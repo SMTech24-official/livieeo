@@ -5,7 +5,10 @@ import { BookControllers } from "./book.controller";
 
 const router = Router();
 
-router.post("/create", fileUploader.upload.single("file"), textToJSONParser, BookControllers.createBook);
+router.post("/create", fileUploader.upload.fields([
+    { name: 'book', maxCount: 1 },
+    { name: 'bookCover', maxCount: 1 }
+]), textToJSONParser, BookControllers.createBook);
 router.get("/", BookControllers.getAllBooks);
 router.get("/:id", BookControllers.getBookById);
 router.patch("/:id", textToJSONParser, BookControllers.updateBook);

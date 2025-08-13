@@ -5,7 +5,16 @@ import { BookServices } from "./book.service";
 import httpStatus from "http-status";
 
 const createBook = catchAsync(async (req, res) => {
-    const result = await BookServices.createBookIntoDB(req.body, req.file as IFile);
+    const files = req.files as {
+        book?: Express.Multer.File[],
+        bookCover?: Express.Multer.File[]
+    };
+
+    const bookFile = files.book ? (files.book[0] as IFile) : undefined;
+    const bookCoverFile = files.bookCover ? (files.bookCover[0] as IFile) : undefined;
+
+    const result = await BookServices.createBookIntoDB(req.body, bookFile!, bookCoverFile!);
+
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,

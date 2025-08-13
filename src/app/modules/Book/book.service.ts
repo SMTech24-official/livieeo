@@ -3,9 +3,16 @@ import prisma from "../../../shared/prisma";
 import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
 
-const createBookIntoDB = async (payload: Book, file: IFile) => {
-    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-    payload.book = uploadToCloudinary?.secure_url ?? "";
+const createBookIntoDB = async (payload: Book,book: IFile , bookCover: IFile) => {
+
+    if (book) {
+        const uploadBook = await fileUploader.uploadToCloudinary(book);
+        payload.book = uploadBook?.secure_url ?? "";
+    }
+    if (bookCover) {
+        const uploadBookCover = await fileUploader.uploadToCloudinary(bookCover);
+        payload.bookCover = uploadBookCover?.secure_url ?? "";
+    }
     const result = await prisma.book.create({
         data: payload
     });
@@ -25,7 +32,7 @@ const getBookByIdFromDB = async (id: string) => {
     });
     return result;
 }
-const updateBookInDB = async (id: string, payload: Book) => {
+const updateBookInDB = async (id: string, payload: Partial<Book>) => {
     const result = await prisma.book.update({
         where: { id },
         data: payload
