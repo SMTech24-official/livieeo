@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  firstName   String
+  lastName    String
+  email       String     @unique
+  password    String
+  phoneNumber String
+  dateOfBirth DateTime
+  gender      Gender
+  role        UserRole   @default(USER)
+  status      UserStatus @default(ACTIVE)
+  photoUrl    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Book {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  bookName   String
+  authorName String
+  price      Float
+  brand      String
+  language   String
+  size       String
+  category   String
+  bookCover  String
+  book       String
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("books")
+}
+
+model Course {
+  id                  String            @id @default(auto()) @map("_id") @db.ObjectId
+  courseTitle         String
+  mentorName          String
+  price               Float
+  totalVideo          Int
+  language            String
+  duration            String
+  description         String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  courseModules       CourseModule[] // One Course -> Many Modules
+  courseCertificateId String            @db.ObjectId
+  courseCertificate   CourseCertificate @relation(fields: [courseCertificateId], references: [id])
+
+  @@map("courses")
+}
+
+model CourseModule {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  moduleTitle        String
+  courseModuleVideos CourseModuleVideo[] // One Module -> Many Videos
+  courseId           String              @db.ObjectId
+  course             Course              @relation(fields: [courseId], references: [id])
+
+  @@map("courseModules")
+}
+
+model CourseModuleVideo {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  videoTitle     String
+  fileUrl        String
+  courseModuleId String       @db.ObjectId
+  courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
+
+  @@map("courseModuleVideos")
+}
+
+model CourseCertificate {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  certificateTitle String
+  certificateUrl   String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  courses          Course[] // One Certificate -> Many Courses
+
+  @@map("courseCertificates")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
