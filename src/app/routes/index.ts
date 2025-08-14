@@ -8,6 +8,8 @@ import { CourseCertificateRoutes } from "../modules/CourseCertificate/courseCert
 import { BookRoutes } from "../modules/Book/book.route";
 import { BlogRoutes } from "../modules/Blog/blog.route";
 import { PodcastRoutes } from "../modules/Podcast/podcast.route";
+import { EducationRoutes } from "../modules/Education/education.route";
+import { SocialLinksRoutes } from "../modules/SocialLinks/socialLinks.route";
 
 const router = Router();
 
@@ -19,6 +21,14 @@ const moduleRoutes = [
   {
     path: "/user",
     route: UserRoutes,
+  },
+  {
+    path: "/education",
+    route: EducationRoutes,
+  },
+  {
+    path: "/social-links",
+    route: SocialLinksRoutes,
   },
   {
     path: "/course-module-video",

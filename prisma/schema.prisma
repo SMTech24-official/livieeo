@@ -7,22 +7,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model User {
+//   id          String     @id @default(auto()) @map("_id") @db.ObjectId
+//   firstName   String
+//   lastName    String
+//   email       String     @unique
+//   password    String
+//   phoneNumber String
+//   dateOfBirth DateTime
+//   gender      Gender
+//   role        UserRole   @default(USER)
+//   status      UserStatus @default(ACTIVE)
+//   photoUrl    String?
+//   createdAt   DateTime   @default(now())
+//   updatedAt   DateTime   @updatedAt
+
+//   @@map("users")
+// }
+
 model User {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  firstName   String
-  lastName    String
-  email       String     @unique
-  password    String
-  phoneNumber String
-  dateOfBirth DateTime
-  gender      Gender
-  role        UserRole   @default(USER)
-  status      UserStatus @default(ACTIVE)
-  photoUrl    String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  firstName     String
+  lastName      String
+  email         String       @unique
+  password      String
+  role          UserRole     @default(USER)
+  bio           String?
+  contactNumber String?
+  gender        Gender?
+  address       String?
+  educationId   String?      @db.ObjectId
+  socialLinksId String?      @db.ObjectId
+  education     Education?   @relation(fields: [educationId], references: [id])
+  socialLinks   SocialLinks? @relation(fields: [socialLinksId], references: [id])
+  orders        Order[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@map("users")
+}
+
+model Education {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  degree      String?
+  institution String?
+  field       String?
+  user        User[]
+}
+
+model SocialLinks {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  facebook  String?
+  twitter   String?
+  linkedin  String?
+  instagram String?
+  user      User[]
+}
+
+model Order {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  category  OrderCategory
+  amount    Float
+  status    OrderStatus @default(PENDING)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Book {
@@ -132,4 +182,14 @@ enum UserStatus {
 enum UserRole {
   USER
   ADMIN
+}
+enum OrderStatus {
+  PENDING
+  PAID
+}
+enum OrderCategory {
+  BOOK
+  COURSE
+  PODCAST
+  BLOG
 }
