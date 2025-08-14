@@ -177,9 +177,16 @@ class QueryBuilder {
     return this;
   }
 
-  async execute() {
-    return this.model.findMany(this.prismaQuery);
-  }
+  // async execute() {
+  //   return this.model.findMany(this.prismaQuery);
+  // }
+
+  async execute(extraOptions: Record<string, any> = {}) {
+  return this.model.findMany({
+    ...this.prismaQuery,
+    ...extraOptions,
+  });
+}
 
   // Count Total
   async countTotal() {

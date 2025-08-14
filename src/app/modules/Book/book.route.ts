@@ -13,5 +13,6 @@ router.get("/", BookControllers.getAllBooks);
 router.get("/:id", BookControllers.getBookById);
 router.patch("/:id", textToJSONParser, BookControllers.updateBook);
 router.delete("/:id", BookControllers.deleteBook);
+router.patch("/:id/published-status", textToJSONParser, BookControllers.updatePublishedStatus);
 
 export const BookRoutes = router;

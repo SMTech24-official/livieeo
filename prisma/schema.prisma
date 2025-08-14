@@ -26,16 +26,17 @@ model User {
 }
 
 model Book {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
-  bookName   String
-  authorName String
-  price      Float
-  brand      String
-  language   String
-  size       String
-  category   String
-  bookCover  String
-  book       String
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  bookName    String
+  authorName  String
+  price       Float
+  brand       String
+  language    String
+  size        String
+  category    String
+  isPublished Boolean @default(false)
+  bookCover   String
+  book        String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,6 +53,7 @@ model Course {
   language            String
   duration            String
   description         String
+  isPublished         Boolean           @default(false)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
   courseModules       CourseModule[] // One Course -> Many Modules
@@ -97,6 +99,7 @@ model Blog {
   blogTitle    String
   content      String
   featureMedia String[]
+  isPublished  Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -109,6 +112,7 @@ model Podcast {
   secondaryTitle String
   constent       String
   featureMedia   String[]
+  isPublished    Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

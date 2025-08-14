@@ -9,5 +9,6 @@ router.post("/create", fileUploader.upload.array("blogImages", 5),textToJSONPars
 router.get("/", BlogControllers.getAllBlogs);
 router.patch("/:id", fileUploader.upload.array("blogImages", 5),textToJSONParser, BlogControllers.updateBlog);
 router.delete("/:id", BlogControllers.deleteBlog);
+router.patch("/published-status/:id", textToJSONParser, BlogControllers.updatePublishedStatus);
 
 export const BlogRoutes = router;

@@ -22,7 +22,7 @@ const getAllBlogsFromDB = async () => {
     });
     return blogs;
 }
-const updateBlogIntoDB = async (id: string, payload: Blog, blogImages: IFile[]) => {
+const updateBlogIntoDB = async (id: string, payload: Partial<Blog>, blogImages: IFile[]) => {
     if (blogImages && blogImages.length > 0) {
         const uploadBlogImages = await fileUploader.uploadMultipleToCloudinary(blogImages);
         payload.featureMedia = uploadBlogImages.map(img => img.secure_url) ?? [] ;
@@ -40,10 +40,18 @@ const deleteBlogFromDB = async (id: string) => {
     });
     return result;
 }
+const updatePublishedStatus = async (blogId: string, status: boolean) => {
+    const result = await prisma.blog.update({
+        where: { id: blogId },
+        data: { isPublished: status },
+    });
+    return result;
+}
 
 export const BlogServices = {
     createBlogIntoDB,
     getAllBlogsFromDB,
     updateBlogIntoDB,
-    deleteBlogFromDB
+    deleteBlogFromDB,
+    updatePublishedStatus
 }

@@ -2,8 +2,11 @@ import { Book } from "@prisma/client";
 import prisma from "../../../shared/prisma";
 import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
+import { IGenericResponse } from "../../../interfaces/common";
+import QueryBuilder from "../../../helpers/queryBuilder";
+import ApiError from "../../../errors/ApiError";
 
-const createBookIntoDB = async (payload: Book,book: IFile , bookCover: IFile) => {
+const createBookIntoDB = async (payload: Book, book: IFile, bookCover: IFile) => {
 
     if (book) {
         const uploadBook = await fileUploader.uploadToCloudinary(book);
@@ -19,9 +22,21 @@ const createBookIntoDB = async (payload: Book,book: IFile , bookCover: IFile) =>
     return result;
 }
 
-const getAllBooksFromDB = async () => {
-    const result = await prisma.book.findMany();
-    return result;
+const getAllBooksFromDB = async (query: Record<string, any>): Promise<IGenericResponse<Book[]>> => {
+    const queryBuilder = new QueryBuilder(prisma.book, query)
+    const books = await queryBuilder
+        .range()
+        .search(["bookName"])
+        .filter(["bookName"])
+        .sort()
+        .paginate()
+        .fields()
+        .execute();
+    const meta = await queryBuilder.countTotal();
+    if (!books || books.length === 0) {
+        throw new ApiError(404, "No books found");
+    }
+    return { meta, data: books };
 };
 
 const getBookByIdFromDB = async (id: string) => {
@@ -45,10 +60,18 @@ const deleteBookFromDB = async (id: string) => {
     });
     return result;
 }
+const updatePublishedStatus = async (id: string, status: boolean) => {
+    const result = await prisma.book.update({
+        where: { id },
+        data: { isPublished: status }
+    });
+    return result;
+}
 export const BookServices = {
     createBookIntoDB,
     getAllBooksFromDB,
     getBookByIdFromDB,
     updateBookInDB,
-    deleteBookFromDB
+    deleteBookFromDB,
+    updatePublishedStatus
 };
