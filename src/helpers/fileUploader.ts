@@ -118,16 +118,29 @@ const uploadToCloudinary = async (
 
 // Upload multiple images to Cloudinary
 const uploadMultipleToCloudinary = async (
-  files: IFile[]
+    files: IFile[]
 ): Promise<ICloudinaryResponse[]> => {
-  const results: ICloudinaryResponse[] = [];
+    const results: ICloudinaryResponse[] = [];
 
-  for (const file of files) {
-    const res = await uploadToCloudinary(file);
-    if (res) results.push(res);
-  }
+    for (const file of files) {
+        const res = await uploadToCloudinary(file);
+        if (res) results.push(res);
+    }
 
-  return results;
+    return results;
+};
+// Upload multiple video to Cloudinary
+const uploadMultipleVideoToCloudinary = async (
+    files: IFile[]
+): Promise<ICloudinaryResponse[]> => {
+    const results: ICloudinaryResponse[] = [];
+
+    for (const file of files) {
+        const res = await uploadVideoToCloudinary(file);
+        if (res) results.push(res);
+    }
+
+    return results;
 };
 
 
@@ -152,5 +165,6 @@ export const fileUploader = {
     upload,
     uploadToCloudinary,
     uploadVideoToCloudinary,
-    uploadMultipleToCloudinary
+    uploadMultipleToCloudinary,
+    uploadMultipleVideoToCloudinary
 };

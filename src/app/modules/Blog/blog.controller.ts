@@ -1,15 +1,54 @@
+import { IFile } from "../../../interfaces/file";
 import catchAsync from "../../../shared/catchAsync";
+import sendResponse from "../../../shared/sendResponse";
 import { BlogServices } from "./blog.service";
+import httpStatus from "http-status";
 
 const createBlog = catchAsync(async (req, res) => {
-    const { body, file } = req;
-    const payload = body;
-    const blogImage = file;
-
-    const result = await BlogServices.createBlogIntoDB(payload, blogImage!);
-    res.status(201).json({
+    const result = await BlogServices.createBlogIntoDB(req.body, req.files as IFile[]);
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
         success: true,
         message: "Blog created successfully",
-        data: result
-    });
+        data: result,
+    })
 })
+
+const getAllBlogs = catchAsync(async (req, res) => {
+    const result = await BlogServices.getAllBlogsFromDB();
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Blogs retrieved successfully",
+        data: result,
+    })
+})
+
+const updateBlog = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await BlogServices.updateBlogIntoDB(id as string, req.body, req.files as IFile[]);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Blog updated successfully",
+        data: result,
+    })
+})
+
+const deleteBlog = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await BlogServices.deleteBlogFromDB(id as string);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Blog deleted successfully",
+        data: result,
+    })
+})
+
+export const BlogControllers = {
+    createBlog,
+    getAllBlogs,
+    updateBlog,
+    deleteBlog
+}

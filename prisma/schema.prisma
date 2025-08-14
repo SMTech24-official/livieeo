@@ -26,7 +26,7 @@ model User {
 }
 
 model Book {
-  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
   bookName   String
   authorName String
   price      Float
@@ -37,8 +37,8 @@ model Book {
   bookCover  String
   book       String
 
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("books")
 }
@@ -93,16 +93,27 @@ model CourseCertificate {
 }
 
 model Blog {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  blogTitle       String
-  content String
-  featureMedia String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  blogTitle    String
+  content      String
+  featureMedia String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("blogs")
 }
 
+model Podcast {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  podcastTitle   String
+  secondaryTitle String
+  constent       String
+  featureMedia   String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("podcasts")
+}
 
 enum Gender {
   MALE
