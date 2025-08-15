@@ -1,7 +1,16 @@
 import { SocialLinks } from "@prisma/client";
 import prisma from "../../../shared/prisma";
+import ApiError from "../../../errors/ApiError";
 
 const createSocialLinkIntoDB = async(payload: SocialLinks)=> {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: payload.userId
+        }
+    })
+    if(!user){
+        throw new ApiError(404,'User not found !')
+    }
     const result = await prisma.socialLinks.create({
         data: payload
     });

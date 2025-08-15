@@ -8,5 +8,6 @@ const router = Router()
 router.post("/register", fileUploader.upload.single("file"),textToJSONParser, UserController.registerUser)
 router.post("/create-admin", fileUploader.upload.single("file"),textToJSONParser, UserController.createAdmin)
 router.get("/", UserController.getAllUser)
+router.get("/:userId", UserController.getUserById)
 
 export const UserRoutes = router;

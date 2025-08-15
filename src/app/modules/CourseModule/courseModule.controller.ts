@@ -21,7 +21,17 @@ const getAllCourseModules = catchAsync(async (req, res) => {
         data: result,
     });
 })
+const getCourseModuleById = catchAsync(async (req, res) => {
+    const result = await CourseModuleServices.getCourseModuleByIdFromDB(req.params.id as string);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Course module retrieved successfully`,
+        data: result,
+    });
+})
 export const CourseModuleControllers = {
     createCourseModule,
-    getAllCourseModules
+    getAllCourseModules,
+    getCourseModuleById
 }

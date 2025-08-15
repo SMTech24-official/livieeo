@@ -7,24 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model User {
-//   id          String     @id @default(auto()) @map("_id") @db.ObjectId
-//   firstName   String
-//   lastName    String
-//   email       String     @unique
-//   password    String
-//   phoneNumber String
-//   dateOfBirth DateTime
-//   gender      Gender
-//   role        UserRole   @default(USER)
-//   status      UserStatus @default(ACTIVE)
-//   photoUrl    String?
-//   createdAt   DateTime   @default(now())
-//   updatedAt   DateTime   @updatedAt
-
-//   @@map("users")
-// }
-
 model User {
   id            String     @id @default(auto()) @map("_id") @db.ObjectId
   userId        String?    @unique
@@ -100,7 +82,7 @@ model Book {
 }
 
 model Course {
-  id                  String            @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
   courseTitle         String
   mentorName          String
   price               Float
@@ -108,12 +90,13 @@ model Course {
   language            String
   duration            String
   description         String
-  isPublished         Boolean           @default(false)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  isPublished         Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
   courseModules       CourseModule[] // One Course -> Many Modules
-  courseCertificateId String            @db.ObjectId
-  courseCertificate   CourseCertificate @relation(fields: [courseCertificateId], references: [id])
+  courseCertificateId String              @db.ObjectId
+  // courseCertificate   CourseCertificate @relation(fields: [courseCertificateId], references: [id])
+  courseCertificate   CourseCertificate[]
 
   @@map("courses")
 }
@@ -142,9 +125,11 @@ model CourseCertificate {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   certificateTitle String
   certificateUrl   String
+  courseId         String   @db.ObjectId
+  course           Course   @relation(fields: [courseId], references: [id])
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  courses          Course[] // One Certificate -> Many Courses
+  // courses          Course[] // One Certificate -> Many Courses
 
   @@map("courseCertificates")
 }
@@ -191,8 +176,9 @@ enum UserStatus {
 }
 
 enum UserRole {
-  USER
   ADMIN
+  SPEAKER
+  USER
 }
 
 enum OrderStatus {
