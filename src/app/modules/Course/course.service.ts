@@ -44,9 +44,18 @@ const updatePublishedStatus = async (courseId: string, status: boolean) => {
   });
   return result;
 }
-
+const updateCourseIntoDB = async (courseId: string, payload: Partial<Course>) => {
+  const result = await prisma.course.update({
+    where: {
+      id: courseId
+    },
+    data: payload
+  })
+  return result
+}
 export const CourseServices = {
   createCourseIntoDB,
   getAllCoursesFromDB,
   updatePublishedStatus,
+  updateCourseIntoDB
 }
