@@ -1,7 +1,16 @@
 import { Education } from "@prisma/client";
 import prisma from "../../../shared/prisma";
+import ApiError from "../../../errors/ApiError";
 
 const createEducationIntoDB = async (payload: Education) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: payload.userId
+        }
+    })
+    if(!user){
+        throw new ApiError(404,'User not found !')
+    }
     const result = await prisma.education.create({
         data: payload
     })
@@ -9,6 +18,14 @@ const createEducationIntoDB = async (payload: Education) => {
 }
 
 const updateEducationIntoDB = async (id: string, payload: Education) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: payload.userId
+        }
+    })
+    if(!user){
+        throw new ApiError(404,'User not found !')
+    }
     const result = await prisma.education.update({
         where: { id },
         data: payload
