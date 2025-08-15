@@ -26,23 +26,26 @@ datasource db {
 // }
 
 model User {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String?    @unique
   firstName     String
   lastName      String
-  email         String       @unique
+  email         String     @unique
   password      String
-  role          UserRole     @default(USER)
+  role          UserRole   @default(USER)
+  status        UserStatus @default(ACTIVE)
   bio           String?
-  contactNumber String?
-  gender        Gender?
+  contactNumber String
+  gender        Gender
+  dob           DateTime?
   address       String?
-  educationId   String?      @db.ObjectId
-  socialLinksId String?      @db.ObjectId
-  education     Education?   @relation(fields: [educationId], references: [id])
-  socialLinks   SocialLinks? @relation(fields: [socialLinksId], references: [id])
-  orders        Order[]
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  photoUrl      String?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  education   Education[]
+  socialLinks SocialLinks[]
+  orders      Order[]
 
   @@map("users")
 }
@@ -52,7 +55,8 @@ model Education {
   degree      String?
   institution String?
   field       String?
-  user        User[]
+  userId      String  @db.ObjectId
+  user        User    @relation(fields: [userId], references: [id])
 }
 
 model SocialLinks {
@@ -61,18 +65,19 @@ model SocialLinks {
   twitter   String?
   linkedin  String?
   instagram String?
-  user      User[]
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
 }
 
 model Order {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   category  OrderCategory
   amount    Float
-  status    OrderStatus @default(PENDING)
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  status    OrderStatus   @default(PENDING)
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
 }
 
 model Book {
@@ -169,6 +174,12 @@ model Podcast {
   @@map("podcasts")
 }
 
+model Counter {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  seq  Int
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -183,10 +194,12 @@ enum UserRole {
   USER
   ADMIN
 }
+
 enum OrderStatus {
   PENDING
   PAID
 }
+
 enum OrderCategory {
   BOOK
   COURSE

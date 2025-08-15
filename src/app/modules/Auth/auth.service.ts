@@ -65,7 +65,7 @@ const refreshToken = async (token: string) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: decodedData.email,
-      status: UserStatus.ACTIVE,
+      // status: UserStatus.ACTIVE,
     },
   });
   const accessToken = JWTHelpers.generateToken(
