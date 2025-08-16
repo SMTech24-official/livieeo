@@ -10,6 +10,7 @@ import { BlogRoutes } from "../modules/Blog/blog.route";
 import { PodcastRoutes } from "../modules/Podcast/podcast.route";
 import { EducationRoutes } from "../modules/Education/education.route";
 import { SocialLinksRoutes } from "../modules/SocialLinks/socialLinks.route";
+import { BookSpeakerRoutes } from "../modules/BookSpeaker/bookSpeaker.route";
 
 const router = Router();
 
@@ -57,6 +58,10 @@ const moduleRoutes = [
   {
     path: "/podcast",
     route: PodcastRoutes,
+  },
+  {
+    path: "/book-speaker",
+    route: BookSpeakerRoutes,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

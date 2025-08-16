@@ -53,7 +53,7 @@ const createAdminIntoDB = async (payload: User, file: IFile) => {
     });
     return result;
 }
-const createSpeakerIntoDB = async (payload: User, file: IFile) => {
+const createBookSpeakerIntoDB = async (payload: User, file: IFile) => {
     const user = await prisma.user.findUnique({
         where: {
             email: payload?.email,
@@ -67,7 +67,7 @@ const createSpeakerIntoDB = async (payload: User, file: IFile) => {
         payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
     }
     payload.userId = await getNextSpeakerId();
-    payload.role = UserRole.SPEAKER;
+    payload.role = UserRole.BOOK_SPEAKER;
     const hashedPassword: string = await bcrypt.hash(payload.password, 12);
     payload.password = hashedPassword;
     const result = await prisma.user.create({
@@ -133,7 +133,7 @@ const getAllSpeakerFromDB = async (query: Record<string, any>): Promise<IGeneric
         .execute({
             where: {
                 status: 'ACTIVE',
-                role: UserRole.SPEAKER
+                role: UserRole.BOOK_SPEAKER
             },
             include: {
                 education: true,
@@ -156,7 +156,7 @@ const getUserByIdFromDB = async(id:string)=> {
 export const UserServices = {
     registerUserIntoDB,
     createAdminIntoDB,
-    createSpeakerIntoDB,
+    createBookSpeakerIntoDB,
     getAllUserFromDB,
     getAllAdminFromDB,
     getAllSpeakerFromDB,

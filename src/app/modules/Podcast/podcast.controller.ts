@@ -17,7 +17,7 @@ const createPodcast = catchAsync(async (req, res) => {
     })
 })
 const getAllPodcasts = catchAsync(async (req, res) => {
-    const podcasts = await PodcastServices.getAllPodcasts();
+    const podcasts = await PodcastServices.getAllPodcastFromDB(req.query);
 
     sendResponse(res, {
         statusCode: 200,

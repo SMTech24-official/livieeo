@@ -2,6 +2,8 @@ import { Podcast } from "@prisma/client";
 import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
 import prisma from "../../../shared/prisma";
+import { IGenericResponse } from "../../../interfaces/common";
+import QueryBuilder from "../../../helpers/queryBuilder";
 
 const createPodcastIntoDB = async(payload: Podcast, podcastFiles: IFile[]) => {
     if (podcastFiles && podcastFiles.length > 0) {
@@ -14,14 +16,24 @@ const createPodcastIntoDB = async(payload: Podcast, podcastFiles: IFile[]) => {
     return result;
 }
 
-const getAllPodcasts = async() => {
-    const podcasts = await prisma.podcast.findMany({
-        orderBy: {
+const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
+    const queryBuilder = new QueryBuilder(prisma.podcast, query)
+        const podcasts = await queryBuilder.range()
+        .search(["podcastTitle"])
+        .filter()
+        .sort()
+        .paginate()
+        .fields()
+        .execute({
+            orderBy: {
             createdAt: 'desc'
         }
-    });
-    return podcasts;
+        });
+        const meta = await queryBuilder.countTotal();
+    return {meta,data: podcasts}
 }
+
+
 const updatePodcast = async(id: string, payload: Partial<Podcast>) => {
     const updatedPodcast = await prisma.podcast.update({
         where: { id },
@@ -45,7 +57,7 @@ const updatePodcastStatus = async(id: string, status: boolean) => {
 
 export const PodcastServices = {
     createPodcastIntoDB,
-    getAllPodcasts,
+    getAllPodcastFromDB,
     updatePodcast,
     deletePodcast,
     updatePodcastStatus

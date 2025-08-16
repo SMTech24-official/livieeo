@@ -32,6 +32,24 @@ model User {
   @@map("users")
 }
 
+model BookSpeaker {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  profession   String
+  language     String
+  location     String
+  experience   String
+  bio          String
+  expertise    String[]
+  achievements String[]
+  reasons      String
+  imageUrl     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("book-speakers")
+}
+
 model Education {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   degree      String?
@@ -68,10 +86,14 @@ model Book {
   authorName  String
   price       Float
   brand       String
+  description      String
   language    String
   size        String
+  availableFormats String[]
   category    String
   isPublished Boolean @default(false)
+  publishDate DateTime @default(now())
+  rating           Float    @default(0)
   bookCover   String
   book        String
 
@@ -80,6 +102,7 @@ model Book {
 
   @@map("books")
 }
+
 
 model Course {
   id                  String              @id @default(auto()) @map("_id") @db.ObjectId
@@ -177,7 +200,6 @@ enum UserStatus {
 
 enum UserRole {
   ADMIN
-  SPEAKER
   USER
 }
 
