@@ -65,7 +65,7 @@ const refreshToken = async (token: string) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: decodedData.email,
-      // status: UserStatus.ACTIVE,
+      status: UserStatus.ACTIVE,
     },
   });
   const accessToken = JWTHelpers.generateToken(
@@ -135,6 +135,7 @@ const forgotPassword = async (payload: { email: string }) => {
     config.reset_pass_link + `?userId=${userData.id}&token=${resetPassToken}`;
   await emailSender(
     userData.email,
+    "Reset Password Link",
     `
         <div>
             <p>Dear User,</p>
@@ -145,7 +146,6 @@ const forgotPassword = async (payload: { email: string }) => {
                     </button>
                 </a>
             </p>
-
         </div>
         `
   );

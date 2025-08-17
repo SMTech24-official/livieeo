@@ -19,7 +19,7 @@ const createPodcastIntoDB = async(payload: Podcast, podcastFiles: IFile[]) => {
 const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
     const queryBuilder = new QueryBuilder(prisma.podcast, query)
         const podcasts = await queryBuilder.range()
-        .search(["podcastTitle"])
+        .search(["podcastTitle","secondaryTitle"])
         .filter()
         .sort()
         .paginate()

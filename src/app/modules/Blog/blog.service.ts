@@ -20,7 +20,7 @@ const getAllBlogsFromDB = async (query: Record<string, unknown>): Promise<IGener
     const queryBuilder = new QueryBuilder(prisma.blog, query)
         const blogs = await queryBuilder.range()
         .search(["blogTitle"])
-        .filter()
+        .filter(["category"])
         .sort()
         .paginate()
         .fields()

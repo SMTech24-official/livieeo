@@ -27,7 +27,7 @@ const getAllBooksFromDB = async (query: Record<string, any>): Promise<IGenericRe
     const books = await queryBuilder
         .range()
         .search(["bookName"])
-        .filter(["bookName"])
+        .filter()
         .sort()
         .paginate()
         .fields()
@@ -40,7 +40,7 @@ const getAllBooksFromDB = async (query: Record<string, any>): Promise<IGenericRe
 };
 
 const getBookByIdFromDB = async (id: string) => {
-    const result = await prisma.book.findUnique({
+    const result = await prisma.book.findUniqueOrThrow({
         where: {
             id
         }
@@ -48,6 +48,14 @@ const getBookByIdFromDB = async (id: string) => {
     return result;
 }
 const updateBookInDB = async (id: string, payload: Partial<Book>) => {
+    const book = await prisma.book.findUnique({
+        where: {
+            id
+        }
+    })
+    if(!book){
+        throw new ApiError(404,"Book not found!")
+    }
     const result = await prisma.book.update({
         where: { id },
         data: payload
@@ -55,12 +63,28 @@ const updateBookInDB = async (id: string, payload: Partial<Book>) => {
     return result;
 }
 const deleteBookFromDB = async (id: string) => {
+    const book = await prisma.book.findUnique({
+        where: {
+            id
+        }
+    })
+    if(!book){
+        throw new ApiError(404,"Book not found!")
+    }
     const result = await prisma.book.delete({
         where: { id }
     });
     return result;
 }
 const updatePublishedStatus = async (id: string, status: boolean) => {
+    const book = await prisma.book.findUnique({
+        where: {
+            id
+        }
+    })
+    if(!book){
+        throw new ApiError(404,"Book not found!")
+    }
     const result = await prisma.book.update({
         where: { id },
         data: { isPublished: status }
