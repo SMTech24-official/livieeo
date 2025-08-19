@@ -55,7 +55,8 @@ model BookingBookSpeaker {
   lastName String
   contactNumber String
   email String
-  selectDateAndTime DateTime
+  date String
+  time String
   yourNote String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
