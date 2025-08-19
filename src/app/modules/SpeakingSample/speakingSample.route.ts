@@ -6,5 +6,9 @@ import textToJSONParser from "../../middlewares/textToJsonParser";
 const router = Router()
 
 router.post("/create", fileUploader.upload.single("video"), textToJSONParser, SpeakingSampleControllers.createSpeakingSample)
+router.get("/:speakingSampleId", SpeakingSampleControllers.getSpeakingSampleById)
+router.get("/:speakingSampleId", SpeakingSampleControllers.updateSpeakingSample)
+router.get("/:speakingSampleId", SpeakingSampleControllers.deleteSpeakingSample)
+router.get("/", SpeakingSampleControllers.getAllSpeakingSample)
 
 export const SpeakingSampleRoutes = router
