@@ -11,4 +11,4 @@ router.get("/:id", CourseModuleVideoControllers.getCourseModuleVideoById)
 router.patch("/:id", textToJSONParser, CourseModuleVideoControllers.updateCourseModuleVideo)
 router.delete("/:id", CourseModuleVideoControllers.deleteCourseModuleVideo)
 
-export const CourseModuleVideoRoutes = router; 
+export const CourseModuleVideoRoutes = router;

@@ -13,6 +13,7 @@ import { SocialLinksRoutes } from "../modules/SocialLinks/socialLinks.route";
 import { BookSpeakerRoutes } from "../modules/BookSpeaker/bookSpeaker.route";
 import { ContactRoutes } from "../modules/Contact/contact.route";
 import { BookingBookSpeakerRoutes } from "../modules/BookingBookSpeaker/bookingBookSpeaker.route";
+import { SpeakingSampleRoutes } from "../modules/SpeakingSample/speakingSample.route";
 
 const router = Router();
 
@@ -72,6 +73,10 @@ const moduleRoutes = [
   {
     path: "/booking-book-speaker",
     route: BookingBookSpeakerRoutes,
+  },
+  {
+    path: "/speaking-sample",
+    route: SpeakingSampleRoutes,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

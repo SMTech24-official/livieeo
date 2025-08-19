@@ -49,18 +49,20 @@ model BookSpeaker {
 
   @@map("book-speakers")
 }
+
 model BookingBookSpeaker {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  firstName String
-  lastName String
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName     String
+  lastName      String
   contactNumber String
-  email String
-  date String
-  time String
-  yourNote String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  email         String
+  date          String
+  time          String
+  yourNote      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
+
 model Education {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   degree      String?
@@ -194,17 +196,29 @@ model Podcast {
   @@map("podcasts")
 }
 
+model SpeakingSample {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  sampleTitle  String
+  content      String
+  featureMedia String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("speaking-samples")
+}
+
 model Contact {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   firstName   String
   lastName    String
   email       String
   phoneNumber String
   message     String
-  createdAt      DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   @@map("contacts")
 }
+
 model Newsletter {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
@@ -212,6 +226,7 @@ model Newsletter {
 
   @@map("newsletters")
 }
+
 model Counter {
   id   String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
