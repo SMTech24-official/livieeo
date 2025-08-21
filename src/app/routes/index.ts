@@ -14,6 +14,7 @@ import { BookSpeakerRoutes } from "../modules/BookSpeaker/bookSpeaker.route";
 import { ContactRoutes } from "../modules/Contact/contact.route";
 import { BookingBookSpeakerRoutes } from "../modules/BookingBookSpeaker/bookingBookSpeaker.route";
 import { SpeakingSampleRoutes } from "../modules/SpeakingSample/speakingSample.route";
+import { OrderBookRoutes } from "../modules/OrderBook/orderBook.route";
 
 const router = Router();
 
@@ -77,6 +78,10 @@ const moduleRoutes = [
   {
     path: "/speaking-sample",
     route: SpeakingSampleRoutes,
+  },
+  {
+    path: "/order-book",
+    route: OrderBookRoutes,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

@@ -53,28 +53,7 @@ const createAdminIntoDB = async (payload: User, file: IFile) => {
     });
     return result;
 }
-const createBookSpeakerIntoDB = async (payload: User, file: IFile) => {
-    const user = await prisma.user.findUnique({
-        where: {
-            email: payload?.email,
-        },
-    })
-    if (user) {
-        throw new ApiError(httpStatus.CONFLICT, "User already exists !");
-    }
-    if (file) {
-        const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-        payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
-    }
-    payload.userId = await getNextSpeakerId();
-    payload.role = UserRole.BOOK_SPEAKER;
-    const hashedPassword: string = await bcrypt.hash(payload.password, 12);
-    payload.password = hashedPassword;
-    const result = await prisma.user.create({
-        data: payload,
-    });
-    return result;
-}
+
 const getAllUserFromDB = async (query: Record<string, any>): Promise<IGenericResponse<User[]>> => {
     const queryBuilder = new QueryBuilder(prisma.user, query);
     const users = await queryBuilder
@@ -92,7 +71,7 @@ const getAllUserFromDB = async (query: Record<string, any>): Promise<IGenericRes
             include: {
                 education: true,
                 socialLinks: true,
-                orders: true
+                // orders: true
             }
         });
     const meta = await queryBuilder.countTotal();
@@ -121,29 +100,7 @@ const getAllAdminFromDB = async (query: Record<string, any>): Promise<IGenericRe
     const meta = await queryBuilder.countTotal();
     return { meta, data: users }
 }
-const getAllSpeakerFromDB = async (query: Record<string, any>): Promise<IGenericResponse<User[]>> => {
-    const queryBuilder = new QueryBuilder(prisma.user, query);
-    const users = await queryBuilder
-        .range()
-        .search(["firstName", "email"])
-        .filter()
-        .sort()
-        .paginate()
-        .fields()
-        .execute({
-            where: {
-                status: 'ACTIVE',
-                role: UserRole.BOOK_SPEAKER
-            },
-            include: {
-                education: true,
-                socialLinks: true,
-                orders: true
-            }
-        });
-    const meta = await queryBuilder.countTotal();
-    return { meta, data: users }
-}
+
 const getUserByIdFromDB = async(id:string)=> {
     const result = await prisma.user.findUniqueOrThrow({
         where: {
@@ -156,9 +113,7 @@ const getUserByIdFromDB = async(id:string)=> {
 export const UserServices = {
     registerUserIntoDB,
     createAdminIntoDB,
-    createBookSpeakerIntoDB,
     getAllUserFromDB,
     getAllAdminFromDB,
-    getAllSpeakerFromDB,
     getUserByIdFromDB
 }

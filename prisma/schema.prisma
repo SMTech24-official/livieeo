@@ -27,7 +27,7 @@ model User {
   updatedAt   DateTime      @updatedAt
   education   Education[]
   socialLinks SocialLinks[]
-  orders      Order[]
+  orderBook   OrderBook[]
 
   @@map("users")
 }
@@ -82,16 +82,16 @@ model SocialLinks {
   user      User    @relation(fields: [userId], references: [id])
 }
 
-model Order {
-  id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  category  OrderCategory
-  amount    Float
-  status    OrderStatus   @default(PENDING)
-  userId    String        @db.ObjectId
-  user      User          @relation(fields: [userId], references: [id])
-  createdAt DateTime      @default(now())
-}
+// model Order {
+//   id        String        @id @default(auto()) @map("_id") @db.ObjectId
+//   title     String
+//   category  OrderCategory
+//   amount    Float
+//   status    OrderStatus   @default(PENDING)
+//   userId    String        @db.ObjectId
+//   user      User          @relation(fields: [userId], references: [id])
+//   createdAt DateTime      @default(now())
+// }
 
 model Book {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -110,10 +110,24 @@ model Book {
   bookCover        String
   book             String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  orderBook OrderBook[]
 
   @@map("books")
+}
+
+model OrderBook {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id])
+  bookId        String   @db.ObjectId
+  book          Book     @relation(fields: [bookId], references: [id])
+  amount        Float
+  paymentStatus PaymentStatus   @default(PENDING)
+  paymentMethod PaymentMethod   @default(STRIPE)
+  transactionId String?
+  createdAt     DateTime @default(now())
 }
 
 model Course {
@@ -197,12 +211,12 @@ model Podcast {
 }
 
 model SpeakingSample {
-  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sampleTitle  String
   content      String
   featureMedia String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("speaking-samples")
 }
@@ -248,14 +262,26 @@ enum UserRole {
   USER
 }
 
-enum OrderStatus {
+// enum OrderStatus {
+//   PENDING
+//   PAID
+//   CANCELED
+// }
+
+// enum OrderCategory {
+//   BOOK
+//   COURSE
+//   PODCAST
+//   BLOG
+// }
+
+enum PaymentStatus {
   PENDING
   PAID
+  CANCELED
 }
 
-enum OrderCategory {
-  BOOK
-  COURSE
-  PODCAST
-  BLOG
+enum PaymentMethod {
+  STRIPE
+  VISA
 }
