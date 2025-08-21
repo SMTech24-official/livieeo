@@ -1,0 +1,1 @@
+{"version":3,"file":"handleClientError.d.ts","sourceRoot":"","sources":["../../src/errors/handleClientError.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,gBAAgB,CAAC;AACxC,OAAO,EAAE,oBAAoB,EAAE,MAAM,qBAAqB,CAAC;AAE3D,QAAA,MAAM,iBAAiB,GAAI,OAAO,MAAM,CAAC,6BAA6B;;;;CA8BrE,CAAC;AAEF,eAAe,iBAAiB,CAAC"}

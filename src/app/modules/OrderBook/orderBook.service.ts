@@ -53,6 +53,7 @@ const createBookOrderIntoDB = async (payload: OrderBook, user: JwtPayload) => {
     cancel_url: `${config.stripe.fail_url}`,
     metadata: {
       orderId: order.id,
+      orderType: "BOOK", // 📌 important
       userId,
     },
   });
@@ -63,44 +64,22 @@ const createBookOrderIntoDB = async (payload: OrderBook, user: JwtPayload) => {
   };
 };
 
-
-// handle webhook for payment success
-const handleStripeWebHook = async(rawBody: Buffer,signature: string)=> {
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      signature,
-      config.stripe.webhook_secret as string
-    );
-  } catch (err: any) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Webhook Error: " + err.message);
-  }
-
-  // handle successful checkout payment
-  if(event.type === "checkout.session.completed"){
-    const session = event.data.object;
-    const orderId = session.metadata?.orderId;
-
-    if(orderId){
-      try {
-        await prisma.orderBook.update({
-          where: {id: orderId},
-          data: {
-            paymentStatus: PaymentStatus.PAID,
-          }
-        })
-      } catch (error) {
-        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to update order status");
-      }
+const getMyBooksFromDB = async (userId: string): Promise<OrderBook[]> => {
+    const result = await prisma.orderBook.findMany({
+        where: {
+            userId,
+            paymentStatus: PaymentStatus.PAID
+        }
+    });
+    if (!result || result.length === 0) {
+        throw new ApiError(404, "No books found for this user");
     }
-  }
-  return { recived:true}
-
+    return result;
 }
+
+
 
 export const OrderBookServices = {
     createBookOrderIntoDB,
-    handleStripeWebHook
+    getMyBooksFromDB
 }

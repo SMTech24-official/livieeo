@@ -16,18 +16,19 @@ const createBookOrder = catchAsync(async(req,res)=> {
     })
 })
 
-const handleStripeWebHook = catchAsync(async(req,res)=> {
-    const sig = req.headers['stripe-signature'] as string;
-    const result = await OrderBookServices.handleStripeWebHook(req.body,sig)
+const getMyBooks = catchAsync(async(req,res)=> {
+    const user = req.user as JwtPayload;
+    const result = await OrderBookServices.getMyBooksFromDB(user.id);
     sendResponse(res,{
-        statusCode: httpStatus.CREATED, 
+        statusCode: httpStatus.OK, 
         success: true,
-        message: "Payment paid successfully",
+        message: "My books fetched successfully",
         data: result
     })
 })
 
+
 export const OrderBookControllers = {
     createBookOrder,
-    handleStripeWebHook
+    getMyBooks
 }

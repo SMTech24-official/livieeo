@@ -1,0 +1,1 @@
+{"version":3,"file":"orderBook.service.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/OrderBook/orderBook.service.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAiB,MAAM,gBAAgB,CAAC;AAC1D,OAAO,EAAE,UAAU,EAAE,MAAM,cAAc,CAAC;AA+E1C,eAAO,MAAM,iBAAiB;qCAxEgB,SAAS,QAAQ,UAAU;;;;+BAyDjC,MAAM,KAAG,OAAO,CAAC,SAAS,EAAE,CAAC;CAkBpE,CAAA"}

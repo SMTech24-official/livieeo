@@ -1,0 +1,39 @@
+import { z } from 'zod';
+export declare const AuthValidator: {
+    login: z.ZodObject<{
+        body: z.ZodObject<{
+            contactNo: z.ZodString;
+            password: z.ZodString;
+        }, z.core.$strip>;
+    }, z.core.$strip>;
+    refreshToken: z.ZodObject<{
+        cookies: z.ZodObject<{
+            refreshToken: z.ZodString;
+        }, z.core.$strip>;
+    }, z.core.$strip>;
+    changePassword: z.ZodObject<{
+        body: z.ZodObject<{
+            oldPassword: z.ZodString;
+            newPassword: z.ZodString;
+        }, z.core.$strip>;
+    }, z.core.$strip>;
+    resetPasswordReq: z.ZodObject<{
+        body: z.ZodObject<{
+            email: z.ZodString;
+        }, z.core.$strip>;
+    }, z.core.$strip>;
+    checkOTPValidation: z.ZodObject<{
+        body: z.ZodObject<{
+            email: z.ZodString;
+            otp: z.ZodNumber;
+        }, z.core.$strip>;
+    }, z.core.$strip>;
+    resetPassword: z.ZodObject<{
+        body: z.ZodObject<{
+            email: z.ZodString;
+            otp: z.ZodNumber;
+            password: z.ZodString;
+        }, z.core.$strip>;
+    }, z.core.$strip>;
+};
+//# sourceMappingURL=auth.validation.d.ts.map

@@ -1,0 +1,62 @@
+import { User } from "@prisma/client";
+import { IGenericResponse } from "../../../interfaces/common";
+import { IFile } from "../../../interfaces/file";
+export declare const UserServices: {
+    registerUserIntoDB: (payload: User, file: IFile) => Promise<{
+        id: string;
+        userId: string | null;
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        status: import("@prisma/client").$Enums.UserStatus;
+        bio: string | null;
+        contactNumber: string;
+        gender: import("@prisma/client").$Enums.Gender;
+        dob: Date | null;
+        address: string | null;
+        photoUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    createAdminIntoDB: (payload: User, file: IFile) => Promise<{
+        id: string;
+        userId: string | null;
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        status: import("@prisma/client").$Enums.UserStatus;
+        bio: string | null;
+        contactNumber: string;
+        gender: import("@prisma/client").$Enums.Gender;
+        dob: Date | null;
+        address: string | null;
+        photoUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    getAllUserFromDB: (query: Record<string, any>) => Promise<IGenericResponse<User[]>>;
+    getAllAdminFromDB: (query: Record<string, any>) => Promise<IGenericResponse<User[]>>;
+    getUserByIdFromDB: (id: string) => Promise<{
+        id: string;
+        userId: string | null;
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        status: import("@prisma/client").$Enums.UserStatus;
+        bio: string | null;
+        contactNumber: string;
+        gender: import("@prisma/client").$Enums.Gender;
+        dob: Date | null;
+        address: string | null;
+        photoUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+};
+//# sourceMappingURL=user.service.d.ts.map

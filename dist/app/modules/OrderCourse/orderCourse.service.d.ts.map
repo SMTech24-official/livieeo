@@ -1,0 +1,1 @@
+{"version":3,"file":"orderCourse.service.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/OrderCourse/orderCourse.service.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,WAAW,EAAE,MAAM,gBAAgB,CAAC;AAC7C,OAAO,EAAE,UAAU,EAAE,MAAM,cAAc,CAAC;AAgE1C,eAAO,MAAM,mBAAmB;uCAzDgB,WAAW,QAAQ,UAAU;;;;CA2D5E,CAAA"}

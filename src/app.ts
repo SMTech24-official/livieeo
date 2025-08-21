@@ -1,11 +1,17 @@
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { application, Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import router from "./app/routes";
 import cookieParser from "cookie-parser";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
+import { WebHookRoutes } from "./app/modules/WebHook/webHook.route";
+
 
 const app: Application = express();
+
+// here use the webhook json data hanlding middleware
+app.use(WebHookRoutes);
+
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
@@ -14,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from Livieeo!");
 });
+
 
 app.use(router);
 app.use(globalErrorHandler);

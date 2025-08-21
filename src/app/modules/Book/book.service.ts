@@ -47,6 +47,7 @@ const getBookByIdFromDB = async (id: string) => {
     });
     return result;
 }
+
 const updateBookInDB = async (id: string, payload: Partial<Book>) => {
     const book = await prisma.book.findUnique({
         where: {
@@ -91,6 +92,23 @@ const updatePublishedStatus = async (id: string, status: boolean) => {
     });
     return result;
 }
+
+const getRelatedBooks = async (bookId: string, limit: number = 5): Promise<Book[]> => {
+    const books = await prisma.book.findMany({
+        where: {
+            id: {
+                not: bookId
+            },
+            isPublished: true
+        },
+        take: limit,
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+    return books;
+}
+
 export const BookServices = {
     createBookIntoDB,
     getAllBooksFromDB,

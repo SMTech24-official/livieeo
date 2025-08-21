@@ -28,6 +28,7 @@ model User {
   education   Education[]
   socialLinks SocialLinks[]
   orderBook   OrderBook[]
+  OrderCourse OrderCourse[]
 
   @@map("users")
 }
@@ -82,17 +83,6 @@ model SocialLinks {
   user      User    @relation(fields: [userId], references: [id])
 }
 
-// model Order {
-//   id        String        @id @default(auto()) @map("_id") @db.ObjectId
-//   title     String
-//   category  OrderCategory
-//   amount    Float
-//   status    OrderStatus   @default(PENDING)
-//   userId    String        @db.ObjectId
-//   user      User          @relation(fields: [userId], references: [id])
-//   createdAt DateTime      @default(now())
-// }
-
 model Book {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   bookName         String
@@ -118,16 +108,29 @@ model Book {
 }
 
 model OrderBook {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  user          User     @relation(fields: [userId], references: [id])
-  bookId        String   @db.ObjectId
-  book          Book     @relation(fields: [bookId], references: [id])
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  bookId        String        @db.ObjectId
+  book          Book          @relation(fields: [bookId], references: [id])
   amount        Float
-  paymentStatus PaymentStatus   @default(PENDING)
-  paymentMethod PaymentMethod   @default(STRIPE)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(STRIPE)
   transactionId String?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime      @default(now())
+}
+
+model OrderCourse {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  courseId      String        @db.ObjectId
+  book          Course        @relation(fields: [courseId], references: [id])
+  amount        Float
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(STRIPE)
+  transactionId String?
+  createdAt     DateTime      @default(now())
 }
 
 model Course {
@@ -146,6 +149,7 @@ model Course {
   courseCertificateId String              @db.ObjectId
   // courseCertificate   CourseCertificate @relation(fields: [courseCertificateId], references: [id])
   courseCertificate   CourseCertificate[]
+  OrderCourse         OrderCourse[]
 
   @@map("courses")
 }
@@ -261,19 +265,6 @@ enum UserRole {
   ADMIN
   USER
 }
-
-// enum OrderStatus {
-//   PENDING
-//   PAID
-//   CANCELED
-// }
-
-// enum OrderCategory {
-//   BOOK
-//   COURSE
-//   PODCAST
-//   BLOG
-// }
 
 enum PaymentStatus {
   PENDING
