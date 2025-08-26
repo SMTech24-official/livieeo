@@ -160,11 +160,27 @@ const uploadVideoToCloudinary = async (
         );
     });
 };
-
+const uploadPdfBuffer = (buffer: Buffer, publicId?: string) =>
+  new Promise((resolve, reject) => {
+    const options: Record<string, any> = {
+      folder: "certificates",
+      resource_type: "raw", // PDF = raw
+      format: "pdf",
+    };
+    if (publicId !== undefined) {
+      options.public_id = publicId;
+    }
+    const stream = cloudinary.uploader.upload_stream(
+      options,
+      (err, result) => (err ? reject(err) : resolve(result))
+    );
+    stream.end(buffer);
+  });
 export const fileUploader = {
     upload,
     uploadToCloudinary,
     uploadVideoToCloudinary,
     uploadMultipleToCloudinary,
-    uploadMultipleVideoToCloudinary
+    uploadMultipleVideoToCloudinary,
+    uploadPdfBuffer
 };

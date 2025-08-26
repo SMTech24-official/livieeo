@@ -1,10 +1,14 @@
 import { Router } from "express";
 import { CourseCertificateControllers } from "./courseCertificate.controller";
-import textToJSONParser from "../../middlewares/textToJsonParser";
-import { fileUploader } from "../../../helpers/fileUploader";
+import auth from "../../middlewares/auth";
+import { UserRole } from "@prisma/client";
 
 const router = Router();
 
-router.post("/create",fileUploader.upload.single("file"),textToJSONParser, CourseCertificateControllers.createCourseCertificate)
+// সার্টিফিকেট ইস্যু (শুধু যাদের কোর্স পেইড আছে তাদের)
+router.post("/issue", auth(UserRole.USER, UserRole.ADMIN), CourseCertificateControllers.createCourseCertificate);
+
+// সার্টিফিকেট ভেরিফিকেশন (পাবলিক লিংক)
+router.get("/verify/:code", CourseCertificateControllers.verifyCourseCertificate);
 
 export const CourseCertificateRoutes = router;

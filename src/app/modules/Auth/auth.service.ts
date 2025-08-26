@@ -197,6 +197,7 @@ import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
 import { JWTHelpers } from "../../../helpers/jwtHelper";
 import emailSender from "./emailSender";
+import { EmailTemplates } from "./emailTemplates";
 
 // ================= LOGIN =================
 const loginUser = async (payload: { email: string; password: string }) => {
@@ -328,7 +329,8 @@ const forgotPassword = async (payload: { email: string }) => {
   await emailSender(
     userData.email,
     "Password Reset OTP",
-    `<p>Your OTP is <b>${otp}</b>. It will expire in 10 minutes.</p>`
+    await EmailTemplates.temp1(otp as unknown as number)
+    // `<p>Your OTP is <b>${otp}</b>. It will expire in 10 minutes.</p>`
   );
 
   return { message: "OTP sent to email" };
