@@ -1,8 +1,8 @@
 import { JwtPayload } from "jsonwebtoken";
 import catchAsync from "../../../shared/catchAsync";
-import { OrderCourseServices } from "./orderCourse.service";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
+import { OrderCourseServices } from "./orderCourse.service";
 
 const createCourseOrder = catchAsync(async(req,res)=> {
     const payload = req.body;
@@ -15,17 +15,27 @@ const createCourseOrder = catchAsync(async(req,res)=> {
         data: result
     })
 })
-const getMyCourses = catchAsync(async(req,res)=> {
-    const user = req.user as JwtPayload;
-    const result = await OrderCourseServices.getMyCourseFromDB(user.id);
+const getAllOrderedCourses = catchAsync(async(req,res)=> {
+    const result = await OrderCourseServices.getAllOrderedCoursesFromDB(req.query);
     sendResponse(res,{
-        statusCode: httpStatus.OK, 
+        statusCode: httpStatus.CREATED, 
         success: true,
-        message: "My courses fetched successfully",
+        message: "Ordered courses retrieved successfully",
+        data: result
+    })
+})
+const getMyOrderedCourses = catchAsync(async(req,res)=> {
+    const user = req.user as JwtPayload;
+    const result = await OrderCourseServices.getMyOrderedCoursesFromDB(req.query,user.email);
+    sendResponse(res,{
+        statusCode: httpStatus.CREATED, 
+        success: true,
+        message: "My Ordered courses retrieved successfully",
         data: result
     })
 })
 export const OrderCourseControllers = {
     createCourseOrder,
-    getMyCourses
+    getAllOrderedCourses,
+    getMyOrderedCourses
 }

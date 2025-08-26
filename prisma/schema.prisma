@@ -28,9 +28,36 @@ model User {
   education   Education[]
   socialLinks SocialLinks[]
   orderBook   OrderBook[]
-  OrderCourse OrderCourse[]
+  orderCourse OrderCourse[]
+  activity    Activity[]
 
   @@map("users")
+}
+
+model ResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model WebVisitor {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  ip        String
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  product   String // যেমন "1 Month Coach Certificate"
+  type      String // Book / Video / Subscription
+  createdAt DateTime @default(now())
+
+  @@map("activities")
 }
 
 model BookSpeaker {
@@ -100,9 +127,9 @@ model Book {
   bookCover        String
   book             String
 
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  orderBook OrderBook[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  orderItems OrderBookItem[]
 
   @@map("books")
 }
@@ -111,26 +138,54 @@ model OrderBook {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   userId        String        @db.ObjectId
   user          User          @relation(fields: [userId], references: [id])
-  bookId        String        @db.ObjectId
-  book          Book          @relation(fields: [bookId], references: [id])
   amount        Float
   paymentStatus PaymentStatus @default(PENDING)
   paymentMethod PaymentMethod @default(STRIPE)
   transactionId String?
   createdAt     DateTime      @default(now())
+
+  items OrderBookItem[]
+
+  @@map("order-books")
+}
+
+model OrderBookItem {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  orderId  String    @db.ObjectId
+  order    OrderBook @relation(fields: [orderId], references: [id])
+  bookId   String    @db.ObjectId
+  book     Book      @relation(fields: [bookId], references: [id])
+  quantity Int       @default(1)
+  price    Float
 }
 
 model OrderCourse {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   userId        String        @db.ObjectId
   user          User          @relation(fields: [userId], references: [id])
-  courseId      String        @db.ObjectId
-  book          Course        @relation(fields: [courseId], references: [id])
   amount        Float
   paymentStatus PaymentStatus @default(PENDING)
   paymentMethod PaymentMethod @default(STRIPE)
   transactionId String?
   createdAt     DateTime      @default(now())
+
+  items    OrderCourseItem[] // 👈 এক order এর multiple courses থাকবে
+  Course   Course?           @relation(fields: [courseId], references: [id])
+  courseId String?           @db.ObjectId
+
+  @@map("order-courses")
+}
+
+model OrderCourseItem {
+  id       String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderId  String      @db.ObjectId
+  order    OrderCourse @relation(fields: [orderId], references: [id])
+  courseId String      @db.ObjectId
+  course   Course      @relation(fields: [courseId], references: [id])
+  price    Float
+  quantity Int         @default(1)
+
+  @@map("order-course-items")
 }
 
 model Course {
@@ -147,9 +202,9 @@ model Course {
   updatedAt           DateTime            @updatedAt
   courseModules       CourseModule[] // One Course -> Many Modules
   courseCertificateId String              @db.ObjectId
-  // courseCertificate   CourseCertificate @relation(fields: [courseCertificateId], references: [id])
   courseCertificate   CourseCertificate[]
-  OrderCourse         OrderCourse[]
+  orderCourse         OrderCourse[]
+  orderCourseItem     OrderCourseItem[]
 
   @@map("courses")
 }
@@ -182,7 +237,6 @@ model CourseCertificate {
   course           Course   @relation(fields: [courseId], references: [id])
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  // courses          Course[] // One Certificate -> Many Courses
 
   @@map("courseCertificates")
 }

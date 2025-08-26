@@ -33,6 +33,16 @@ const getAllUser = catchAsync(async (req, res) => {
         data: result.data,
     });
 })
+const getAllCustomer = catchAsync(async (req, res) => {
+    const result = await UserServices.getAllCustomersFromDB(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: `Customers retrived successfully`,
+        meta: result.meta,
+        data: result.data,
+    });
+})
 const getUserById = catchAsync(async (req, res) => {
     const { userId } = req.params
     const result = await UserServices.getUserByIdFromDB(userId as string);
@@ -47,5 +57,6 @@ export const UserController = {
     registerUser,
     getAllUser,
     createAdmin,
-    getUserById
+    getUserById,
+    getAllCustomer
 }

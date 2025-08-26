@@ -10,9 +10,11 @@ router.post("/create", fileUploader.upload.fields([
     { name: 'bookCover', maxCount: 1 }
 ]), textToJSONParser, BookControllers.createBook);
 router.get("/", BookControllers.getAllBooks);
+router.get("/published-books", BookControllers.getPublishedBooks);
 router.get("/:id", BookControllers.getBookById);
 router.patch("/:id", textToJSONParser, BookControllers.updateBook);
 router.delete("/:id", BookControllers.deleteBook);
 router.patch("/:id/published-status", textToJSONParser, BookControllers.updatePublishedStatus);
+router.patch("/rating/:bookId", BookControllers.ratingToBook)
 
 export const BookRoutes = router;

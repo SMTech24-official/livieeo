@@ -6,7 +6,7 @@ import { UserRole } from "@prisma/client";
 const router = Router()
 
 router.post("/create",auth(UserRole.USER), OrderBookControllers.createBookOrder)
-router.get("/my-books", auth(UserRole.USER), OrderBookControllers.getMyBooks);
-
+router.get("/", OrderBookControllers.getAllOrderedBooks)
+router.get("/my-books",auth(UserRole.USER), OrderBookControllers.getMyOrderedBooks)
 
 export const OrderBookRoutes = router

@@ -36,6 +36,34 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGen
 
   return { meta, data: courses }
 };
+const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.course, query)
+  const courses = await queryBuilder.range()
+    .search(["courseTitle"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: {
+        isPublished: true
+      },
+      include: {
+        courseModules: {
+          include: {
+            courseModuleVideos: true, // প্রতিটি module এর videos
+          },
+        },
+        courseCertificate: true, // প্রতিটি course এর certificate
+      },
+    });
+  const meta = await queryBuilder.countTotal();
+  if (!courses || courses.length === 0) {
+    throw new ApiError(404, "No courses found");
+  }
+
+  return { meta, data: courses }
+};
 
 const updatePublishedStatus = async (courseId: string, status: boolean) => {
   const result = await prisma.course.update({
@@ -57,5 +85,6 @@ export const CourseServices = {
   createCourseIntoDB,
   getAllCoursesFromDB,
   updatePublishedStatus,
-  updateCourseIntoDB
+  updateCourseIntoDB,
+  getPublishedCoursesFromDB
 }

@@ -26,6 +26,16 @@ const getAllPodcasts = catchAsync(async (req, res) => {
         data: podcasts
     })
 })
+const getPublishedPodcasts = catchAsync(async (req, res) => {
+    const podcasts = await PodcastServices.getAllPodcastFromDB(req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Published podcasts retrieved successfully",
+        data: podcasts
+    })
+})
 const updatePodcast = catchAsync(async (req, res) => {
     const id = req.params.id as string;
     const payload = req.body;
@@ -70,5 +80,6 @@ export const PodcastControllers = {
     getAllPodcasts,
     updatePodcast,
     deletePodcast,
-    updatePodcastStatus
+    updatePodcastStatus,
+    getPublishedPodcasts
 };

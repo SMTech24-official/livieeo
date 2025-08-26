@@ -87,7 +87,7 @@ const moduleRoutes = [
   {
     path: "/order-course",
     route: OrderCourseRoutes,
-  },
+  }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 export default router;

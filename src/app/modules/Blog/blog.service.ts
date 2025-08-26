@@ -32,6 +32,25 @@ const getAllBlogsFromDB = async (query: Record<string, unknown>): Promise<IGener
         const meta = await queryBuilder.countTotal();
     return {meta,data: blogs}
 }
+const getPublishedBlogsFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Blog[]>> => {
+    const queryBuilder = new QueryBuilder(prisma.blog, query)
+        const blogs = await queryBuilder.range()
+        .search(["blogTitle"])
+        .filter(["category"])
+        .sort()
+        .paginate()
+        .fields()
+        .execute({
+            where: {
+                isPublished: true
+            },
+            orderBy: {
+            createdAt: 'desc'
+        }
+        });
+        const meta = await queryBuilder.countTotal();
+    return {meta,data: blogs}
+}
 const updateBlogIntoDB = async (id: string, payload: Partial<Blog>, blogImages: IFile[]) => {
     if (blogImages && blogImages.length > 0) {
         const uploadBlogImages = await fileUploader.uploadMultipleToCloudinary(blogImages);
@@ -61,6 +80,7 @@ const updatePublishedStatus = async (blogId: string, status: boolean) => {
 export const BlogServices = {
     createBlogIntoDB,
     getAllBlogsFromDB,
+    getPublishedBlogsFromDB,
     updateBlogIntoDB,
     deleteBlogFromDB,
     updatePublishedStatus
