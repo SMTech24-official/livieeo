@@ -16,6 +16,7 @@ import { BookingBookSpeakerRoutes } from "../modules/BookingBookSpeaker/bookingB
 import { SpeakingSampleRoutes } from "../modules/SpeakingSample/speakingSample.route";
 import { OrderBookRoutes } from "../modules/OrderBook/orderBook.route";
 import { OrderCourseRoutes } from "../modules/OrderCourse/orderCourse.route";
+import { DashboardRoutes } from "../modules/Dashboard/dashboard.route";
 
 const router = Router();
 
@@ -87,7 +88,11 @@ const moduleRoutes = [
   {
     path: "/order-course",
     route: OrderCourseRoutes,
-  }
+  },
+  {
+    path: "/dashboard",
+    route: DashboardRoutes,
+  },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 export default router;

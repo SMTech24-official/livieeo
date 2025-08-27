@@ -31,6 +31,7 @@ model User {
   orderCourse       OrderCourse[]
   activity          Activity[]
   courseCertificate CourseCertificate[]
+  podcastActivity   PodcastActivity[]
 
   @@map("users")
 }
@@ -50,15 +51,41 @@ model WebVisitor {
   createdAt DateTime @default(now())
 }
 
-model Activity {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  product   String // যেমন "1 Month Coach Certificate"
-  type      String // Book / Video / Subscription
+model PodcastActivity {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String         @db.ObjectId
+  user      User           @relation(fields: [userId], references: [id])
+  type      String         @default("PODCAST")
+  action    ActivityAction @default(PLAY)
+  podcastId String         @db.ObjectId
+  podcast   Podcast        @relation(fields: [podcastId], references: [id])
+
   createdAt DateTime @default(now())
 
+  @@index([userId, type, createdAt(sort: Desc)])
+  @@index([podcastId, createdAt(sort: Desc)])
+  @@map("podcast-activities")
+}
+
+enum ActivityAction {
+  PLAY
+  COMPLETE
+}
+
+model Activity {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String       @db.ObjectId
+  user      User         @relation(fields: [userId], references: [id])
+  product   String // যেমন "1 Month Coach Certificate"
+  type      ActivityType
+  createdAt DateTime     @default(now())
+
   @@map("activities")
+}
+
+enum ActivityType {
+  BOOK
+  COURSE
 }
 
 model BookSpeaker {
@@ -261,14 +288,15 @@ model Blog {
 }
 
 model Podcast {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  podcastTitle   String
-  secondaryTitle String
-  constent       String
-  featureMedia   String[]
-  isPublished    Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  podcastTitle    String
+  secondaryTitle  String
+  constent        String
+  featureMedia    String[]
+  isPublished     Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  podcastActivity PodcastActivity[]
 
   @@map("podcasts")
 }

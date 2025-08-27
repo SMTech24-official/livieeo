@@ -114,7 +114,6 @@ Base URL: `/api/v1`
 
 - `POST /course-certificate/issue` - Create certificate (upload file)
 - `GET /course-certificate/verify` - Verify certificates
-- `GET /course-certificate/verify` - Verify certificates
 
 ### Blog
 
@@ -186,6 +185,19 @@ Base URL: `/api/v1`
 ### Webhook
 
 - `POST /webhook/stripe` - Stripe webhook endpoint
+
+### Dashboard
+
+- `GET /dashboard/total-revenue` - Get total revenue
+- `GET /dashboard/book-sales-count` - Get book sales count
+- `GET /dashboard/course-enrollments` - Get course enrollments count
+- `GET /dashboard/speaking-inquiries` - Get speaking-inquiries
+- `GET /dashboard/new-members-this-month` - Get new-members-this-month
+- `GET /dashboard/web-visitors-this-month` - Get web-visitors-this-month
+- `GET /dashboard/recent-activities` - Get recent-activities
+- `GET /dashboard/top-selling-books` - Get top-selling-books
+- `GET /dashboard/top-selling-courses` - Get top-selling-courses
+
 
 ## File Uploads
 

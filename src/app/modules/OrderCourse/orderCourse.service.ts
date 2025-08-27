@@ -76,8 +76,9 @@ import httpStatus from "http-status";
 import stripe from "../../../helpers/stripe";
 import config from "../../../config";
 import { IGenericResponse } from "../../../interfaces/common";
-import { OrderCourse, UserRole } from "@prisma/client";
+import { ActivityType, OrderCourse, UserRole } from "@prisma/client";
 import QueryBuilder from "../../../helpers/queryBuilder";
+import { saveActivity } from "../Dashboard/dashboard.service";
 
 const createCourseOrderIntoDB = async (
   payload: { courseIds: string[] },
@@ -97,6 +98,7 @@ const createCourseOrderIntoDB = async (
 
   // total amount sum
   const totalAmount = courses.reduce((sum, course) => sum + course.price, 0);
+  const courseNames = courses.map(course => course.courseTitle).join(", ");
 
   // 1️⃣ create order
   const order = await prisma.orderCourse.create({
@@ -141,7 +143,7 @@ const createCourseOrderIntoDB = async (
       userId,
     },
   });
-
+  saveActivity(userId, courseNames, ActivityType.COURSE)
   return {
     orderId: order.id,
     paymentUrl: session.url,

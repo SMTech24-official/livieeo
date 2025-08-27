@@ -93,7 +93,7 @@
 
 
 
-import { OrderBook } from "@prisma/client";
+import { ActivityType, OrderBook } from "@prisma/client";
 import { JwtPayload } from "jsonwebtoken";
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiError";
@@ -102,6 +102,7 @@ import stripe from "../../../helpers/stripe";
 import config from "../../../config";
 import { IGenericResponse } from "../../../interfaces/common";
 import QueryBuilder from "../../../helpers/queryBuilder";
+import { saveActivity } from "../Dashboard/dashboard.service";
 
 // ==========================
 // CREATE BOOK ORDER SERVICE
@@ -124,6 +125,7 @@ const createBookOrderIntoDB = async (
 
   // total amount calculate
   const totalAmount = books.reduce((sum, book) => sum + book.price, 0);
+  const bookNames = books.map(book => book.bookName).join(", ");
 
   // 1️⃣ create order
   const order = await prisma.orderBook.create({
@@ -168,7 +170,7 @@ const createBookOrderIntoDB = async (
       userId,
     },
   });
-
+  saveActivity(userId, bookNames, ActivityType.BOOK)
   return {
     orderId: order.id,
     paymentUrl: session.url,
@@ -207,7 +209,7 @@ const getAllOrderedBooksFromDB = async (
 // ==========================
 // GET MY ORDERS SERVICE
 // ==========================
-const getMyOrderedBooksFromDB = async (query: Record<string, any>,userEmail:string): Promise<IGenericResponse<OrderBook[]>> => {
+const getMyOrderedBooksFromDB = async (query: Record<string, any>, userEmail: string): Promise<IGenericResponse<OrderBook[]>> => {
   const queryBuilder = new QueryBuilder(prisma.orderBook, query);
   const myBooks = await queryBuilder
     .range()

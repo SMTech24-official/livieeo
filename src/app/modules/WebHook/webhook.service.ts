@@ -41,6 +41,7 @@ const handleStripeWebHook = async (rawBody: Buffer, signature: string) => {
                                         : PaymentStatus.CANCELED,
                             },
                         });
+                        
                         break;
 
                     case "COURSE":
