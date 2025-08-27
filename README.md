@@ -132,6 +132,13 @@ Base URL: `/api/v1`
 - `PATCH /podcast/:id` - Update podcast
 - `DELETE /podcast/:id` - Delete podcast
 - `PATCH /podcast/podcast-status/:id` - Update podcast status
+- `POST /podcast/log-play/:podcastId` - Hit route when user play podcast
+- `POST /podcast/log-play/:podcastId` - Hit route when user play podcast
+- `GET /podcast/my-recent-podcasts` -   GET my-recent-podcasts
+
+router.post("/log-play/:podcastId",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.logPodcastPlay);
+router.get("/activities", PodcastControllers.getActivities);
+router.get("/my-recent-podcasts",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getMyRecentPodcasts);
 
 ### Education
 
