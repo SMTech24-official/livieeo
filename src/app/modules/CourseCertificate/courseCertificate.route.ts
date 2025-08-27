@@ -10,5 +10,7 @@ router.post("/issue", auth(UserRole.USER, UserRole.ADMIN), CourseCertificateCont
 
 // সার্টিফিকেট ভেরিফিকেশন (পাবলিক লিংক)
 router.get("/verify/:code", CourseCertificateControllers.verifyCourseCertificate);
+// ইউজারের নিজের সার্টিফিকেট লিস্ট
+router.get("/my-certificates", auth(UserRole.USER, UserRole.ADMIN), CourseCertificateControllers.getMyCertificates);
 
-export const CourseCertificateRoutes = router;
+export const CourseCertificateRoutes = router; 

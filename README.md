@@ -80,6 +80,8 @@ Base URL: `/api/v1`
 - `GET /user` - Get all users
 - `GET /user/customers` - Get all customers
 - `GET /user/:userId` - Get user by ID
+- `PUT /user/update-profile` - Update user profile
+- `PATCH /user/update-role/:id` - Update user profile
 
 ### Book
 
@@ -110,8 +112,9 @@ Base URL: `/api/v1`
 
 ### Course Certificate
 
-- `POST /course-certificate/create` - Create certificate (upload file)
-- `GET /course-certificate` - Get all certificates
+- `POST /course-certificate/issue` - Create certificate (upload file)
+- `GET /course-certificate/verify` - Verify certificates
+- `GET /course-certificate/verify` - Verify certificates
 
 ### Blog
 

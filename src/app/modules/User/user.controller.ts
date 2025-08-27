@@ -1,3 +1,4 @@
+import { JwtPayload } from "jsonwebtoken";
 import { IFile } from "../../../interfaces/file";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
@@ -53,10 +54,35 @@ const getUserById = catchAsync(async (req, res) => {
         data: result
     });
 })
+
+const updateProfile = catchAsync(async (req, res) => {
+    const user = req.user as JwtPayload
+    const file = req.file as IFile;
+    const result = await UserServices.updateProfile(req.body, user, file);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Profile updated successfully",
+        data: result,
+    });
+})
+const updateUserRole = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+    const result = await UserServices.updateUserRole(id as string, role);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `User is ${role} successfully`,
+        data: result,
+    });
+})
 export const UserController = {
     registerUser,
     getAllUser,
     createAdmin,
     getUserById,
-    getAllCustomer
+    getAllCustomer,
+    updateProfile,
+    updateUserRole
 }
