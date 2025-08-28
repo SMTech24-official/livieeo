@@ -82,6 +82,7 @@ Base URL: `/api/v1`
 - `GET /user/:userId` - Get user by ID
 - `PUT /user/update-profile` - Update user profile
 - `PATCH /user/update-role/:id` - Update user profile
+- `PATCH /user/edit/admin-setting/:id` - Update user profile
 
 ### Book
 

@@ -12,5 +12,6 @@ router.get("/customers", UserController.getAllCustomer)
 router.get("/:userId", UserController.getUserById)
 router.put("/update-profile", fileUploader.upload.single("file"),textToJSONParser, UserController.updateProfile)
 router.patch("/update-role/:id", UserController.updateUserRole)
+router.patch("/edit/admin-setting/:id", UserController.editAdminSetting)
 
 export const UserRoutes = router;

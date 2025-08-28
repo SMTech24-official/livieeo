@@ -168,16 +168,16 @@ const getUserByIdFromDB = async (id: string) => {
     })
     return result
 }
-const updateProfile = async(payload: Partial<User>, user: JwtPayload, file?: IFile) => {
+const updateProfile = async (payload: Partial<User>, user: JwtPayload, file?: IFile) => {
     const userExists = await prisma.user.findUnique({
         where: {
             id: user.id
         }
     })
-    if(!userExists){
+    if (!userExists) {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found")
     }
-    if(file){
+    if (file) {
         const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
         payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
     }
@@ -189,13 +189,13 @@ const updateProfile = async(payload: Partial<User>, user: JwtPayload, file?: IFi
     })
     return result;
 }
-const updateUserRole = async(id:string, role: UserRole)=> {
+const updateUserRole = async (id: string, role: UserRole) => {
     const userExists = await prisma.user.findUnique({
         where: {
             id
         }
     })
-    if(!userExists){
+    if (!userExists) {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found")
     }
     const result = await prisma.user.update({
@@ -208,6 +208,31 @@ const updateUserRole = async(id:string, role: UserRole)=> {
     })
     return result;
 }
+const editAdminSetting = async (id: string, payload: Partial<User>) => {
+    const userExists = await prisma.user.findUnique({
+        where: {
+            id
+        }
+    })
+    if (!userExists) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User not found")
+    }
+    // Only include defined properties in the update data
+    const updateData: Record<string, any> = {};
+    if (payload.firstName !== undefined) updateData.firstName = payload.firstName;
+    if (payload.contactNumber !== undefined) updateData.contactNumber = payload.contactNumber;
+    if (payload.email !== undefined) updateData.email = payload.email;
+    if (payload.address !== undefined) updateData.address = payload.address;
+    if (payload.introduction !== undefined) updateData.introduction = payload.introduction;
+
+    const result = await prisma.user.update({
+        where: {
+            id
+        },
+        data: updateData
+    })
+    return result;
+}
 export const UserServices = {
     registerUserIntoDB,
     createAdminIntoDB,
@@ -216,5 +241,6 @@ export const UserServices = {
     getAllAdminFromDB,
     getUserByIdFromDB,
     updateProfile,
-    updateUserRole
+    updateUserRole,
+    editAdminSetting
 }

@@ -77,6 +77,16 @@ const updateUserRole = catchAsync(async (req, res) => {
         data: result,
     });
 })
+const editAdminSetting = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await UserServices.editAdminSetting(id as string, req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Admin setting updated successfully`,
+        data: result,
+    });
+})
 export const UserController = {
     registerUser,
     getAllUser,
@@ -84,5 +94,6 @@ export const UserController = {
     getUserById,
     getAllCustomer,
     updateProfile,
-    updateUserRole
+    updateUserRole,
+    editAdminSetting
 }
