@@ -118,6 +118,9 @@ const getActivities = async (query: { user?: JwtPayload; type: "PODCAST", page?:
     ])
     return { meta: { page, limit, total, pages: Math.ceil(total / limit) }, data }
 }
+
+
+// final
 const getMyRecentPodcasts = async (
   user: JwtPayload,
   opts?: { page?: number; limit?: number }
@@ -126,12 +129,12 @@ const getMyRecentPodcasts = async (
   const limit = Math.min(Math.max(Number(opts?.limit) || 10, 1), 100);
   const skip = (page - 1) * limit;
 
-  // 1) aggregate activities -> group by podcastId (only PODCAST)
+  // মূল pipeline
   const raw = await prisma.podcastActivity.aggregateRaw({
     pipeline: [
       {
         $match: {
-          userId: { $oid: user.id }, // ✅ Mongo ObjectId হিসেবে পাঠাতে হবে
+          userId: { $oid: user.id }, // যদি DB-তে ObjectId থাকে
           type: "PODCAST",
           podcastId: { $ne: null },
         },
@@ -149,30 +152,62 @@ const getMyRecentPodcasts = async (
     ],
   });
 
-  // 2) hydrate podcasts
-  const groups =
-    (raw as unknown as { _id: { $oid: string }; lastPlayedAt: string; plays: number }[]) || [];
+  const groups = raw as unknown as {
+    _id: { $oid: string } | string;
+    lastPlayedAt?: { $date: string } | string;
+    plays: number;
+  }[];
 
-  const ids = groups.map((g) => String(g._id.$oid)); // ✅ ObjectId → string
+  if (!groups.length) {
+    return {
+      meta: { page, limit, total: 0, pages: 0 },
+      data: [],
+    };
+  }
+
+  // podcast ids বের করা
+  const ids = groups.map((g) =>
+    typeof g._id === "object" && (g._id as any).$oid
+      ? (g._id as any).$oid
+      : String(g._id)
+  );
 
   const podcasts = await prisma.podcast.findMany({
     where: { id: { in: ids } },
   });
 
-  // 3) merge
   const map = new Map(podcasts.map((p) => [p.id, p]));
-  const rows = groups.map((g) => ({
-    podcast: map.get(String(g._id.$oid)) || null,
-    lastPlayedAt: new Date(g.lastPlayedAt),
-    plays: g.plays,
-  }));
 
-  // 4) total distinct podcasts for this user
+  // unwrap $date properly
+  const rows = groups.map((g) => {
+    let lastPlayed: Date | null = null;
+
+    if (g.lastPlayedAt) {
+      if (typeof g.lastPlayedAt === "object" && (g.lastPlayedAt as any).$date) {
+        lastPlayed = new Date((g.lastPlayedAt as any).$date);
+      } else if (typeof g.lastPlayedAt === "string") {
+        lastPlayed = new Date(g.lastPlayedAt);
+      }
+    }
+
+    return {
+      podcast:
+        map.get(
+          typeof g._id === "object" && (g._id as any).$oid
+            ? (g._id as any).$oid
+            : String(g._id)
+        ) || null,
+      lastPlayedAt: lastPlayed,
+      plays: g.plays,
+    };
+  });
+
+  // total বের করা
   const totalAgg = await prisma.podcastActivity.aggregateRaw({
     pipeline: [
       {
         $match: {
-          userId: { $oid: user.id }, // ✅ একইভাবে পাঠাতে হবে
+          userId: { $oid: user.id },
           type: "PODCAST",
           podcastId: { $ne: null },
         },
@@ -189,6 +224,8 @@ const getMyRecentPodcasts = async (
     data: rows,
   };
 };
+
+
 export const PodcastServices = {
     createPodcastIntoDB,
     getAllPodcastFromDB,
