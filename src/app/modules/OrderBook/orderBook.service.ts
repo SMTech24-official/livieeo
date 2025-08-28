@@ -123,8 +123,34 @@ const createBookOrderIntoDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, "No books found !");
   }
 
+  // 🔎 check if user already bought any of these books
+  const alreadyBought = await prisma.orderBookItem.findMany({
+    where: {
+      bookId: { in: bookIds },
+      order: {
+        userId,
+        paymentStatus: "PAID",
+      },
+    },
+    select: { bookId: true },
+  });
+
+  if (alreadyBought.length > 0) {
+    const boughtBookIds = alreadyBought.map((b) => b.bookId);
+    const boughtBookNames = books
+      .filter((b) => boughtBookIds.includes(b.id))
+      .map((b) => b.bookName)
+      .join(", ");
+
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `You have already purchased these books: ${boughtBookNames}`
+    );
+  }
+
   // total amount calculate
   const totalAmount = books.reduce((sum, book) => sum + book.price, 0);
+  const totalBooks = books.length;
   const bookNames = books.map(book => book.bookName).join(", ");
 
   // 1️⃣ create order
@@ -143,7 +169,7 @@ const createBookOrderIntoDB = async (
       orderId: order.id,
       bookId: book.id,
       price: book.price,
-      quantity: 1,
+      quantity: totalBooks,
     })),
   });
 

@@ -100,6 +100,31 @@ const createCourseOrderIntoDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, "No courses found!");
   }
 
+  // 🔎 check if user already bought any of these courses
+  const alreadyBought = await prisma.orderCourseItem.findMany({
+    where: {
+      courseId: { in: courseIds },
+      order: {
+        userId,
+        paymentStatus: "PAID",
+      },
+    },
+    select: { courseId: true },
+  });
+
+  if (alreadyBought.length > 0) {
+    const boughtCourseIds = alreadyBought.map((c) => c.courseId);
+    const boughtCourseNames = courses
+      .filter((c) => boughtCourseIds.includes(c.id))
+      .map((c) => c.courseTitle)
+      .join(", ");
+
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `You have already purchased these courses: ${boughtCourseNames}`
+    );
+  }
+
   // total amount sum
   const totalAmount = courses.reduce((sum, course) => sum + course.price, 0);
   const totalQuantity = courses.length;
