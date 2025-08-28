@@ -43,6 +43,8 @@ model ResetToken {
   otp       String
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@map("reset-tokens")
 }
 
 model WebVisitor {
@@ -50,6 +52,8 @@ model WebVisitor {
   ip        String
   userAgent String?
   createdAt DateTime @default(now())
+
+  @@map("web-visitors")
 }
 
 model PodcastActivity {
@@ -77,7 +81,7 @@ model Activity {
   id        String       @id @default(auto()) @map("_id") @db.ObjectId
   userId    String       @db.ObjectId
   user      User         @relation(fields: [userId], references: [id])
-  product   String // যেমন "1 Month Coach Certificate"
+  product   String
   type      ActivityType
   createdAt DateTime     @default(now())
 
@@ -118,6 +122,8 @@ model BookingBookSpeaker {
   yourNote      String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@map("booking-book-speakers")
 }
 
 model Education {
@@ -127,6 +133,8 @@ model Education {
   field       String?
   userId      String  @db.ObjectId
   user        User    @relation(fields: [userId], references: [id])
+
+  @@map("educations")
 }
 
 model SocialLinks {
@@ -137,6 +145,8 @@ model SocialLinks {
   instagram String?
   userId    String  @db.ObjectId
   user      User    @relation(fields: [userId], references: [id])
+
+  @@map("social-links")
 }
 
 model Book {
@@ -186,6 +196,8 @@ model OrderBookItem {
   book     Book      @relation(fields: [bookId], references: [id])
   quantity Int       @default(1)
   price    Float
+
+  @@map("order-book-items")
 }
 
 model OrderCourse {
@@ -199,8 +211,8 @@ model OrderCourse {
   createdAt     DateTime      @default(now())
 
   items    OrderCourseItem[] // 👈 এক order এর multiple courses থাকবে
-  Course   Course?           @relation(fields: [courseId], references: [id])
   courseId String?           @db.ObjectId
+  course   Course?           @relation(fields: [courseId], references: [id])
 
   @@map("order-courses")
 }
@@ -218,24 +230,41 @@ model OrderCourseItem {
 }
 
 model Course {
-  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
-  courseTitle         String
-  mentorName          String
-  price               Float
-  totalVideo          Int
-  language            String
-  duration            String
-  description         String
-  isPublished         Boolean             @default(false)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  courseModules       CourseModule[] // One Course -> Many Modules
-  courseCertificateId String              @db.ObjectId
-  courseCertificate   CourseCertificate[]
-  orderCourse         OrderCourse[]
-  orderCourseItem     OrderCourseItem[]
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  courseTitle       String
+  mentorName        String
+  price             Float
+  totalVideo        Int
+  language          String
+  duration          String
+  description       String
+  isPublished       Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  courseModules     CourseModule[]      // One Course -> Many Modules
+  courseCertificate CourseCertificate[] // One-to-many: multiple users can get certificates for same course
+  orderCourse       OrderCourse[]
+  orderCourseItem   OrderCourseItem[]
 
   @@map("courses")
+}
+
+
+model CourseCertificate {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+  userId   String @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id])
+
+  certificateNo  String   @unique // eg: CERT-2025-000123
+  certificateUrl String // Cloudinary PDF URL
+  verifyCode     String   @unique // ছোট একটি কোড/টোকেন
+  issuedAt       DateTime @default(now())
+
+  @@index([courseId, userId])
+  @@map("course-certificates")
 }
 
 model CourseModule {
@@ -255,24 +284,10 @@ model CourseModuleVideo {
   courseModuleId String       @db.ObjectId
   courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
 
-  @@map("courseModuleVideos")
+  @@map("course-module-videos")
 }
 
-model CourseCertificate {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  courseId String @db.ObjectId
-  course   Course @relation(fields: [courseId], references: [id])
-  userId   String @db.ObjectId
-  user     User   @relation(fields: [userId], references: [id])
 
-  certificateNo  String   @unique // eg: CERT-2025-000123
-  certificateUrl String // Cloudinary PDF URL
-  verifyCode     String   @unique // ছোট একটি কোড/টোকেন
-  issuedAt       DateTime @default(now())
-
-  @@index([courseId, userId])
-  @@map("course-certificates")
-}
 
 model Blog {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -337,6 +352,8 @@ model Counter {
   id   String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
   seq  Int
+
+  @@map("counters")
 }
 
 enum Gender {

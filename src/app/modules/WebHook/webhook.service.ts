@@ -18,8 +18,6 @@ const handleStripeWebHook = async (rawBody: Buffer, signature: string) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Webhook Error: " + err.message);
     }
 
-    console.log("event ========> ", event);
-
     if (
         event.type === "checkout.session.completed" ||
         event.type === "checkout.session.expired"
@@ -39,7 +37,10 @@ const handleStripeWebHook = async (rawBody: Buffer, signature: string) => {
                                     event.type === "checkout.session.completed"
                                         ? PaymentStatus.PAID
                                         : PaymentStatus.CANCELED,
+                                transactionId: session.payment_intent ?? session.id,
+                                
                             },
+                            include: {items: true}
                         });
                         
                         break;
@@ -52,7 +53,9 @@ const handleStripeWebHook = async (rawBody: Buffer, signature: string) => {
                                     event.type === "checkout.session.completed"
                                         ? PaymentStatus.PAID
                                         : PaymentStatus.CANCELED,
+                                transactionId: session.payment_intent ?? session.id,
                             },
+                            include: {items: true}
                         });
                         break;
 

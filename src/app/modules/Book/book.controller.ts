@@ -22,6 +22,23 @@ const createBook = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const updateBook = catchAsync(async (req, res) => {
+    const files = req.files as {
+        book?: Express.Multer.File[],
+        bookCover?: Express.Multer.File[]
+    };
+
+    const bookFile = files.book ? (files.book[0] as IFile) : undefined;
+    const bookCoverFile = files.bookCover ? (files.bookCover[0] as IFile) : undefined;
+
+    const result = await BookServices.updateBookInDB(req.params.id as string, req.body, bookFile!, bookCoverFile!);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Book updated successfully`,
+        data: result,
+    });
+});
 const getAllBooks = catchAsync(async (req, res) => {
     const result = await BookServices.getAllBooksFromDB(req.query);
     sendResponse(res, {
@@ -49,15 +66,7 @@ const getBookById = catchAsync(async (req, res) => {
         data: result,
     });
 });
-const updateBook = catchAsync(async (req, res) => {
-    const result = await BookServices.updateBookInDB(req.params.id as string, req.body);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Book updated successfully`,
-        data: result,
-    });
-});
+
 const deleteBook = catchAsync(async (req, res) => {
     const result = await BookServices.deleteBookFromDB(req.params.id as string);
     sendResponse(res, {

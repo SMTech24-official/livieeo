@@ -87,17 +87,22 @@ const createCourseOrderIntoDB = async (
   const userId = user.id;
   const { courseIds } = payload;
 
+  if (!courseIds || courseIds.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No course ids provided");
+  }
+
   // find all courses
   const courses = await prisma.course.findMany({
     where: { id: { in: courseIds } },
   });
 
-  if (courses.length === 0) {
+  if (!courses.length) {
     throw new ApiError(httpStatus.NOT_FOUND, "No courses found!");
   }
 
   // total amount sum
   const totalAmount = courses.reduce((sum, course) => sum + course.price, 0);
+  const totalQuantity = courses.length;
   const courseNames = courses.map(course => course.courseTitle).join(", ");
 
   // 1️⃣ create order
@@ -116,7 +121,7 @@ const createCourseOrderIntoDB = async (
       orderId: order.id,
       courseId: course.id,
       price: course.price,
-      quantity: 1,
+      quantity: totalQuantity,
     })),
   });
 

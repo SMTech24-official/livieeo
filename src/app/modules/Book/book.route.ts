@@ -12,7 +12,10 @@ router.post("/create", fileUploader.upload.fields([
 router.get("/", BookControllers.getAllBooks);
 router.get("/published-books", BookControllers.getPublishedBooks);
 router.get("/:id", BookControllers.getBookById);
-router.patch("/:id", textToJSONParser, BookControllers.updateBook);
+router.patch("/:id",fileUploader.upload.fields([
+    { name: 'book', maxCount: 1 },
+    { name: 'bookCover', maxCount: 1 }
+]), textToJSONParser, BookControllers.updateBook);
 router.delete("/:id", BookControllers.deleteBook);
 router.patch("/:id/published-status", textToJSONParser, BookControllers.updatePublishedStatus);
 router.patch("/rating/:bookId", BookControllers.ratingToBook)

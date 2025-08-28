@@ -49,7 +49,9 @@ const getPublishedBooksFromDB = async (query: Record<string, any>): Promise<IGen
         .fields()
         .execute(
             {
-                isPublished: true
+                where: {
+                    isPublished: true
+                }
             }
         );
     const meta = await queryBuilder.countTotal();
@@ -68,21 +70,70 @@ const getBookByIdFromDB = async (id: string) => {
     return result;
 }
 
-const updateBookInDB = async (id: string, payload: Partial<Book>) => {
-    const book = await prisma.book.findUnique({
-        where: {
-            id
-        }
-    })
-    if (!book) {
-        throw new ApiError(404, "Book not found!")
+const updateBookInDB = async (id: string, payload?: Partial<Book>, book?: IFile, bookCover?: IFile) => {
+    // যদি payload undefined বা empty object হয়
+    if (!payload || Object.keys(payload).length === 0) {
+        throw new ApiError(400, "No data provided to update");
     }
-    const result = await prisma.book.update({
-        where: { id },
-        data: payload
-    });
+
+    const existbook = await prisma.book.findUnique({ where: { id } });
+    if (!existbook) {
+        throw new ApiError(404, "Book not found!");
+    }
+
+    // file update handle
+    if (book) {
+        const uploadBook = await fileUploader.uploadToCloudinary(book);
+        payload = { ...payload, book: uploadBook?.secure_url ?? existbook.book };
+    }
+
+    if (bookCover) {
+        const uploadBookCover = await fileUploader.uploadToCloudinary(bookCover);
+        payload = { ...payload, bookCover: uploadBookCover?.secure_url ?? existbook.bookCover };
+    }
+
+    // rating validation
+    if (payload.rating !== undefined) {
+        if (payload.rating < 1 || payload.rating > 5) {
+            throw new ApiError(400, "Rating must be between 1 and 5");
+        }
+    }
+
+    const result = await prisma.book.update({ where: { id }, data: payload });
     return result;
-}
+};
+
+// const updateBookInD = async (id: string, payload: Partial<Book>, book?: IFile, bookCover?: IFile) => {
+//     // payload empty বা undefined হলে
+//     if ((!payload || Object.keys(payload).length === 0) && !book && !bookCover) {
+//         throw new ApiError(400, "No data provided to update");
+//     }
+
+//     const existingBook = await prisma.book.findUnique({ where: { id } });
+//     if (!existingBook) throw new ApiError(404, "Book not found!");
+
+//     // file update handle
+//     if (book) {
+//         const uploadBook = await fileUploader.uploadToCloudinary(book);
+//         payload = { ...payload, book: uploadBook?.secure_url ?? existingBook.book };
+//     }
+
+//     if (bookCover) {
+//         const uploadBookCover = await fileUploader.uploadToCloudinary(bookCover);
+//         payload = { ...payload, bookCover: uploadBookCover?.secure_url ?? existingBook.bookCover };
+//     }
+
+//     // rating validation
+//     if (payload.rating !== undefined) {
+//         if (payload.rating < 1 || payload.rating > 5) {
+//             throw new ApiError(400, "Rating must be between 1 and 5");
+//         }
+//     }
+
+//     const result = await prisma.book.update({ where: { id }, data: payload });
+//     return result;
+// };
+
 const deleteBookFromDB = async (id: string) => {
     const book = await prisma.book.findUnique({
         where: {
@@ -128,20 +179,30 @@ const getRelatedBooks = async (bookId: string): Promise<Book[]> => {
     return books;
 }
 const ratingToBook = async (bookId: string, rating: number) => {
+    // 1️⃣ rating validate করা
+    if (rating < 1 || rating > 5) {
+        throw new ApiError(400, "Rating must be between 1 and 5");
+    }
+
+    // 2️⃣ বই খুঁজে বের করা
     const book = await prisma.book.findUnique({
         where: {
             id: bookId
         }
-    })
+    });
+
     if (!book) {
-        throw new ApiError(404, "Book not found!")
+        throw new ApiError(404, "Book not found!");
     }
+
+    // 3️⃣ rating update করা
     const result = await prisma.book.update({
         where: { id: bookId },
-        data: { rating  }
-    })
+        data: { rating }
+    });
+
     return result;
-}
+};
 
 export const BookServices = {
     createBookIntoDB,
