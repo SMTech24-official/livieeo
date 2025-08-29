@@ -103,37 +103,6 @@ const updateBookInDB = async (id: string, payload?: Partial<Book>, book?: IFile,
     return result;
 };
 
-// const updateBookInD = async (id: string, payload: Partial<Book>, book?: IFile, bookCover?: IFile) => {
-//     // payload empty বা undefined হলে
-//     if ((!payload || Object.keys(payload).length === 0) && !book && !bookCover) {
-//         throw new ApiError(400, "No data provided to update");
-//     }
-
-//     const existingBook = await prisma.book.findUnique({ where: { id } });
-//     if (!existingBook) throw new ApiError(404, "Book not found!");
-
-//     // file update handle
-//     if (book) {
-//         const uploadBook = await fileUploader.uploadToCloudinary(book);
-//         payload = { ...payload, book: uploadBook?.secure_url ?? existingBook.book };
-//     }
-
-//     if (bookCover) {
-//         const uploadBookCover = await fileUploader.uploadToCloudinary(bookCover);
-//         payload = { ...payload, bookCover: uploadBookCover?.secure_url ?? existingBook.bookCover };
-//     }
-
-//     // rating validation
-//     if (payload.rating !== undefined) {
-//         if (payload.rating < 1 || payload.rating > 5) {
-//             throw new ApiError(400, "Rating must be between 1 and 5");
-//         }
-//     }
-
-//     const result = await prisma.book.update({ where: { id }, data: payload });
-//     return result;
-// };
-
 const deleteBookFromDB = async (id: string) => {
     const book = await prisma.book.findUnique({
         where: {

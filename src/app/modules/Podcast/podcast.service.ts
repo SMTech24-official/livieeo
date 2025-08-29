@@ -56,7 +56,11 @@ const getPublishedPodcastFromDB = async (query: Record<string, unknown>): Promis
 }
 
 
-const updatePodcast = async (id: string, payload: Partial<Podcast>) => {
+const updatePodcast = async (id: string, payload: Partial<Podcast>, podcastFiles?: IFile[]) => {
+  if (podcastFiles && podcastFiles.length > 0) {
+        const uploadPodcastImages = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
+        payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+    }
     const updatedPodcast = await prisma.podcast.update({
         where: { id },
         data: payload

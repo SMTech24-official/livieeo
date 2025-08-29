@@ -42,9 +42,8 @@ const getPublishedPodcasts = catchAsync(async (req, res) => {
 const updatePodcast = catchAsync(async (req, res) => {
     const id = req.params.id as string;
     const payload = req.body;
-
-    const updatedPodcast = await PodcastServices.updatePodcast(id, payload);
-
+    const podcastFiles = req.files as IFile[];
+    const updatedPodcast = await PodcastServices.updatePodcast(id, payload,podcastFiles);
     sendResponse(res, {
         statusCode: 200,
         success: true,

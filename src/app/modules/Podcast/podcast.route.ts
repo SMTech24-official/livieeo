@@ -10,7 +10,7 @@ const router = Router();
 router.post("/create", fileUploader.upload.array("podcastFiles", 5), textToJSONParser,PodcastControllers.createPodcast);
 router.get("/", PodcastControllers.getAllPodcasts);
 router.get("/published-podcast", PodcastControllers.getPublishedPodcasts);
-router.patch("/:id", PodcastControllers.updatePodcast);
+router.patch("/:id", fileUploader.upload.array("podcastFiles", 5), textToJSONParser, PodcastControllers.updatePodcast);
 router.delete("/:id", PodcastControllers.deletePodcast);
 router.patch("/podcast-status/:id", PodcastControllers.updatePodcastStatus);
 
