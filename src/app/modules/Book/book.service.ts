@@ -26,8 +26,8 @@ const getAllBooksFromDB = async (query: Record<string, any>): Promise<IGenericRe
     const queryBuilder = new QueryBuilder(prisma.book, query)
     const books = await queryBuilder
         .range()
-        .search(["bookName"])
-        .filter()
+        .search(["bookName", "authorName", "category", "brand"])
+        .filter(["category"])
         .sort()
         .paginate()
         .fields()
@@ -42,8 +42,8 @@ const getPublishedBooksFromDB = async (query: Record<string, any>): Promise<IGen
     const queryBuilder = new QueryBuilder(prisma.book, query)
     const books = await queryBuilder
         .range()
-        .search(["bookName"])
-        .filter()
+        .search(["bookName", "authorName", "category", "brand"])
+        .filter(["category"])
         .sort()
         .paginate()
         .fields()
@@ -62,6 +62,10 @@ const getPublishedBooksFromDB = async (query: Record<string, any>): Promise<IGen
 };
 
 const getBookByIdFromDB = async (id: string) => {
+    const existbook = await prisma.book.findUnique({ where: { id } });
+    if (!existbook) {
+        throw new ApiError(404, "Book not found!");
+    }
     const result = await prisma.book.findUniqueOrThrow({
         where: {
             id
@@ -104,19 +108,32 @@ const updateBookInDB = async (id: string, payload?: Partial<Book>, book?: IFile,
 };
 
 const deleteBookFromDB = async (id: string) => {
-    const book = await prisma.book.findUnique({
-        where: {
-            id
+    return await prisma.$transaction(async (tx) => {
+        // 1️⃣ বইটা আছে কিনা চেক করো
+        const book = await tx.book.findUnique({
+            where: { id },
+            include: { orderItems: true },
+        });
+
+        if (!book) {
+            throw new ApiError(404, "Book not found!");
         }
-    })
-    if (!book) {
-        throw new ApiError(404, "Book not found!")
-    }
-    const result = await prisma.book.delete({
-        where: { id }
+
+        // 2️⃣ আগে orderItems ডিলিট করো (যদি থাকে)
+        if (book.orderItems.length > 0) {
+            await tx.orderBookItem.deleteMany({
+                where: { bookId: id },
+            });
+        }
+
+        // 3️⃣ এবার বই ডিলিট করো
+        await tx.book.delete({
+            where: { id },
+        });
+
+        return { message: "Book and associated order items deleted successfully" };
     });
-    return result;
-}
+};
 const updatePublishedStatus = async (id: string, status: boolean) => {
     const book = await prisma.book.findUnique({
         where: {

@@ -162,7 +162,7 @@ const createCourseOrderIntoDB = async (
         },
         unit_amount: Math.round(course.price * 100), // in cents
       },
-      quantity: 1,
+      quantity: totalQuantity,
     })),
     mode: "payment",
     success_url: `${config.stripe.success_url}`,

@@ -1,4 +1,4 @@
-import { BookSpeaker } from "@prisma/client";
+import { BookSpeaker, Prisma } from "@prisma/client";
 import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
 import prisma from "../../../shared/prisma";
@@ -6,12 +6,18 @@ import QueryBuilder from "../../../helpers/queryBuilder";
 import { IGenericResponse } from "../../../interfaces/common";
 import ApiError from "../../../errors/ApiError";
 
-const createBookSpeakerIntoDB = async (payload: BookSpeaker, file: IFile) => {
-    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file)
-    payload.imageUrl = uploadToCloudinary?.secure_url ?? ""
-    const result = await prisma.bookSpeaker.create({ data: payload })
-    return result
-}
+const createBookSpeakerIntoDB = async (payload: Prisma.BookSpeakerCreateInput, file: IFile) => {
+  const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+
+  const result = await prisma.bookSpeaker.create({
+    data: {
+      ...payload,
+      imageUrl: uploadToCloudinary?.secure_url ?? "",
+    },
+  });
+
+  return result;
+};
 
 const getAllBookSpeakerFromDB = async (query: Record<string, any>): Promise<IGenericResponse<BookSpeaker[]>> => {
     const queryBuilder = new QueryBuilder(prisma.bookSpeaker, query)
@@ -61,12 +67,12 @@ const deleteBookSpeakerFromDB = async (speakerId: string) => {
     if (!bookSpeaker) {
         throw new ApiError(404, "Book speaker not found")
     }
-    const result = await prisma.bookSpeaker.delete({
+    await prisma.bookSpeaker.delete({
         where: {
             id: speakerId
         }
     })
-    return result
+    return { message: "Book speaker deleted successfully"}
 }
 export const BookSpeakerServices = {
     createBookSpeakerIntoDB,

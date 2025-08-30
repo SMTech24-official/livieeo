@@ -33,6 +33,7 @@ model User {
   activity          Activity[]
   courseCertificate CourseCertificate[]
   podcastActivity   PodcastActivity[]
+  courseProgress    CourseProgress[]
 
   @@map("users")
 }
@@ -94,19 +95,22 @@ enum ActivityType {
 }
 
 model BookSpeaker {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  profession   String
-  language     String
-  location     String
-  experience   String
-  bio          String
-  expertise    String[]
-  achievements String[]
-  reasons      String
-  imageUrl     String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String
+  contactNumber String
+  date          String
+  profession    String
+  language      String
+  location      String
+  experience    String
+  bio           String
+  expertise     String[]
+  achievements  String[]
+  reasons       String
+  imageUrl      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("book-speakers")
 }
@@ -200,6 +204,49 @@ model OrderBookItem {
   @@map("order-book-items")
 }
 
+model Course {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseTitle String
+  mentorName  String
+  price       Float
+  totalVideo  Int
+  language    String
+  duration    String
+  description String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courseModules     CourseModule[] // One Course -> Many Modules
+  courseCertificate CourseCertificate[] // One-to-many: multiple users can get certificates for same course
+  orderCourse       OrderCourse[]
+  orderCourseItem   OrderCourseItem[]
+  courseProgress    CourseProgress[]
+
+  @@map("courses")
+}
+
+model CourseProgress {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id])
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  currentModuleId String? @db.ObjectId
+  currentVideoId  String? @db.ObjectId
+
+  completedVideos  String[] // যেসব video দেখা শেষ করেছে
+  completedModules String[] // যেসব module শেষ করেছে
+
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, courseId])
+  @@map("course-progress")
+}
+
 model OrderCourse {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   userId        String        @db.ObjectId
@@ -228,28 +275,6 @@ model OrderCourseItem {
 
   @@map("order-course-items")
 }
-
-model Course {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  courseTitle       String
-  mentorName        String
-  price             Float
-  totalVideo        Int
-  language          String
-  duration          String
-  description       String
-  isPublished       Boolean             @default(false)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  courseModules     CourseModule[]      // One Course -> Many Modules
-  courseCertificate CourseCertificate[] // One-to-many: multiple users can get certificates for same course
-  orderCourse       OrderCourse[]
-  orderCourseItem   OrderCourseItem[]
-
-  @@map("courses")
-}
-
 
 model CourseCertificate {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
@@ -287,8 +312,6 @@ model CourseModuleVideo {
   @@map("course-module-videos")
 }
 
-
-
 model Blog {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   blogTitle    String
@@ -310,6 +333,7 @@ model Podcast {
   constent        String
   featureMedia    String[]
   isPublished     Boolean           @default(false)
+  publishDate     DateTime          @default(now())
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   podcastActivity PodcastActivity[]

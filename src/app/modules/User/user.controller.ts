@@ -44,13 +44,13 @@ const getAllCustomer = catchAsync(async (req, res) => {
         data: result.data,
     });
 })
-const getUserById = catchAsync(async (req, res) => {
+const getCustomerById = catchAsync(async (req, res) => {
     const { userId } = req.params
-    const result = await UserServices.getUserByIdFromDB(userId as string);
+    const result = await UserServices.getCustomerByIdFromDB(userId as string);
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
-        message: `User retrived successfully`,
+        message: `Customer retrived successfully`,
         data: result
     });
 })
@@ -91,7 +91,7 @@ export const UserController = {
     registerUser,
     getAllUser,
     createAdmin,
-    getUserById,
+    getCustomerById,
     getAllCustomer,
     updateProfile,
     updateUserRole,

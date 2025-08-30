@@ -66,9 +66,8 @@ const deletePodcast = catchAsync(async (req, res) => {
 })
 const updatePodcastStatus = catchAsync(async (req, res) => {
     const id = req.params.id as string;
-    const status = req.body.status as boolean;
 
-    const updatedPodcast = await PodcastServices.updatePodcastStatus(id, status);
+    const updatedPodcast = await PodcastServices.updatePodcastStatus(id);
 
     sendResponse(res, {
         statusCode: 200,

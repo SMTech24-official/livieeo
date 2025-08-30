@@ -17,6 +17,7 @@ import { SpeakingSampleRoutes } from "../modules/SpeakingSample/speakingSample.r
 import { OrderBookRoutes } from "../modules/OrderBook/orderBook.route";
 import { OrderCourseRoutes } from "../modules/OrderCourse/orderCourse.route";
 import { DashboardRoutes } from "../modules/Dashboard/dashboard.route";
+import { CourseProgressRoutes } from "../modules/CourseProgress/courseProgress.route";
 
 const router = Router();
 
@@ -48,6 +49,10 @@ const moduleRoutes = [
   {
     path: "/course",
     route: CourseRoutes,
+  },
+  {
+    path: "/course-progress",
+    route: CourseProgressRoutes,
   },
   {
     path: "/course-certificate",

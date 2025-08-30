@@ -5,7 +5,7 @@ import { fileUploader } from "../../../helpers/fileUploader";
 import ApiError from "../../../errors/ApiError";
 
 const createCourseModuleVideoIntoDB = async (payload: CourseModuleVideo, file: IFile) => {
-    const courseModule = await prisma.course.findUnique({
+    const courseModule = await prisma.courseModule.findUnique({
         where: {
             id: payload.courseModuleId
         }

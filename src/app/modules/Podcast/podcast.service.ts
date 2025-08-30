@@ -73,10 +73,10 @@ const deletePodcast = async (id: string) => {
     });
     return deletedPodcast;
 }
-const updatePodcastStatus = async (id: string, status: boolean) => {
+const updatePodcastStatus = async (id: string) => {
     const updatedPodcast = await prisma.podcast.update({
         where: { id },
-        data: { isPublished: status }
+        data: { isPublished: true, publishDate: new Date() }
     });
     return updatedPodcast;
 }

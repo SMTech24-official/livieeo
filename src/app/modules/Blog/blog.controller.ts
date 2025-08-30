@@ -57,8 +57,7 @@ const deleteBlog = catchAsync(async (req, res) => {
 })
 const updatePublishedStatus = catchAsync(async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
-    const result = await BlogServices.updatePublishedStatus(id as string, status);
+    const result = await BlogServices.updatePublishedStatus(id as string);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

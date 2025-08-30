@@ -185,7 +185,7 @@ const createBookOrderIntoDB = async (
         },
         unit_amount: Math.round(book.price * 100), // convert to cents
       },
-      quantity: 1,
+      quantity: totalBooks,
     })),
     mode: "payment",
     success_url: `${config.stripe.success_url}`,
@@ -263,7 +263,6 @@ const getMyOrderedBooksFromDB = async (query: Record<string, any>, userEmail: st
   const meta = await queryBuilder.countTotal();
   return { meta, data: myBooks }
 }
-
 
 export const OrderBookServices = {
   createBookOrderIntoDB,
