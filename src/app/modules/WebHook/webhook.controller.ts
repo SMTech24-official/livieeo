@@ -2,7 +2,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 
 import httpStatus from 'http-status'
-import { WebhookServices } from "./webHook.service";
+import { WebhookServices } from "./webhook.service";
 
 const handleStripeWebHook = catchAsync(async(req,res)=> {
     const sig = req.headers['stripe-signature'] as string;

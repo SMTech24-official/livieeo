@@ -80,105 +80,262 @@ import { ActivityType, OrderCourse, UserRole } from "@prisma/client";
 import QueryBuilder from "../../../helpers/queryBuilder";
 import { saveActivity } from "../Dashboard/dashboard.service";
 
-const createCourseOrderIntoDB = async (
-  payload: { courseIds: string[] },
-  user: JwtPayload
-) => {
+// const createCourseOrderIntoDB = async (
+//   payload: { courseIds: string[] },
+//   user: JwtPayload
+// ) => {
+//   const userId = user.id;
+//   const { courseIds } = payload;
+
+//   if (!courseIds || courseIds.length === 0) {
+//     throw new ApiError(httpStatus.BAD_REQUEST, "No course ids provided");
+//   }
+
+//   // find all courses
+//   const courses = await prisma.course.findMany({
+//     where: { id: { in: courseIds } },
+//   });
+
+//   if (!courses.length) {
+//     throw new ApiError(httpStatus.NOT_FOUND, "No courses found!");
+//   }
+
+//   // 🔎 check if user already bought any of these courses
+//   const alreadyBought = await prisma.orderCourseItem.findMany({
+//     where: {
+//       courseId: { in: courseIds },
+//       order: {
+//         userId,
+//         paymentStatus: "PAID",
+//       },
+//     },
+//     select: { courseId: true },
+//   });
+
+//   if (alreadyBought.length > 0) {
+//     const boughtCourseIds = alreadyBought.map((c) => c.courseId);
+//     const boughtCourseNames = courses
+//       .filter((c) => boughtCourseIds.includes(c.id))
+//       .map((c) => c.courseTitle)
+//       .join(", ");
+
+//     throw new ApiError(
+//       httpStatus.BAD_REQUEST,
+//       `You have already purchased these courses: ${boughtCourseNames}`
+//     );
+//   }
+
+//   // total amount sum
+//   const totalAmount = courses.reduce((sum, course) => sum + course.price, 0);
+//   const totalQuantity = courses.length;
+//   const courseNames = courses.map(course => course.courseTitle).join(", ");
+
+//   // 1️⃣ create order
+//   const order = await prisma.orderCourse.create({
+//     data: {
+//       userId,
+//       amount: totalAmount,
+//       paymentStatus: "PENDING",
+//       paymentMethod: "STRIPE",
+//     },
+//   });
+
+//   // 2️⃣ create order items
+//   await prisma.orderCourseItem.createMany({
+//     data: courses.map((course) => ({
+//       orderId: order.id,
+//       courseId: course.id,
+//       price: course.price,
+//       quantity: totalQuantity,
+//     })),
+//   });
+
+//   // 3️⃣ stripe checkout session
+//   const session = await stripe.checkout.sessions.create({
+//     payment_method_types: ["card"],
+//     line_items: courses.map((course) => ({
+//       price_data: {
+//         currency: "usd",
+//         product_data: {
+//           name: course.courseTitle,
+//           description: course.description ?? "Course purchase",
+//         },
+//         unit_amount: Math.round(course.price * 100), // in cents
+//       },
+//       quantity: totalQuantity,
+//     })),
+//     mode: "payment",
+//     success_url: `${config.stripe.success_url}`,
+//     cancel_url: `${config.stripe.fail_url}`,
+//     metadata: {
+//       orderId: order.id,
+//       orderType: "COURSE",
+//       userId,
+//     },
+//   });
+//   saveActivity(userId, courseNames, ActivityType.COURSE)
+//   return {
+//     orderId: order.id,
+//     paymentUrl: session.url,
+//   };
+// };
+
+
+// const createCourseOrderIntoDB = async (
+//   payload: { courseIds: string[] },
+//   user: JwtPayload
+// ) => {
+//   const userId = user.id;
+//   const { courseIds } = payload;
+
+//   if (!courseIds || courseIds.length === 0) {
+//     throw new ApiError(httpStatus.BAD_REQUEST, "No course ids provided");
+//   }
+
+//   // find all courses
+//   const courses = await prisma.course.findMany({
+//     where: { id: { in: courseIds } },
+//   });
+
+//   if (!courses.length) {
+//     throw new ApiError(httpStatus.NOT_FOUND, "No courses found!");
+//   }
+
+//   // check if user already bought any of these courses
+//   const alreadyBought = await prisma.orderCourseItem.findMany({
+//     where: {
+//       courseId: { in: courseIds },
+//       order: {
+//         userId,
+//         paymentStatus: "PAID",
+//       },
+//     },
+//     select: { courseId: true },
+//   });
+
+//   if (alreadyBought.length > 0) {
+//     const boughtCourseIds = alreadyBought.map((c) => c.courseId);
+//     const boughtCourseNames = courses
+//       .filter((c) => boughtCourseIds.includes(c.id))
+//       .map((c) => c.courseTitle)
+//       .join(", ");
+
+//     throw new ApiError(
+//       httpStatus.BAD_REQUEST,
+//       `You have already purchased these courses: ${boughtCourseNames}`
+//     );
+//   }
+
+//   // total amount
+//   const totalAmount = courses.reduce((sum, course) => sum + course.price, 0);
+//   const courseNames = courses.map(course => course.courseTitle).join(", ");
+
+//   // create order
+//   const order = await prisma.orderCourse.create({
+//     data: {
+//       userId,
+//       amount: totalAmount,
+//       paymentStatus: "PENDING",
+//       paymentMethod: "STRIPE",
+//     },
+//   });
+
+//   // create order items (quantity 1 for each)
+//   await prisma.orderCourseItem.createMany({
+//     data: courses.map((course) => ({
+//       orderId: order.id,
+//       courseId: course.id,
+//       price: course.price,
+//       quantity: 1, // ✅ fix
+//     })),
+//   });
+
+//   // stripe checkout session
+//   const session = await stripe.checkout.sessions.create({
+//     payment_method_types: ["card"],
+//     line_items: courses.map((course) => ({
+//       price_data: {
+//         currency: "usd",
+//         product_data: {
+//           name: course.courseTitle,
+//           description: course.description ?? "Course purchase",
+//         },
+//         unit_amount: Math.round(course.price * 100),
+//       },
+//       quantity: 1, // ✅ fix
+//     })),
+//     mode: "payment",
+//     success_url: `${config.stripe.success_url}`,
+//     cancel_url: `${config.stripe.fail_url}`,
+//     metadata: {
+//       orderId: order.id,
+//       orderType: "COURSE",
+//       userId,
+//     },
+//   });
+
+//   saveActivity(userId, courseNames, ActivityType.COURSE);
+
+//   return {
+//     orderId: order.id,
+//     paymentUrl: session.url,
+//   };
+// };
+
+
+const createCourseOrderIntoDB = async (payload: { courseIds: string[] }, user: JwtPayload) => {
   const userId = user.id;
   const { courseIds } = payload;
 
-  if (!courseIds || courseIds.length === 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No course ids provided");
-  }
+  if (!courseIds?.length) throw new ApiError(httpStatus.BAD_REQUEST, "No course ids provided");
 
-  // find all courses
-  const courses = await prisma.course.findMany({
-    where: { id: { in: courseIds } },
-  });
+  const courses = await prisma.course.findMany({ where: { id: { in: courseIds } } });
+  if (!courses.length) throw new ApiError(httpStatus.NOT_FOUND, "No courses found");
 
-  if (!courses.length) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No courses found!");
-  }
-
-  // 🔎 check if user already bought any of these courses
+  // Check already purchased
   const alreadyBought = await prisma.orderCourseItem.findMany({
     where: {
       courseId: { in: courseIds },
-      order: {
-        userId,
-        paymentStatus: "PAID",
-      },
+      order: { userId, paymentStatus: "PAID" },
     },
     select: { courseId: true },
   });
-
-  if (alreadyBought.length > 0) {
-    const boughtCourseIds = alreadyBought.map((c) => c.courseId);
-    const boughtCourseNames = courses
-      .filter((c) => boughtCourseIds.includes(c.id))
-      .map((c) => c.courseTitle)
-      .join(", ");
-
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `You have already purchased these courses: ${boughtCourseNames}`
-    );
+  if (alreadyBought.length) {
+    const boughtNames = courses.filter(c => alreadyBought.map(a => a.courseId).includes(c.id))
+                              .map(c => c.courseTitle).join(", ");
+    throw new ApiError(httpStatus.BAD_REQUEST, `Already purchased: ${boughtNames}`);
   }
 
-  // total amount sum
-  const totalAmount = courses.reduce((sum, course) => sum + course.price, 0);
-  const totalQuantity = courses.length;
-  const courseNames = courses.map(course => course.courseTitle).join(", ");
+  const totalAmount = courses.reduce((sum, c) => sum + c.price, 0);
 
-  // 1️⃣ create order
   const order = await prisma.orderCourse.create({
-    data: {
-      userId,
-      amount: totalAmount,
-      paymentStatus: "PENDING",
-      paymentMethod: "STRIPE",
-    },
+    data: { userId, amount: totalAmount, paymentStatus: "PENDING", paymentMethod: "STRIPE" },
   });
 
-  // 2️⃣ create order items
   await prisma.orderCourseItem.createMany({
-    data: courses.map((course) => ({
-      orderId: order.id,
-      courseId: course.id,
-      price: course.price,
-      quantity: totalQuantity,
-    })),
+    data: courses.map(c => ({ orderId: order.id, courseId: c.id, price: c.price, quantity: 1 })),
   });
 
-  // 3️⃣ stripe checkout session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    line_items: courses.map((course) => ({
+    line_items: courses.map(c => ({
       price_data: {
         currency: "usd",
-        product_data: {
-          name: course.courseTitle,
-          description: course.description ?? "Course purchase",
-        },
-        unit_amount: Math.round(course.price * 100), // in cents
+        product_data: { name: c.courseTitle, description: c.description ?? "" },
+        unit_amount: Math.round(c.price * 100),
       },
-      quantity: totalQuantity,
+      quantity: 1,
     })),
     mode: "payment",
-    success_url: `${config.stripe.success_url}`,
-    cancel_url: `${config.stripe.fail_url}`,
-    metadata: {
-      orderId: order.id,
-      orderType: "COURSE",
-      userId,
-    },
+    success_url: config.stripe.success_url ?? "",
+    cancel_url: config.stripe.fail_url ?? "",
+    metadata: { orderId: order.id, orderType: "COURSE", userId },
   });
-  saveActivity(userId, courseNames, ActivityType.COURSE)
-  return {
-    orderId: order.id,
-    paymentUrl: session.url,
-  };
+
+  return { orderId: order.id, paymentUrl: session.url };
 };
+
+
 const getAllOrderedCoursesFromDB = async (
   query: Record<string, any>
 ): Promise<IGenericResponse<OrderCourse[]>> => {

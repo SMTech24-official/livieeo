@@ -217,34 +217,13 @@ model Course {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  courseModules     CourseModule[] // One Course -> Many Modules
-  courseCertificate CourseCertificate[] // One-to-many: multiple users can get certificates for same course
+  courseModules     CourseModule[]
+  courseCertificate CourseCertificate[]
   orderCourse       OrderCourse[]
   orderCourseItem   OrderCourseItem[]
   courseProgress    CourseProgress[]
 
   @@map("courses")
-}
-
-model CourseProgress {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  userId   String @db.ObjectId
-  user     User   @relation(fields: [userId], references: [id])
-  courseId String @db.ObjectId
-  course   Course @relation(fields: [courseId], references: [id])
-
-  currentModuleId String? @db.ObjectId
-  currentVideoId  String? @db.ObjectId
-
-  completedVideos  String[] // যেসব video দেখা শেষ করেছে
-  completedModules String[] // যেসব module শেষ করেছে
-
-  isCompleted Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([userId, courseId])
-  @@map("course-progress")
 }
 
 model OrderCourse {
@@ -257,7 +236,7 @@ model OrderCourse {
   transactionId String?
   createdAt     DateTime      @default(now())
 
-  items    OrderCourseItem[] // 👈 এক order এর multiple courses থাকবে
+  items    OrderCourseItem[]
   courseId String?           @db.ObjectId
   course   Course?           @relation(fields: [courseId], references: [id])
 
@@ -283,9 +262,9 @@ model CourseCertificate {
   userId   String @db.ObjectId
   user     User   @relation(fields: [userId], references: [id])
 
-  certificateNo  String   @unique // eg: CERT-2025-000123
-  certificateUrl String // Cloudinary PDF URL
-  verifyCode     String   @unique // ছোট একটি কোড/টোকেন
+  certificateNo  String   @unique
+  certificateUrl String
+  verifyCode     String   @unique
   issuedAt       DateTime @default(now())
 
   @@index([courseId, userId])
@@ -295,10 +274,12 @@ model CourseCertificate {
 model CourseModule {
   id                 String              @id @default(auto()) @map("_id") @db.ObjectId
   moduleTitle        String
-  courseModuleVideos CourseModuleVideo[] // One Module -> Many Videos
+  order              Int                 @default(0)
+  courseModuleVideos CourseModuleVideo[]
   courseId           String              @db.ObjectId
   course             Course              @relation(fields: [courseId], references: [id])
 
+  @@index([courseId, order])
   @@map("courseModules")
 }
 
@@ -306,11 +287,201 @@ model CourseModuleVideo {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   videoTitle     String
   fileUrl        String
+  order          Int          @default(0)
   courseModuleId String       @db.ObjectId
   courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
 
+  @@index([courseModuleId, order])
   @@map("course-module-videos")
 }
+
+model CourseProgress {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id])
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  currentModuleId String? @db.ObjectId
+  currentVideoId  String? @db.ObjectId
+
+  completedVideos  String[]
+  completedModules String[]
+
+  percentCompleted Float    @default(0)
+  isCompleted      Boolean  @default(false)
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  lastActivityAt   DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@map("course-progress")
+}
+
+// model Course {
+//   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+//   courseTitle String
+//   mentorName  String
+//   price       Float
+//   totalVideo  Int
+//   language    String
+//   duration    String
+//   description String
+//   isPublished Boolean  @default(false)
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   courseModules     CourseModule[] // One Course -> Many Modules
+//   courseCertificate CourseCertificate[] // One-to-many: multiple users can get certificates for same course
+//   orderCourse       OrderCourse[]
+//   orderCourseItem   OrderCourseItem[]
+//   courseProgress    CourseProgress[]
+
+//   @@map("courses")
+// }
+
+
+
+// model OrderCourse {
+//   id            String        @id @default(auto()) @map("_id") @db.ObjectId
+//   userId        String        @db.ObjectId
+//   user          User          @relation(fields: [userId], references: [id])
+//   amount        Float
+//   paymentStatus PaymentStatus @default(PENDING)
+//   paymentMethod PaymentMethod @default(STRIPE)
+//   transactionId String?
+//   createdAt     DateTime      @default(now())
+
+//   items    OrderCourseItem[] // 👈 এক order এর multiple courses থাকবে
+//   courseId String?           @db.ObjectId
+//   course   Course?           @relation(fields: [courseId], references: [id])
+
+//   @@map("order-courses")
+// }
+
+// model OrderCourseItem {
+//   id       String      @id @default(auto()) @map("_id") @db.ObjectId
+//   orderId  String      @db.ObjectId
+//   order    OrderCourse @relation(fields: [orderId], references: [id])
+//   courseId String      @db.ObjectId
+//   course   Course      @relation(fields: [courseId], references: [id])
+//   price    Float
+//   quantity Int         @default(1)
+
+//   @@map("order-course-items")
+// }
+
+// model CourseCertificate {
+//   id       String @id @default(auto()) @map("_id") @db.ObjectId
+//   courseId String @db.ObjectId
+//   course   Course @relation(fields: [courseId], references: [id])
+//   userId   String @db.ObjectId
+//   user     User   @relation(fields: [userId], references: [id])
+
+//   certificateNo  String   @unique // eg: CERT-2025-000123
+//   certificateUrl String // Cloudinary PDF URL
+//   verifyCode     String   @unique // ছোট একটি কোড/টোকেন
+//   issuedAt       DateTime @default(now())
+
+//   @@index([courseId, userId])
+//   @@map("course-certificates")
+// }
+
+// model CourseModule {
+//   id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+//   moduleTitle        String
+//   order              Int                 @default(0) // <— NEW: ordering
+//   courseModuleVideos CourseModuleVideo[]
+//   courseId           String              @db.ObjectId
+//   course             Course              @relation(fields: [courseId], references: [id])
+
+//   @@index([courseId, order])
+//   @@map("courseModules")
+// }
+
+// model CourseModuleVideo {
+//   id             String       @id @default(auto()) @map("_id") @db.ObjectId
+//   videoTitle     String
+//   fileUrl        String
+//   order          Int          @default(0) // <— NEW: ordering
+//   courseModuleId String       @db.ObjectId
+//   courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
+
+//   @@index([courseModuleId, order])
+//   @@map("course-module-videos")
+// }
+
+// model CourseProgress {
+//   id       String @id @default(auto()) @map("_id") @db.ObjectId
+//   userId   String @db.ObjectId
+//   user     User   @relation(fields: [userId], references: [id])
+//   courseId String @db.ObjectId
+//   course   Course @relation(fields: [courseId], references: [id])
+
+//   currentModuleId String? @db.ObjectId
+//   currentVideoId  String? @db.ObjectId
+
+//   completedVideos  String[] // দেখা শেষ করা ভিডিও
+//   completedModules String[] // শেষ করা মডিউল
+
+//   percentCompleted Float    @default(0)  // <— NEW
+//   isCompleted      Boolean  @default(false)
+//   startedAt        DateTime @default(now()) // <— NEW
+//   completedAt      DateTime?               // <— NEW
+//   lastActivityAt   DateTime @default(now()) // <— NEW
+
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   @@unique([userId, courseId]) // <— NEW: একজন ইউজারের প্রতি কোর্সে একটি প্রগ্রেস
+//   @@map("course-progress")
+// }
+
+
+// model CourseProgress {
+//   id       String @id @default(auto()) @map("_id") @db.ObjectId
+//   userId   String @db.ObjectId
+//   user     User   @relation(fields: [userId], references: [id])
+//   courseId String @db.ObjectId
+//   course   Course @relation(fields: [courseId], references: [id])
+
+//   currentModuleId String? @db.ObjectId
+//   currentVideoId  String? @db.ObjectId
+
+//   completedVideos  String[] // যেসব video দেখা শেষ করেছে
+//   completedModules String[] // যেসব module শেষ করেছে
+
+//   isCompleted Boolean  @default(false)
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   @@index([userId, courseId])
+//   @@map("course-progress")
+// }
+
+
+// model CourseModule {
+//   id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+//   moduleTitle        String
+//   courseModuleVideos CourseModuleVideo[] // One Module -> Many Videos
+//   courseId           String              @db.ObjectId
+//   course             Course              @relation(fields: [courseId], references: [id])
+
+//   @@map("courseModules")
+// }
+
+// model CourseModuleVideo {
+//   id             String       @id @default(auto()) @map("_id") @db.ObjectId
+//   videoTitle     String
+//   fileUrl        String
+//   courseModuleId String       @db.ObjectId
+//   courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
+
+//   @@map("course-module-videos")
+// }
 
 model Blog {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
