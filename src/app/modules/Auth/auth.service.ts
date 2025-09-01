@@ -156,7 +156,6 @@ const forgotPassword = async (payload: { email: string }) => {
     userData.email,
     "Password Reset OTP",
     await EmailTemplates.temp1(otp as unknown as number)
-    // `<p>Your OTP is <b>${otp}</b>. It will expire in 10 minutes.</p>`
   );
 
   return { message: "OTP sent to email" };

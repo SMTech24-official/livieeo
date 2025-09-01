@@ -111,9 +111,21 @@ Base URL: `/api/v1`
 - `GET /course-module-video` - Get all videos
 - `GET /course-module-video/:id` - Get video by ID
 
-### Course Certificate
 
-- `POST /course-certificate/issue` - Create certificate (upload file)
+router.post("/complete-video", auth(UserRole.USER), CourseProgressController.completeVideo);
+
+// Get course progress
+router.get("/:courseId/progress", auth(UserRole.USER), CourseProgressController.getProgress);
+
+// “Course Complete” বাটন (সব ভিডিও দেখা আছে কিনা যাচাই + সার্টিফিকেট)
+router.post("/complete-course", auth(UserRole.USER), CourseProgressController.completeCourse);
+export const CourseProgressRoutes = router;
+
+
+### Course Progress
+
+- `POST /course-progress/complete-video` - Complete video
+- `POST /course-progress/68b3300607f690e58fd61521/progress` - Complete video
 - `GET /course-certificate/verify` - Verify certificates
 
 ### Blog
