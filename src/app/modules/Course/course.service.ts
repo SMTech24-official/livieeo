@@ -65,7 +65,7 @@ const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promis
   return { meta, data: courses }
 };
 
-const updatePublishedStatus = async (courseId: string, status: boolean) => {
+const updatePublishedStatus = async (courseId: string) => {
   // 1️⃣ Course আছে কিনা check করা
   const existingCourse = await prisma.course.findUnique({
     where: { id: courseId },
@@ -76,7 +76,7 @@ const updatePublishedStatus = async (courseId: string, status: boolean) => {
   }
   const result = await prisma.course.update({
     where: { id: courseId },
-    data: { isPublished: status },
+    data: { isPublished: true },
   });
   return result;
 }

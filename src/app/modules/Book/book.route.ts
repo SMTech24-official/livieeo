@@ -19,5 +19,6 @@ router.patch("/:id",fileUploader.upload.fields([
 router.delete("/:id", BookControllers.deleteBook);
 router.patch("/:id/published-status", textToJSONParser, BookControllers.updatePublishedStatus);
 router.patch("/rating/:bookId", BookControllers.ratingToBook)
+router.get("/:bookId/related-books", BookControllers.getRelatedBooks)
 
 export const BookRoutes = router;

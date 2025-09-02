@@ -26,7 +26,8 @@ const getAllPodcasts = catchAsync(async (req, res) => {
         statusCode: 200,
         success: true,
         message: "Podcasts retrieved successfully",
-        data: podcasts
+        meta: podcasts.meta,
+        data: podcasts.data
     })
 })
 const getPublishedPodcasts = catchAsync(async (req, res) => {
@@ -36,9 +37,23 @@ const getPublishedPodcasts = catchAsync(async (req, res) => {
         statusCode: 200,
         success: true,
         message: "Published podcasts retrieved successfully",
-        data: podcasts
+        meta: podcasts.meta,
+        data: podcasts.data
     })
 })
+const getRelatedPodcasts = catchAsync(async (req, res) => {
+    const {podcastId} = req.params
+    const podcasts = await PodcastServices.getRelatedPodcastsFromDB(podcastId as string,req.query);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Published podcasts retrieved successfully",
+        meta: podcasts.meta,
+        data: podcasts.data
+    })
+})
+
 const updatePodcast = catchAsync(async (req, res) => {
     const id = req.params.id as string;
     const payload = req.body;
@@ -135,5 +150,6 @@ export const PodcastControllers = {
     getPublishedPodcasts,
     logPodcastPlay,
     getActivities,
-    getMyRecentPodcasts
+    getMyRecentPodcasts,
+    getRelatedPodcasts
 };

@@ -20,17 +20,31 @@ const getAllBlogs = catchAsync(async (req, res) => {
         statusCode: httpStatus.OK,
         success: true,
         message: "Blogs retrieved successfully",
-        data: result,
+        meta: result.meta,
+        data: result.data
     })
 })
 
 const getPublishedBlogs = catchAsync(async (req, res) => {
-    const result = await BlogServices.getAllBlogsFromDB(req.query);
+    const result = await BlogServices.getPublishedBlogsFromDB(req.query);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: "Published blogs retrieved successfully",
-        data: result,
+        meta: result.meta,
+        data: result.data
+    })
+})
+
+const getRelatedBlogs = catchAsync(async(req,res)=> {
+    const {blogId} = req.params
+    const result = await BlogServices.getRelatedBlogsFromDB(blogId as string, req.query)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Related blogs retrieved successfully",
+        meta: result.meta,
+        data: result.data
     })
 })
 
@@ -72,5 +86,6 @@ export const BlogControllers = {
     getPublishedBlogs,
     updateBlog,
     deleteBlog,
-    updatePublishedStatus
+    updatePublishedStatus,
+    getRelatedBlogs
 }

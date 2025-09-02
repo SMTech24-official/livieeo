@@ -86,7 +86,8 @@ const updatePublishedStatus = catchAsync(async (req, res) => {
     })
 })
 const getRelatedBooks = catchAsync(async (req, res) => {
-    const result = await BookServices.getRelatedBooks(req.params.id as string);
+    const { bookId } = req.params
+    const result = await BookServices.getRelatedBooksFromDB(bookId as string, req.query);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -95,7 +96,7 @@ const getRelatedBooks = catchAsync(async (req, res) => {
     });
 });
 const ratingToBook = catchAsync(async (req, res) => {
-    const {bookId} = req.params
+    const { bookId } = req.params
     const result = await BookServices.ratingToBook(bookId as string, req.body.rating);
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -112,5 +113,6 @@ export const BookControllers = {
     updateBook,
     deleteBook,
     updatePublishedStatus,
-    ratingToBook
+    ratingToBook,
+    getRelatedBooks
 };

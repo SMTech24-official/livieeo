@@ -17,6 +17,7 @@ interface ChangePasswordPayload {
 
 // ================= LOGIN =================
 const loginUser = async (payload: { email: string; password: string }) => {
+  // 1) ইমেইল দিয়ে ইউজার খোঁজা
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,
@@ -24,14 +25,17 @@ const loginUser = async (payload: { email: string; password: string }) => {
     },
   });
 
+  // 2) পাসওয়ার্ড চেক করা
   const isCorrectPassword: boolean = await bcrypt.compare(
     payload.password,
     userData.password
   );
+
   if (!isCorrectPassword) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
   }
 
+  // 3) Access Token বানানো
   const accessToken = JWTHelpers.generateToken(
     {
       id: userData.id,
@@ -44,6 +48,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     config.jwt.access_expires_in as string
   );
 
+  // 4) Refresh Token বানানো
   const refreshToken = JWTHelpers.generateToken(
     {
       id: userData.id,
@@ -56,7 +61,20 @@ const loginUser = async (payload: { email: string; password: string }) => {
     config.jwt.refresh_expires_in as string
   );
 
-  return { accessToken, refreshToken };
+  // 5) টোকেন + ইউজার ডেটা রিটার্ন করা
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: userData.id,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      role: userData.role,
+      status: userData.status,
+      createdAt: userData.createdAt,
+    },
+  };
 };
 
 // ================= REFRESH TOKEN =================

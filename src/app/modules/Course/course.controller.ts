@@ -24,7 +24,7 @@ const getAllCourses = catchAsync(async (req, res) => {
     });
 })
 const getPublishedCourses = catchAsync(async (req, res) => {
-    const result = await CourseServices.getAllCoursesFromDB(req.query);
+    const result = await CourseServices.getPublishedCoursesFromDB(req.query);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -35,8 +35,7 @@ const getPublishedCourses = catchAsync(async (req, res) => {
 })
 const updatePublishedStatus = catchAsync(async (req, res) => {
     const { courseId } = req.params;
-    const { status } = req.body;
-    const result = await CourseServices.updatePublishedStatus(courseId as string, status);
+    const result = await CourseServices.updatePublishedStatus(courseId as string);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

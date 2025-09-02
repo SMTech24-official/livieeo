@@ -94,6 +94,7 @@ Base URL: `/api/v1`
 - `DELETE /book/:id` - Delete book
 - `PATCH /book/:id/published-status` - Update published status
 - `PATCH /book/rating/:bookId` - Rate a book
+- `GET /related-books` - Get related book
 
 ### Course
 
@@ -148,6 +149,7 @@ export const CourseProgressRoutes = router;
 - `POST /podcast/log-play/:podcastId` - Hit route when user play podcast
 - `POST /podcast/log-play/:podcastId` - Hit route when user play podcast
 - `GET /podcast/my-recent-podcasts` -   GET my-recent-podcasts
+- `GET /:podcastId/related-podcasts` -   GET my-related-podcasts
 
 router.post("/log-play/:podcastId",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.logPodcastPlay);
 router.get("/activities", PodcastControllers.getActivities);

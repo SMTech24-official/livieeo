@@ -150,20 +150,42 @@ const updatePublishedStatus = async (id: string, status: boolean) => {
     return result;
 }
 
-const getRelatedBooks = async (bookId: string): Promise<Book[]> => {
-    const books = await prisma.book.findMany({
-        where: {
-            id: {
-                not: bookId
-            },
-            isPublished: true
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
+const getRelatedBooksFromDB = async (
+  bookId: string,
+  query: Record<string, any>
+): Promise<IGenericResponse<Book[]>> => {
+  const currentBook = await prisma.book.findUnique({
+    where: { id: bookId },
+  });
+
+  if (!currentBook) {
+    throw new ApiError(404, "Book not found");
+  }
+  const queryBuilder = new QueryBuilder(prisma.book, query);
+
+  const books = await queryBuilder
+    .range()
+    .search(["bookName", "authorName", "category", "brand"])
+    .filter(["category"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: {
+        category: currentBook.category,
+        id: { not: bookId },
+        isPublished: true,
+      },
     });
-    return books;
-}
+
+  const meta = await queryBuilder.countTotal();
+
+  if (!books || books.length === 0) {
+    throw new ApiError(404, "No related books found");
+  }
+
+  return { meta, data: books };
+};
 const ratingToBook = async (bookId: string, rating: number) => {
     // 1️⃣ rating validate করা
     if (rating < 1 || rating > 5) {
@@ -198,6 +220,6 @@ export const BookServices = {
     updateBookInDB,
     deleteBookFromDB,
     updatePublishedStatus,
-    getRelatedBooks,
+    getRelatedBooksFromDB,
     ratingToBook
 };

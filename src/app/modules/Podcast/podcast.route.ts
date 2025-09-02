@@ -17,5 +17,6 @@ router.patch("/podcast-status/:id", PodcastControllers.updatePodcastStatus);
 router.post("/log-play/:podcastId",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.logPodcastPlay);
 router.get("/activities", PodcastControllers.getActivities);
 router.get("/my-recent-podcasts",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getMyRecentPodcasts);
+router.get("/:podcastId/related-podcasts")
 
 export const PodcastRoutes = router;

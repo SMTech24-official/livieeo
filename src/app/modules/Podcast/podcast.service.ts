@@ -22,8 +22,8 @@ const createPodcastIntoDB = async (payload: Podcast, podcastFiles: IFile[]) => {
 const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
     const queryBuilder = new QueryBuilder(prisma.podcast, query)
     const podcasts = await queryBuilder.range()
-        .search(["podcastTitle", "secondaryTitle"])
-        .filter()
+        .search(["category","podcastTitle", "secondaryTitle"])
+        .filter(["category"])
         .sort()
         .paginate()
         .fields()
@@ -38,7 +38,7 @@ const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGen
 const getPublishedPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
     const queryBuilder = new QueryBuilder(prisma.podcast, query)
     const podcasts = await queryBuilder.range()
-        .search(["podcastTitle", "secondaryTitle"])
+        .search(["category","podcastTitle", "secondaryTitle"])
         .filter()
         .sort()
         .paginate()
@@ -54,7 +54,48 @@ const getPublishedPodcastFromDB = async (query: Record<string, unknown>): Promis
     const meta = await queryBuilder.countTotal();
     return { meta, data: podcasts }
 }
+const getRelatedPodcastsFromDB = async (
+  podcastId: string,
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Podcast[]>> => {
+  // 1) current podcast বের করা
+  const currentPodcast = await prisma.podcast.findUnique({
+    where: { id: podcastId },
+  });
 
+  if (!currentPodcast) {
+    throw new ApiError(404, "Podcast not found");
+  }
+
+  // 2) QueryBuilder দিয়ে related আনবো
+  const queryBuilder = new QueryBuilder(prisma.podcast, query);
+
+  const podcasts = await queryBuilder
+    .range()
+    .search(["podcastTitle", "secondaryTitle"])
+    .filter(["category"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: {
+        id: { not: podcastId }, // নিজের podcast বাদ
+        category: { hasSome: currentPodcast.category }, // যদি category থাকে
+        isPublished: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+  const meta = await queryBuilder.countTotal();
+
+  if (!podcasts || podcasts.length === 0) {
+    throw new ApiError(404, "No related podcasts found");
+  }
+
+  return { meta, data: podcasts };
+};
 
 const updatePodcast = async (id: string, payload: Partial<Podcast>, podcastFiles?: IFile[]) => {
   if (podcastFiles && podcastFiles.length > 0) {
@@ -239,5 +280,6 @@ export const PodcastServices = {
     updatePodcastStatus,
     logPodcastPlay,
     getActivities,
-    getMyRecentPodcasts
+    getMyRecentPodcasts,
+    getRelatedPodcastsFromDB
 };

@@ -7,9 +7,10 @@ const router = Router();
 
 router.post("/create", fileUploader.upload.array("blogImages", 5),textToJSONParser,BlogControllers.createBlog)
 router.get("/", BlogControllers.getAllBlogs);
-router.get("/", BlogControllers.getPublishedBlogs);
+router.get("/published-blogs", BlogControllers.getPublishedBlogs);
 router.patch("/:id", fileUploader.upload.array("blogImages", 5),textToJSONParser, BlogControllers.updateBlog);
 router.delete("/:id", BlogControllers.deleteBlog);
 router.patch("/published-status/:id", textToJSONParser, BlogControllers.updatePublishedStatus);
+router.get("/:blogId/related-blogs", BlogControllers.getRelatedBlogs)
 
 export const BlogRoutes = router;
