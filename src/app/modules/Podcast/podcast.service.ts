@@ -35,6 +35,17 @@ const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGen
     const meta = await queryBuilder.countTotal();
     return { meta, data: podcasts }
 }
+const getSinglePodcastFromDB = async (podcastId: string) => {
+  const podcast = await prisma.podcast.findUnique({
+    where: { id: podcastId }
+  });
+
+  if (!podcast) {
+    throw new ApiError(404, "Podcast not found");
+  }
+
+  return podcast;
+};
 const getPublishedPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
     const queryBuilder = new QueryBuilder(prisma.podcast, query)
     const podcasts = await queryBuilder.range()
@@ -281,5 +292,6 @@ export const PodcastServices = {
     logPodcastPlay,
     getActivities,
     getMyRecentPodcasts,
-    getRelatedPodcastsFromDB
+    getRelatedPodcastsFromDB,
+    getSinglePodcastFromDB
 };

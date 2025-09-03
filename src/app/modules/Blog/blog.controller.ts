@@ -24,6 +24,16 @@ const getAllBlogs = catchAsync(async (req, res) => {
         data: result.data
     })
 })
+const getSingleBlog = catchAsync(async (req, res) => {
+    const {blogId} = req.params
+    const result = await BlogServices.getSingleBlogFromDB(blogId as string);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Blog retrieved successfully",
+        data: result
+    })
+})
 
 const getPublishedBlogs = catchAsync(async (req, res) => {
     const result = await BlogServices.getPublishedBlogsFromDB(req.query);
@@ -87,5 +97,6 @@ export const BlogControllers = {
     updateBlog,
     deleteBlog,
     updatePublishedStatus,
-    getRelatedBlogs
+    getRelatedBlogs,
+    getSingleBlog
 }

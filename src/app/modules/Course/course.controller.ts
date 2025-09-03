@@ -33,6 +33,27 @@ const getPublishedCourses = catchAsync(async (req, res) => {
         data: result.data,
     });
 })
+const getSingleCourse = catchAsync(async (req, res) => {
+    const {courseId} = req.params
+    const result = await CourseServices.getSingleCourseFromDB(courseId as string);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Single course retrieved successfully`,
+        data: result
+    });
+})
+const getRelatedCourses = catchAsync(async (req, res) => {
+    const {courseId} = req.params
+    const result = await CourseServices.getRelatedCoursesFromDB(courseId as string,req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Published courses retrieved successfully`,
+        meta: result.meta,
+        data: result.data,
+    });
+})
 const updatePublishedStatus = catchAsync(async (req, res) => {
     const { courseId } = req.params;
     const result = await CourseServices.updatePublishedStatus(courseId as string);
@@ -73,5 +94,7 @@ export const CourseControllers = {
     getPublishedCourses,
     updatePublishedStatus,
     deleteCourse,
-    updateCourse
+    updateCourse,
+    getRelatedCourses,
+    getSingleCourse
 }

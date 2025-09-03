@@ -33,6 +33,17 @@ const getAllBlogsFromDB = async (query: Record<string, unknown>): Promise<IGener
     const meta = await queryBuilder.countTotal();
     return { meta, data: blogs }
 }
+const getSingleBlogFromDB = async (blogId: string) => {
+  const blog = await prisma.blog.findUnique({
+    where: { id: blogId },
+  });
+
+  if (!blog) {
+    throw new ApiError(404, "Blog not found");
+  }
+
+  return blog;
+};
 const getPublishedBlogsFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Blog[]>> => {
     const queryBuilder = new QueryBuilder(prisma.blog, query)
     const blogs = await queryBuilder.range()
@@ -146,5 +157,6 @@ export const BlogServices = {
     updateBlogIntoDB,
     deleteBlogFromDB,
     updatePublishedStatus,
-    getRelatedBlogsFromDB
+    getRelatedBlogsFromDB,
+    getSingleBlogFromDB
 }

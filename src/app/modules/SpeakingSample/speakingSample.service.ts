@@ -17,8 +17,8 @@ const getAllSpeakingSampleFromDB = async (query: Record<string, any>): Promise<I
     const queryBuilder = new QueryBuilder(prisma.speakingSample, query)
     const speakingSamples = await queryBuilder
         .range()
-        .search(["sampleTitle", "content"])
-        .filter()
+        .search(["category","sampleTitle", "content"])
+        .filter(["category"])
         .sort()
         .paginate()
         .fields()
@@ -34,6 +34,42 @@ const getSpeakingSampleById = async (speakingSampleId: string) => {
         }
     })
     return result
+}
+const getRelatedSpeakingSamplesFromDB = async (
+    sampleId: string,
+    query: Record<string, any>
+): Promise<IGenericResponse<SpeakingSample[]>> => {
+    // প্রথমে সেই sample পাওয়া যাক
+    const currentSample = await prisma.speakingSample.findUnique({
+        where: { id: sampleId }
+    });
+
+    if (!currentSample) {
+        throw new ApiError(404, "Speaking sample not found");
+    }
+
+    // QueryBuilder ব্যবহার করে related samples fetch
+    const queryBuilder = new QueryBuilder(prisma.speakingSample, query);
+    const speakingSamples = await queryBuilder
+        .range()
+        .search(["category","sampleTitle", "content"])
+        .filter(["category"])
+        .sort()
+        .paginate()
+        .fields()
+        .execute({
+            where: {
+                id: { not: sampleId }, // নিজের exclude
+                category: currentSample.category // একই category
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+    const meta = await queryBuilder.countTotal();
+
+    return { meta, data: speakingSamples };
 }
 const updateSpeakingSampleIntoDB = async (speakingSampleId: string, payload: Partial<SpeakingSample>) => {
     const speakingSample = await prisma.speakingSample.findUnique({
@@ -73,5 +109,6 @@ export const SpeakingSampleServices = {
     getAllSpeakingSampleFromDB,
     getSpeakingSampleById,
     updateSpeakingSampleIntoDB,
-    deleteSpeakingSampleFromDB
+    deleteSpeakingSampleFromDB,
+    getRelatedSpeakingSamplesFromDB
 }

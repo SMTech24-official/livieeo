@@ -208,6 +208,7 @@ model Course {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   courseTitle String
   mentorName  String
+  category    String
   price       Float
   totalVideo  Int
   language    String
@@ -308,11 +309,11 @@ model CourseProgress {
   completedVideos  String[]
   completedModules String[]
 
-  percentCompleted Float    @default(0)
-  isCompleted      Boolean  @default(false)
-  startedAt        DateTime @default(now())
+  percentCompleted Float     @default(0)
+  isCompleted      Boolean   @default(false)
+  startedAt        DateTime  @default(now())
   completedAt      DateTime?
-  lastActivityAt   DateTime @default(now())
+  lastActivityAt   DateTime  @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -339,7 +340,7 @@ model Podcast {
   id              String            @id @default(auto()) @map("_id") @db.ObjectId
   podcastTitle    String
   secondaryTitle  String
-  category String
+  category        String
   constent        String
   featureMedia    String[]
   isPublished     Boolean           @default(false)
@@ -355,6 +356,7 @@ model SpeakingSample {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sampleTitle  String
   content      String
+  category     String
   featureMedia String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

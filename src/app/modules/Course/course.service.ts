@@ -3,6 +3,7 @@ import prisma from "../../../shared/prisma";
 import { IGenericResponse } from "../../../interfaces/common";
 import QueryBuilder from "../../../helpers/queryBuilder";
 import ApiError from "../../../errors/ApiError";
+import httpStatus from 'http-status'
 
 const createCourseIntoDB = async (payload: Course) => {
   const result = await prisma.course.create({
@@ -14,8 +15,8 @@ const createCourseIntoDB = async (payload: Course) => {
 const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
   const queryBuilder = new QueryBuilder(prisma.course, query)
   const courses = await queryBuilder.range()
-    .search(["courseTitle","mentorName"])
-    .filter()
+    .search(["category","courseTitle","mentorName"])
+    .filter(["category"])
     .sort()
     .paginate()
     .fields()
@@ -35,6 +36,27 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGen
   }
 
   return { meta, data: courses }
+};
+const getSingleCourseFromDB = async (courseId: string) => {
+  const course = await prisma.course.findUnique({
+    where: {
+      id: courseId,
+    },
+    include: {
+      courseModules: {
+        include: {
+          courseModuleVideos: true, // প্রতিটি module এর videos
+        },
+      },
+      courseCertificate: true, // course এর certificate
+    },
+  });
+
+  if (!course) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
+  }
+
+  return course;
 };
 const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
   const queryBuilder = new QueryBuilder(prisma.course, query)
@@ -64,7 +86,56 @@ const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promis
 
   return { meta, data: courses }
 };
+const getRelatedCoursesFromDB = async (
+  courseId: string,
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Course[]>> => {
+  // 1) প্রথমে main course বের করা
+  const currentCourse = await prisma.course.findUnique({
+    where: { id: courseId },
+  });
 
+  if (!currentCourse) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  // 2) QueryBuilder দিয়ে related courses আনবো
+  const queryBuilder = new QueryBuilder(prisma.course, query);
+
+  const courses = await queryBuilder
+    .range()
+    .search(["courseTitle", "mentorName", "category"])
+    .filter(["category"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: {
+        id: { not: courseId }, // নিজের course বাদ যাবে
+        category: currentCourse.category, // একই category এর course
+        isPublished: true, // শুধু published course
+      },
+      include: {
+        courseModules: {
+          include: {
+            courseModuleVideos: true,
+          },
+        },
+        courseCertificate: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+  const meta = await queryBuilder.countTotal();
+
+  if (!courses || courses.length === 0) {
+    throw new ApiError(404, "No related courses found");
+  }
+
+  return { meta, data: courses };
+};
 const updatePublishedStatus = async (courseId: string) => {
   // 1️⃣ Course আছে কিনা check করা
   const existingCourse = await prisma.course.findUnique({
@@ -178,5 +249,7 @@ export const CourseServices = {
   updatePublishedStatus,
   updateCourseIntoDB,
   getPublishedCoursesFromDB,
-  deleteCourseFromDB
+  deleteCourseFromDB,
+  getRelatedCoursesFromDB,
+  getSingleCourseFromDB
 }

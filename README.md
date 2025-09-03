@@ -102,6 +102,7 @@ Base URL: `/api/v1`
 - `GET /course` - Get all courses
 - `GET /course/published-courses` - Get published courses
 - `PATCH /course/:courseId/published-status` - Update published status
+- `GET /course/:courseId/related-courses` - Get related courses
 
 ### Course Module & Video
 
@@ -147,7 +148,6 @@ export const CourseProgressRoutes = router;
 - `DELETE /podcast/:id` - Delete podcast
 - `PATCH /podcast/podcast-status/:id` - Update podcast status
 - `POST /podcast/log-play/:podcastId` - Hit route when user play podcast
-- `POST /podcast/log-play/:podcastId` - Hit route when user play podcast
 - `GET /podcast/my-recent-podcasts` -   GET my-recent-podcasts
 - `GET /:podcastId/related-podcasts` -   GET my-related-podcasts
 
@@ -187,6 +187,7 @@ router.get("/my-recent-podcasts",auth(UserRole.ADMIN,UserRole.USER), PodcastCont
 
 - `POST /speaking-sample/create` - Create speaking sample (upload video)
 - `GET /speaking-sample` - Get all samples
+- `GET /speaking-sample/:speakingSampleId/related-speaking-sample` - Get all samples
 - `GET /speaking-sample/:speakingSampleId` - Get sample by ID
 - `PATCH /speaking-sample/:speakingSampleId` - Update sample
 - `DELETE /speaking-sample/:speakingSampleId` - Delete sample

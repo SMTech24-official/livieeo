@@ -12,5 +12,6 @@ router.patch("/:id", fileUploader.upload.array("blogImages", 5),textToJSONParser
 router.delete("/:id", BlogControllers.deleteBlog);
 router.patch("/published-status/:id", textToJSONParser, BlogControllers.updatePublishedStatus);
 router.get("/:blogId/related-blogs", BlogControllers.getRelatedBlogs)
+router.get("/:blogId", BlogControllers.getSingleBlog)
 
 export const BlogRoutes = router;

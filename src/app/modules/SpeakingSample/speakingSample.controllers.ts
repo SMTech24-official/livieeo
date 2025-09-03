@@ -24,6 +24,16 @@ const getAllSpeakingSample = catchAsync(async (req, res) => {
         data: result.data,
     });
 })
+const getRelatedSpeakingSample = catchAsync(async (req, res) => {
+    const result = await SpeakingSampleServices.getAllSpeakingSampleFromDB(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Related speaking samples retrieved successfully`,
+        meta: result.meta,
+        data: result.data,
+    });
+})
 const getSpeakingSampleById = catchAsync(async (req, res) => {
     const {speakingSampleId} = req.params
     const result = await SpeakingSampleServices.getSpeakingSampleById(speakingSampleId as string);
@@ -59,5 +69,6 @@ export const SpeakingSampleControllers = {
     getAllSpeakingSample,
     getSpeakingSampleById,
     updateSpeakingSample,
-    deleteSpeakingSample
+    deleteSpeakingSample,
+    getRelatedSpeakingSample
 }
