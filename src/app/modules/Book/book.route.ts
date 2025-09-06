@@ -10,6 +10,8 @@ router.post("/create", fileUploader.upload.fields([
     { name: 'bookCover', maxCount: 1 }
 ]), textToJSONParser, BookControllers.createBook);
 router.get("/", BookControllers.getAllBooks);
+router.get("/most-popular", BookControllers.getMostPopularBooks);
+router.get("/new-books", BookControllers.getNewBooks);
 router.get("/published-books", BookControllers.getPublishedBooks);
 router.get("/:id", BookControllers.getBookById);
 router.patch("/:id",fileUploader.upload.fields([

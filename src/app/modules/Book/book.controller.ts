@@ -45,9 +45,32 @@ const getAllBooks = catchAsync(async (req, res) => {
         statusCode: httpStatus.OK,
         success: true,
         message: `Books retrieved successfully`,
-        data: result,
+        meta: result.meta,
+        data: result.data,
     });
 });
+
+const getMostPopularBooks = catchAsync(async(req,res)=> {
+    const result = await BookServices.getMostPopularBooksFromDB(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `Most popular books retrieved successfully`,
+        meta: result.meta,
+        data: result.data,
+    });
+})
+const getNewBooks = catchAsync(async(req,res)=> {
+    const result = await BookServices.getMostPopularBooksFromDB(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: `New books retrieved successfully`,
+        meta: result.meta,
+        data: result.data,
+    });
+})
+
 const getPublishedBooks = catchAsync(async (req, res) => {
     const result = await BookServices.getPublishedBooksFromDB(req.query);
     sendResponse(res, {
@@ -105,6 +128,7 @@ const ratingToBook = catchAsync(async (req, res) => {
         data: result,
     });
 });
+
 export const BookControllers = {
     createBook,
     getAllBooks,
@@ -114,5 +138,7 @@ export const BookControllers = {
     deleteBook,
     updatePublishedStatus,
     ratingToBook,
-    getRelatedBooks
+    getRelatedBooks,
+    getMostPopularBooks,
+    getNewBooks
 };

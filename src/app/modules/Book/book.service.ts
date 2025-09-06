@@ -38,6 +38,60 @@ const getAllBooksFromDB = async (query: Record<string, any>): Promise<IGenericRe
     }
     return { meta, data: books };
 };
+
+
+// 📌 Most Popular Books Service
+const getMostPopularBooksFromDB = async (
+  query: Record<string, any>
+): Promise<IGenericResponse<Book[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.book, query);
+
+  const books = await queryBuilder
+    .range()
+    .search(["bookName", "authorName", "category", "brand", "language"])
+    .filter(["category"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: { isPublished: true },
+      orderBy: { rating: "desc" }, // ⭐ highest rating আগে আসবে
+    });
+
+  const meta = await queryBuilder.countTotal();
+
+  if (!books || books.length === 0) {
+    throw new ApiError(404, "No popular books found");
+  }
+
+  return { meta, data: books };
+};
+// 📌 New Books Service
+const getNewBooksFromDB = async (
+  query: Record<string, any>
+): Promise<IGenericResponse<Book[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.book, query);
+
+  const books = await queryBuilder
+    .range()
+    .search(["bookName", "authorName", "category", "brand", "language"])
+    .filter(["category", "language", "brand"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: { isPublished: true },
+      orderBy: { publishDate: "desc" }, // ⭐ সর্বশেষ বই আগে আসবে
+    });
+
+  const meta = await queryBuilder.countTotal();
+
+  if (!books || books.length === 0) {
+    throw new ApiError(404, "No new books found");
+  }
+
+  return { meta, data: books };
+};
 const getPublishedBooksFromDB = async (query: Record<string, any>): Promise<IGenericResponse<Book[]>> => {
     const queryBuilder = new QueryBuilder(prisma.book, query)
     const books = await queryBuilder
@@ -221,5 +275,7 @@ export const BookServices = {
     deleteBookFromDB,
     updatePublishedStatus,
     getRelatedBooksFromDB,
-    ratingToBook
+    ratingToBook,
+    getMostPopularBooksFromDB,
+    getNewBooksFromDB
 };

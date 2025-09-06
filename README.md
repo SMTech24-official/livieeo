@@ -89,6 +89,7 @@ Base URL: `/api/v1`
 - `POST /book/create` - Create book (upload book & cover)
 - `GET /book` - Get all books
 - `GET /book/published-books` - Get published books
+- `GET /book/most-popular` - Get getMostPopularBooks books
 - `GET /book/:id` - Get book by ID
 - `PATCH /book/:id` - Update book
 - `DELETE /book/:id` - Delete book
