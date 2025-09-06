@@ -3,8 +3,8 @@ export declare const saveActivity: (userId: string, product: string, type: Activ
     id: string;
     userId: string;
     createdAt: Date;
-    type: import("@prisma/client").$Enums.ActivityType;
     product: string;
+    type: import("@prisma/client").$Enums.ActivityType;
 }>;
 export declare const getRecentActivities: () => Promise<{
     name: string;
