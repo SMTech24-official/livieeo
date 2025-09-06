@@ -6,6 +6,7 @@ export declare const SpeakingSampleServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        category: string;
         content: string;
         featureMedia: string;
         sampleTitle: string;
@@ -15,6 +16,7 @@ export declare const SpeakingSampleServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        category: string;
         content: string;
         featureMedia: string;
         sampleTitle: string;
@@ -23,6 +25,7 @@ export declare const SpeakingSampleServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        category: string;
         content: string;
         featureMedia: string;
         sampleTitle: string;
@@ -31,9 +34,11 @@ export declare const SpeakingSampleServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        category: string;
         content: string;
         featureMedia: string;
         sampleTitle: string;
     }>;
+    getRelatedSpeakingSamplesFromDB: (sampleId: string, query: Record<string, any>) => Promise<IGenericResponse<SpeakingSample[]>>;
 };
 //# sourceMappingURL=speakingSample.service.d.ts.map

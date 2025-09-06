@@ -18,8 +18,8 @@ const getAllSpeakingSampleFromDB = async (query) => {
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.speakingSample, query);
     const speakingSamples = await queryBuilder
         .range()
-        .search(["sampleTitle", "content"])
-        .filter()
+        .search(["category", "sampleTitle", "content"])
+        .filter(["category"])
         .sort()
         .paginate()
         .fields()
@@ -34,6 +34,35 @@ const getSpeakingSampleById = async (speakingSampleId) => {
         }
     });
     return result;
+};
+const getRelatedSpeakingSamplesFromDB = async (sampleId, query) => {
+    // প্রথমে সেই sample পাওয়া যাক
+    const currentSample = await prisma_1.default.speakingSample.findUnique({
+        where: { id: sampleId }
+    });
+    if (!currentSample) {
+        throw new ApiError_1.default(404, "Speaking sample not found");
+    }
+    // QueryBuilder ব্যবহার করে related samples fetch
+    const queryBuilder = new queryBuilder_1.default(prisma_1.default.speakingSample, query);
+    const speakingSamples = await queryBuilder
+        .range()
+        .search(["category", "sampleTitle", "content"])
+        .filter(["category"])
+        .sort()
+        .paginate()
+        .fields()
+        .execute({
+        where: {
+            id: { not: sampleId }, // নিজের exclude
+            category: currentSample.category // একই category
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+    const meta = await queryBuilder.countTotal();
+    return { meta, data: speakingSamples };
 };
 const updateSpeakingSampleIntoDB = async (speakingSampleId, payload) => {
     const speakingSample = await prisma_1.default.speakingSample.findUnique({
@@ -73,6 +102,7 @@ exports.SpeakingSampleServices = {
     getAllSpeakingSampleFromDB,
     getSpeakingSampleById,
     updateSpeakingSampleIntoDB,
-    deleteSpeakingSampleFromDB
+    deleteSpeakingSampleFromDB,
+    getRelatedSpeakingSamplesFromDB
 };
 //# sourceMappingURL=speakingSample.service.js.map

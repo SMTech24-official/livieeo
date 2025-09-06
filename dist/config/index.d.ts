@@ -1,6 +1,7 @@
 declare const _default: {
     env: string | undefined;
     port: string | undefined;
+    base_url: string | undefined;
     bycrypt_salt_rounds: string | undefined;
     jwt: {
         access_secret: string | undefined;

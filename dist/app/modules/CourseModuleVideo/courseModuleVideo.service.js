@@ -8,7 +8,7 @@ const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const fileUploader_1 = require("../../../helpers/fileUploader");
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const createCourseModuleVideoIntoDB = async (payload, file) => {
-    const courseModule = await prisma_1.default.course.findUnique({
+    const courseModule = await prisma_1.default.courseModule.findUnique({
         where: {
             id: payload.courseModuleId
         }

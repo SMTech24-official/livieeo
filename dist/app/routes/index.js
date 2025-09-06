@@ -18,6 +18,8 @@ const bookingBookSpeaker_route_1 = require("../modules/BookingBookSpeaker/bookin
 const speakingSample_route_1 = require("../modules/SpeakingSample/speakingSample.route");
 const orderBook_route_1 = require("../modules/OrderBook/orderBook.route");
 const orderCourse_route_1 = require("../modules/OrderCourse/orderCourse.route");
+const dashboard_route_1 = require("../modules/Dashboard/dashboard.route");
+const courseProgress_route_1 = require("../modules/CourseProgress/courseProgress.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -47,6 +49,10 @@ const moduleRoutes = [
     {
         path: "/course",
         route: course_route_1.CourseRoutes,
+    },
+    {
+        path: "/course-progress",
+        route: courseProgress_route_1.CourseProgressRoutes,
     },
     {
         path: "/course-certificate",
@@ -87,6 +93,10 @@ const moduleRoutes = [
     {
         path: "/order-course",
         route: orderCourse_route_1.OrderCourseRoutes,
+    },
+    {
+        path: "/dashboard",
+        route: dashboard_route_1.DashboardRoutes,
     },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

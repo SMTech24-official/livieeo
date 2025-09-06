@@ -28,6 +28,16 @@ const getAllSpeakingSample = (0, catchAsync_1.default)(async (req, res) => {
         data: result.data,
     });
 });
+const getRelatedSpeakingSample = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await speakingSample_service_1.SpeakingSampleServices.getAllSpeakingSampleFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: `Related speaking samples retrieved successfully`,
+        meta: result.meta,
+        data: result.data,
+    });
+});
 const getSpeakingSampleById = (0, catchAsync_1.default)(async (req, res) => {
     const { speakingSampleId } = req.params;
     const result = await speakingSample_service_1.SpeakingSampleServices.getSpeakingSampleById(speakingSampleId);
@@ -63,6 +73,7 @@ exports.SpeakingSampleControllers = {
     getAllSpeakingSample,
     getSpeakingSampleById,
     updateSpeakingSample,
-    deleteSpeakingSample
+    deleteSpeakingSample,
+    getRelatedSpeakingSample
 };
 //# sourceMappingURL=speakingSample.controllers.js.map

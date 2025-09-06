@@ -6,5 +6,6 @@ export declare const fileUploader: {
     uploadVideoToCloudinary: (file: IFile) => Promise<ICloudinaryResponse | undefined>;
     uploadMultipleToCloudinary: (files: IFile[]) => Promise<ICloudinaryResponse[]>;
     uploadMultipleVideoToCloudinary: (files: IFile[]) => Promise<ICloudinaryResponse[]>;
+    uploadPdfBuffer: (buffer: Buffer, publicId?: string) => Promise<unknown>;
 };
 //# sourceMappingURL=fileUploader.d.ts.map

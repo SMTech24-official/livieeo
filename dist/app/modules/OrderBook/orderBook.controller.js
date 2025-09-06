@@ -19,17 +19,31 @@ const createBookOrder = (0, catchAsync_1.default)(async (req, res) => {
         data: result
     });
 });
-const getMyBooks = (0, catchAsync_1.default)(async (req, res) => {
-    const user = req.user;
-    const result = await orderBook_service_1.OrderBookServices.getMyBooksFromDB(user.id);
+const getAllOrderedBooks = (0, catchAsync_1.default)(async (req, res) => {
+    const query = req.query;
+    const result = await orderBook_service_1.OrderBookServices.getAllOrderedBooksFromDB(query);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: "My books fetched successfully",
-        data: result
+        message: "Ordered books retrieved successfully",
+        data: result.data,
+        meta: result.meta
+    });
+});
+const getMyOrderedBooks = (0, catchAsync_1.default)(async (req, res) => {
+    const user = req.user;
+    const result = await orderBook_service_1.OrderBookServices.getMyOrderedBooksFromDB(req.query, user.email);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "My Ordered books retrieved successfully",
+        data: result.data,
+        meta: result.meta
     });
 });
 exports.OrderBookControllers = {
-    createBookOrder
+    createBookOrder,
+    getAllOrderedBooks,
+    getMyOrderedBooks
 };
 //# sourceMappingURL=orderBook.controller.js.map

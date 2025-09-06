@@ -1,10 +1,14 @@
 import { OrderBook } from "@prisma/client";
 import { JwtPayload } from "jsonwebtoken";
+import { IGenericResponse } from "../../../interfaces/common";
 export declare const OrderBookServices: {
-    createBookOrderIntoDB: (payload: OrderBook, user: JwtPayload) => Promise<{
+    createBookOrderIntoDB: (payload: {
+        bookIds: string[];
+    }, user: JwtPayload) => Promise<{
         orderId: string;
         paymentUrl: string | null;
     }>;
-    getMyBooksFromDB: (userId: string) => Promise<OrderBook[]>;
+    getAllOrderedBooksFromDB: (query: Record<string, any>) => Promise<IGenericResponse<OrderBook[]>>;
+    getMyOrderedBooksFromDB: (query: Record<string, any>, userEmail: string) => Promise<IGenericResponse<OrderBook[]>>;
 };
 //# sourceMappingURL=orderBook.service.d.ts.map

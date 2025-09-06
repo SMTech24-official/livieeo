@@ -7,8 +7,8 @@ export declare const ContactServices: {
         lastName: string;
         email: string;
         createdAt: Date;
-        phoneNumber: string;
         message: string;
+        phoneNumber: string;
     }>;
 };
 //# sourceMappingURL=contact.service.d.ts.map

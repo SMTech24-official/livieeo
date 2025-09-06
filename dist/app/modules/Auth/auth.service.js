@@ -9,21 +9,24 @@ const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const config_1 = __importDefault(require("../../../config"));
 const http_status_1 = __importDefault(require("http-status"));
-const http_status_2 = __importDefault(require("http-status"));
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const jwtHelper_1 = require("../../../helpers/jwtHelper");
 const emailSender_1 = __importDefault(require("./emailSender"));
+// ================= LOGIN =================
 const loginUser = async (payload) => {
+    // 1) ইমেইল দিয়ে ইউজার খোঁজা
     const userData = await prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: payload.email,
             status: client_1.UserStatus.ACTIVE,
         },
     });
-    const isCorresctPassword = await bcrypt_1.default.compare(payload.password, userData.password);
-    if (!isCorresctPassword) {
+    // 2) পাসওয়ার্ড চেক করা
+    const isCorrectPassword = await bcrypt_1.default.compare(payload.password, userData.password);
+    if (!isCorrectPassword) {
         throw new ApiError_1.default(http_status_1.default.UNAUTHORIZED, "Incorrect password");
     }
+    // 3) Access Token বানানো
     const accessToken = jwtHelper_1.JWTHelpers.generateToken({
         id: userData.id,
         firstName: userData.firstName,
@@ -31,6 +34,7 @@ const loginUser = async (payload) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
+    // 4) Refresh Token বানানো
     const refreshToken = jwtHelper_1.JWTHelpers.generateToken({
         id: userData.id,
         firstName: userData.firstName,
@@ -38,12 +42,22 @@ const loginUser = async (payload) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.refresh_secret, config_1.default.jwt.refresh_expires_in);
+    // 5) টোকেন + ইউজার ডেটা রিটার্ন করা
     return {
         accessToken,
         refreshToken,
-        // needPasswordChange: userData.needPasswordChange,
+        user: {
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            role: userData.role,
+            status: userData.status,
+            createdAt: userData.createdAt,
+        },
     };
 };
+// ================= REFRESH TOKEN =================
 const refreshToken = async (token) => {
     let decodedData;
     try {
@@ -65,36 +79,61 @@ const refreshToken = async (token) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
-    return {
-        accessToken,
-        // needPasswordChange: userData.needPasswordChange,
-    };
+    return { accessToken };
 };
+// ================= CHANGE PASSWORD =================
 const changePassword = async (user, payload) => {
-    const userData = await prisma_1.default.user.findUniqueOrThrow({
-        where: {
-            email: user.email,
-            status: client_1.UserStatus.ACTIVE,
-        },
+    // ১. ইউজার ডেটা বের করা
+    const userData = await prisma_1.default.user.findUnique({
+        where: { email: user.email },
     });
+    if (!userData || userData.status !== client_1.UserStatus.ACTIVE) {
+        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "User not found or inactive!");
+    }
+    // ২. পুরানো পাসওয়ার্ড চেক করা
     const isCorrectPassword = await bcrypt_1.default.compare(payload.oldPassword, userData.password);
     if (!isCorrectPassword) {
-        throw new ApiError_1.default(http_status_1.default.UNAUTHORIZED, "Incorrect password !");
+        throw new ApiError_1.default(http_status_1.default.UNAUTHORIZED, "Incorrect password!");
     }
+    // ৩. নতুন পাসওয়ার্ড ও কনফার্ম পাসওয়ার্ড ম্যাচ করছে কিনা চেক
+    if (payload.newPassword !== payload.confirmPassword) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Passwords do not match!");
+    }
+    // ৪. নতুন পাসওয়ার্ড হ্যাশ করা
     const hashedPassword = await bcrypt_1.default.hash(payload.newPassword, 12);
+    // ৫. ডাটাবেজে আপডেট করা
     await prisma_1.default.user.update({
-        where: {
-            email: userData.email,
-        },
-        data: {
-            password: hashedPassword,
-            // needPasswordChange: false,
-        },
+        where: { email: userData.email },
+        data: { password: hashedPassword },
     });
-    return {
-        message: "Password changed successfully!",
-    };
+    return { message: "Password changed successfully!" };
 };
+// ================= FORGOT PASSWORD (Send OTP) =================
+// const forgotPassword = async (payload: { email: string }) => {
+//   const userData = await prisma.user.findUniqueOrThrow({
+//     where: {
+//       email: payload.email,
+//       status: UserStatus.ACTIVE,
+//     },
+//   });
+//   // generate 6 digit OTP
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//   // save OTP in DB with expiry
+//   await prisma.resetToken.create({
+//     data: {
+//       email: userData.email,
+//       otp,
+//       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+//     },
+//   });
+//   // send email
+//   await emailSender(
+//     userData.email,
+//     "Password Reset OTP",
+//     await EmailTemplates.temp1(otp as unknown as number)
+//   );
+//   return { message: "OTP sent to email" };
+// };
 const forgotPassword = async (payload) => {
     const userData = await prisma_1.default.user.findUniqueOrThrow({
         where: {
@@ -103,54 +142,98 @@ const forgotPassword = async (payload) => {
         },
     });
     const resetPassToken = jwtHelper_1.JWTHelpers.generateToken({
-        id: userData.id,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.reset_pass_secret, config_1.default.jwt.reset_pass_expires_in);
-    const resetPassLink = config_1.default.reset_pass_link + `?userId=${userData.id}&token=${resetPassToken}`;
-    await (0, emailSender_1.default)(userData.email, "Reset Password Link", `
-        <div>
-            <p>Dear User,</p>
-            <p>Your password reset link 
-                <a href=${resetPassLink}>
-                    <button>
-                        Reset Password
-                    </button>
-                </a>
-            </p>
+    const resetPassLink = config_1.default.reset_pass_link + `?email=${userData.email}&token=${resetPassToken}`;
+    await (0, emailSender_1.default)(userData.email, "Reset Your Password", `
+  <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; padding: 40px;">
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
+
+      <!-- Header -->
+      <div style="background: linear-gradient(90deg, #4f46e5, #6366f1); color: #ffffff; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 700;">Reset Your Password</h1>
+        <p style="margin: 8px 0 0 0; font-size: 16px;">We received a request to reset your password</p>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 40px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi <strong>${userData.firstName}</strong>,</p>
+        <p>Click the button below to securely reset your password. This link will expire in <strong>30 minutes</strong>.</p>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${resetPassLink}" 
+             style="background: linear-gradient(90deg, #4f46e5, #6366f1); 
+                    color: #ffffff; 
+                    padding: 14px 30px; 
+                    text-decoration: none; 
+                    border-radius: 8px; 
+                    font-size: 18px; 
+                    font-weight: 600;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+                    display: inline-block;
+                    transition: all 0.3s;">
+            Reset Password
+          </a>
         </div>
-        `);
+
+        <p style="font-size: 14px; color: #555555;">
+          If the button above doesn’t work, copy and paste this link into your browser:<br>
+          <a href="${resetPassLink}" style="color: #4f46e5; word-break: break-all;">${resetPassLink}</a>
+        </p>
+
+        <p style="font-size: 16px; color: #555555; margin-top: 30px;">Thank you,<br><strong>Livieeo Team</strong></p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #f0f2f5; color: #888888; padding: 20px; text-align: center; font-size: 12px;">
+        &copy; ${new Date().getFullYear()} Livieeo. All rights reserved.<br>
+        If you didn't request this, please ignore this email.
+      </div>
+
+    </div>
+  </div>
+  `);
 };
-const resetPassword = async (token, payload) => {
-    await prisma_1.default.user.findUniqueOrThrow({
-        where: {
-            id: payload.id,
-            status: client_1.UserStatus.ACTIVE,
-        },
+// ================= VERIFY OTP =================
+const verifyOtp = async (payload) => {
+    const token = await prisma_1.default.resetToken.findFirst({
+        where: { email: payload.email, otp: payload.otp },
     });
-    const isValidToken = jwtHelper_1.JWTHelpers.verifyToken(token, config_1.default.jwt.reset_pass_secret);
-    if (!isValidToken) {
-        throw new ApiError_1.default(http_status_2.default.FORBIDDEN, "Forbidden access");
+    if (!token) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Invalid OTP");
     }
-    // hash password
-    const password = await bcrypt_1.default.hash(payload.password, 12);
-    // update into database
-    await prisma_1.default.user.update({
-        where: {
-            id: payload.id,
-        },
-        data: {
-            password,
-        },
+    if (token.expiresAt < new Date()) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "OTP expired");
+    }
+    return { message: "OTP verified successfully" };
+};
+// ================= RESET PASSWORD =================
+const resetPassword = async (payload) => {
+    const token = await prisma_1.default.resetToken.findFirst({
+        where: { email: payload.email, otp: payload.otp },
     });
+    if (!token) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Invalid OTP");
+    }
+    if (token.expiresAt < new Date()) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "OTP expired");
+    }
+    const hashedPassword = await bcrypt_1.default.hash(payload.newPassword, 12);
+    await prisma_1.default.user.update({
+        where: { email: payload.email },
+        data: { password: hashedPassword },
+    });
+    // delete OTP after success
+    await prisma_1.default.resetToken.delete({ where: { id: token.id } });
+    return { message: "Password reset successfully" };
 };
 exports.AuthServices = {
     loginUser,
     refreshToken,
     changePassword,
     forgotPassword,
+    verifyOtp,
     resetPassword,
 };
 //# sourceMappingURL=auth.service.js.map

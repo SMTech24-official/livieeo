@@ -1,21 +1,38 @@
 import { CourseCertificate } from "@prisma/client";
-import { IFile } from "../../../interfaces/file";
+import { JwtPayload } from "jsonwebtoken";
 export declare const CourseCertificateServices: {
-    createCourseCertificateIntoDB: (payload: CourseCertificate, file: IFile) => Promise<{
+    createCourseCertificateIntoDB: (payload: CourseCertificate, userJwt: JwtPayload) => Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        userId: string;
         courseId: string;
-        certificateTitle: string;
+        certificateNo: string;
         certificateUrl: string;
+        verifyCode: string;
+        issuedAt: Date;
     }>;
-    getAllCourseCertificatesFromDB: () => Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        courseId: string;
-        certificateTitle: string;
-        certificateUrl: string;
-    }[]>;
+    verifyCourseCertificateFromDB: (code: string) => Promise<{
+        valid: boolean;
+        certificateNo: string;
+        url: string;
+        user: {
+            firstName: string;
+            lastName: string | null;
+            email: string;
+        };
+        course: {
+            courseTitle: string;
+            mentorName: string;
+        };
+        issuedAt: Date;
+    }>;
+    getMyCertificatesFromDB: (query: Record<string, any>, user: JwtPayload) => Promise<{
+        meta: {
+            page: number;
+            limit: number;
+            total: any;
+            totalPage: number;
+        };
+        data: any;
+    }>;
 };
 //# sourceMappingURL=courseCertificate.service.d.ts.map

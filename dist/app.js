@@ -10,16 +10,22 @@ const routes_1 = __importDefault(require("./app/routes"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const globalErrorHandler_1 = __importDefault(require("./app/middlewares/globalErrorHandler"));
 const webhook_route_1 = require("./app/modules/WebHook/webhook.route");
+const visitorLogger_1 = require("./app/middlewares/visitorLogger");
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+// here use the webhook json data hanlding middleware
+app.use("/api/v1", webhook_route_1.WebHookRoutes);
+app.use((0, cors_1.default)({
+    origin: ["http://localhost:3000", "http://localhost:3001", "https://livieeo-frontend.vercel.app"], // frontend URL
+    credentials: true, // allow credentials (cookies, auth headers)
+}));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+app.use(visitorLogger_1.visitorLogger);
 app.get("/", (req, res) => {
     res.send("Hello from Livieeo!");
 });
-app.use(webhook_route_1.WebHookRoutes);
-app.use(routes_1.default);
+app.use("/api/v1", routes_1.default);
 app.use(globalErrorHandler_1.default);
 app.use((req, res, next) => {
     res.status(http_status_1.default.NOT_FOUND).json({

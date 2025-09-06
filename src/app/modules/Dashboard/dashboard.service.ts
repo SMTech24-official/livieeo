@@ -1,4 +1,4 @@
-import { PaymentStatus } from "@prisma/client";
+import { ActivityType, PaymentStatus } from "@prisma/client";
 import prisma from "../../../shared/prisma";
 
 const totalRevenue = async()=> {
@@ -110,12 +110,16 @@ const webVisitorOfThisMonth = async()=> {
 }
 
 
-export const saveActivity = async (userId: string, product: string, type: string) => {
+export const saveActivity = async (
+  userId: string,
+  product: string,
+  type: ActivityType
+) => {
   const activity = await prisma.activity.create({
     data: {
       userId,
       product,
-      type,
+      type, // এখন ঠিক আছে
     },
   });
   return activity;

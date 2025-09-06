@@ -10,8 +10,12 @@ const queryBuilder_1 = __importDefault(require("../../../helpers/queryBuilder"))
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const createBookSpeakerIntoDB = async (payload, file) => {
     const uploadToCloudinary = await fileUploader_1.fileUploader.uploadToCloudinary(file);
-    payload.imageUrl = uploadToCloudinary?.secure_url ?? "";
-    const result = await prisma_1.default.bookSpeaker.create({ data: payload });
+    const result = await prisma_1.default.bookSpeaker.create({
+        data: {
+            ...payload,
+            imageUrl: uploadToCloudinary?.secure_url ?? "",
+        },
+    });
     return result;
 };
 const getAllBookSpeakerFromDB = async (query) => {
@@ -61,12 +65,12 @@ const deleteBookSpeakerFromDB = async (speakerId) => {
     if (!bookSpeaker) {
         throw new ApiError_1.default(404, "Book speaker not found");
     }
-    const result = await prisma_1.default.bookSpeaker.delete({
+    await prisma_1.default.bookSpeaker.delete({
         where: {
             id: speakerId
         }
     });
-    return result;
+    return { message: "Book speaker deleted successfully" };
 };
 exports.BookSpeakerServices = {
     createBookSpeakerIntoDB,

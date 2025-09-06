@@ -23,7 +23,39 @@ const getAllBlogs = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_1.default.OK,
         success: true,
         message: "Blogs retrieved successfully",
-        data: result,
+        meta: result.meta,
+        data: result.data
+    });
+});
+const getSingleBlog = (0, catchAsync_1.default)(async (req, res) => {
+    const { blogId } = req.params;
+    const result = await blog_service_1.BlogServices.getSingleBlogFromDB(blogId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Blog retrieved successfully",
+        data: result
+    });
+});
+const getPublishedBlogs = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await blog_service_1.BlogServices.getPublishedBlogsFromDB(req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Published blogs retrieved successfully",
+        meta: result.meta,
+        data: result.data
+    });
+});
+const getRelatedBlogs = (0, catchAsync_1.default)(async (req, res) => {
+    const { blogId } = req.params;
+    const result = await blog_service_1.BlogServices.getRelatedBlogsFromDB(blogId, req.query);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Related blogs retrieved successfully",
+        meta: result.meta,
+        data: result.data
     });
 });
 const updateBlog = (0, catchAsync_1.default)(async (req, res) => {
@@ -48,8 +80,7 @@ const deleteBlog = (0, catchAsync_1.default)(async (req, res) => {
 });
 const updatePublishedStatus = (0, catchAsync_1.default)(async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
-    const result = await blog_service_1.BlogServices.updatePublishedStatus(id, status);
+    const result = await blog_service_1.BlogServices.updatePublishedStatus(id);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -60,8 +91,11 @@ const updatePublishedStatus = (0, catchAsync_1.default)(async (req, res) => {
 exports.BlogControllers = {
     createBlog,
     getAllBlogs,
+    getPublishedBlogs,
     updateBlog,
     deleteBlog,
-    updatePublishedStatus
+    updatePublishedStatus,
+    getRelatedBlogs,
+    getSingleBlog
 };
 //# sourceMappingURL=blog.controller.js.map

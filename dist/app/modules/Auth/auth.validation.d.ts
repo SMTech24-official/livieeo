@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z } from "zod";
 export declare const AuthValidator: {
     login: z.ZodObject<{
         body: z.ZodObject<{
-            contactNo: z.ZodString;
+            email: z.ZodString;
             password: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;
@@ -17,22 +17,22 @@ export declare const AuthValidator: {
             newPassword: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;
-    resetPasswordReq: z.ZodObject<{
+    forgotPassword: z.ZodObject<{
         body: z.ZodObject<{
             email: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;
-    checkOTPValidation: z.ZodObject<{
+    verifyOtp: z.ZodObject<{
         body: z.ZodObject<{
             email: z.ZodString;
-            otp: z.ZodNumber;
+            otp: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;
     resetPassword: z.ZodObject<{
         body: z.ZodObject<{
             email: z.ZodString;
-            otp: z.ZodNumber;
-            password: z.ZodString;
+            otp: z.ZodString;
+            newPassword: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;
 };

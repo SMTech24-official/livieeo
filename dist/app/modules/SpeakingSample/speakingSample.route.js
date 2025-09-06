@@ -14,5 +14,6 @@ router.get("/:speakingSampleId", speakingSample_controllers_1.SpeakingSampleCont
 router.get("/:speakingSampleId", speakingSample_controllers_1.SpeakingSampleControllers.updateSpeakingSample);
 router.get("/:speakingSampleId", speakingSample_controllers_1.SpeakingSampleControllers.deleteSpeakingSample);
 router.get("/", speakingSample_controllers_1.SpeakingSampleControllers.getAllSpeakingSample);
+router.get("/:speakingSampleId/related-speaking-sample", speakingSample_controllers_1.SpeakingSampleControllers.getAllSpeakingSample);
 exports.SpeakingSampleRoutes = router;
 //# sourceMappingURL=speakingSample.route.js.map

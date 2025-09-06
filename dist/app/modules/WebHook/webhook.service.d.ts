@@ -1,6 +1,6 @@
 export declare const WebhookServices: {
     handleStripeWebHook: (rawBody: Buffer, signature: string) => Promise<{
-        recived: boolean;
+        received: boolean;
     }>;
 };
 //# sourceMappingURL=webhook.service.d.ts.map
