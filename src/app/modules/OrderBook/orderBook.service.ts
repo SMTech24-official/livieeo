@@ -149,7 +149,7 @@ const createBookOrderIntoDB = async (
   }
 
   // total amount calculate
-  const totalAmount = books.reduce((sum, book) => sum + book.price, 0);
+  const totalAmount = books.reduce((sum, book) => sum + book.discountPrice, 0);
   const totalBooks = books.length;
   const bookNames = books.map(book => book.bookName).join(", ");
 
@@ -168,7 +168,7 @@ const createBookOrderIntoDB = async (
     data: books.map((book) => ({
       orderId: order.id,
       bookId: book.id,
-      price: book.price,
+      price: book.discountPrice,
       quantity: totalBooks,
     })),
   });
@@ -183,7 +183,7 @@ const createBookOrderIntoDB = async (
           name: book.bookName,
           description: book.description ?? "Book purchase",
         },
-        unit_amount: Math.round(book.price * 100), // convert to cents
+        unit_amount: Math.round(book.discountPrice * 100), // convert to cents
       },
       quantity: totalBooks,
     })),

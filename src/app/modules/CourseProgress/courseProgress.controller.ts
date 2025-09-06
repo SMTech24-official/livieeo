@@ -16,26 +16,4 @@ const completeVideo = catchAsync(async (req, res) => {
     });
 });
 
-const getProgress = catchAsync(async (req, res) => {
-    const user = req.user as JwtPayload;
-    const { courseId } = req.params;
-    const result = await CourseProgressServices.getProgress(user.id, courseId as string);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: "Course progress retrieved successfully",
-        data: result,
-    });
-});
-const completeCourse = catchAsync(async (req, res) => {
-  const user = req.user as JwtPayload;
-  const { courseId } = req.body;
-  const result = await CourseProgressServices.completeCourseManually(user.id, courseId);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Course completed and certificate generated",
-    data: result,
-  });
-});
-export const CourseProgressController = { completeVideo, getProgress,completeCourse };
+export const CourseProgressController = { completeVideo };

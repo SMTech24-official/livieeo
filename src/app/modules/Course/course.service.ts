@@ -4,6 +4,48 @@ import { IGenericResponse } from "../../../interfaces/common";
 import QueryBuilder from "../../../helpers/queryBuilder";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from 'http-status'
+import { calcPercent, countTotals, sortCourseDeep } from "../../../helpers/progress";
+import { JwtPayload } from "jsonwebtoken";
+
+
+
+
+type VideoStatus = "locked" | "current" | "completed";
+
+interface CourseDetailsView {
+  id: string;
+  courseTitle: string;
+  mentorName: string;
+  category: string;
+  price: number;
+  discountPrice: number;
+  language: string;
+  duration: string;
+  description: string;
+  purchased: boolean;
+  percentCompleted: number;
+  summary: {
+    totalModules: number;
+    completedModules: number;
+    totalVideos: number;
+    completedVideos: number;
+  };
+  modules: {
+    id: string;
+    moduleTitle: string;
+    order: number;
+    completed: boolean;
+    videos: {
+      id: string;
+      videoTitle: string;
+      order: number;
+      status: VideoStatus;
+    }[];
+  }[];
+  certificate?: { certificateNo: string; certificateUrl: string } | null;
+}
+
+
 
 const createCourseIntoDB = async (payload: Course) => {
   const result = await prisma.course.create({
@@ -37,27 +79,114 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGen
 
   return { meta, data: courses }
 };
-const getSingleCourseFromDB = async (courseId: string) => {
-  const course = await prisma.course.findUnique({
-    where: {
-      id: courseId,
-    },
+
+
+
+
+const getSingleCourseFromDB = async (
+  courseId: string,
+  userId?: string
+): Promise<CourseDetailsView> => {
+  const courseRaw = await prisma.course.findUnique({
+    where: { id: courseId },
     include: {
-      courseModules: {
-        include: {
-          courseModuleVideos: true, // প্রতিটি module এর videos
-        },
-      },
-      courseCertificate: true, // course এর certificate
+      courseModules: { include: { courseModuleVideos: true }, orderBy: { order: "asc" } },
     },
   });
+  if (!courseRaw) throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
 
-  if (!course) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
+  const course = sortCourseDeep(courseRaw);
+  const { totalModules, totalVideos } = countTotals(course);
+
+  // ডিফল্ট: সব locked
+  let purchased = false;
+  let percentCompleted = 0;
+  let completedModulesCount = 0;
+  let completedVideosCount = 0;
+  let currentVideoId: string | null = null;
+  let completedSet = new Set<string>();
+  let certInfo: CourseDetailsView["certificate"] = null;
+
+  // যদি ইউজার দেয়া থাকে → progress আনবো
+  let progress: any = null;
+  if (userId) {
+    progress = await prisma.courseProgress.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+    });
+
+    purchased = !!progress;
+
+    if (progress) {
+      completedSet = new Set(progress.completedVideos);
+      percentCompleted = calcPercent(progress.completedVideos.length, totalVideos);
+
+      // যদি currentVideoId null হয় (rare) → UX fallback (first video current দেখাই)
+      currentVideoId = progress.currentVideoId ?? null;
+
+      // সার্টিফিকেট থাকলে আনুন (শুধু সম্পন্ন হলে)
+      if (progress.isCompleted) {
+        const cert = await prisma.courseCertificate.findFirst({ where: { userId, courseId } });
+        if (cert) certInfo = { certificateNo: cert.certificateNo, certificateUrl: cert.certificateUrl };
+      }
+    }
   }
 
-  return course;
+  const modules = course.courseModules.map((m: any) => {
+    const videos = m.courseModuleVideos.map((v: any) => {
+      let status: VideoStatus = "locked";
+
+      if (!purchased) {
+        status = "locked";
+      } else if (completedSet.has(v.id)) {
+        status = "completed";
+        completedVideosCount++;
+      } else if (currentVideoId && v.id === currentVideoId) {
+        status = "current";
+      } else {
+        status = "locked";
+      }
+
+      return { id: v.id, videoTitle: v.videoTitle, order: v.order, status };
+    });
+
+    const isModuleCompleted = m.courseModuleVideos.every((v: any) => completedSet.has(v.id));
+    if (isModuleCompleted) completedModulesCount++;
+
+    return {
+      id: m.id,
+      moduleTitle: m.moduleTitle,
+      order: m.order,
+      completed: isModuleCompleted,
+      videos,
+    };
+  });
+
+  return {
+    id: course.id,
+    courseTitle: course.courseTitle,
+    mentorName: course.mentorName,
+    category: course.category,
+    price: course.price,
+    discountPrice: course.discountPrice,
+    language: course.language,
+    duration: course.duration,
+    description: course.description,
+    purchased,
+    percentCompleted,
+    modules,
+    summary: {
+      totalModules,
+      completedModules: completedModulesCount,
+      totalVideos,
+      completedVideos: completedVideosCount,
+    },
+    certificate: certInfo,
+  };
 };
+
+
+
+
 const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
   const queryBuilder = new QueryBuilder(prisma.course, query)
   const courses = await queryBuilder.range()

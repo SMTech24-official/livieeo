@@ -2,6 +2,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 import { CourseServices } from "./course.service";
+import { JwtPayload } from "jsonwebtoken";
 
 const createCourse = catchAsync(async (req, res) => {
     const result = await CourseServices.createCourseIntoDB(req.body);
@@ -34,15 +35,22 @@ const getPublishedCourses = catchAsync(async (req, res) => {
     });
 })
 const getSingleCourse = catchAsync(async (req, res) => {
-    const {courseId} = req.params
-    const result = await CourseServices.getSingleCourseFromDB(courseId as string);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Single course retrieved successfully`,
-        data: result
-    });
-})
+  if (!req.user) {
+    throw new Error("Unauthorized: user not found in request");
+  }
+
+  const { courseId } = req.params;
+  const userId = req.user.id;
+
+  const result = await CourseServices.getSingleCourseFromDB(courseId as string, userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Single course retrieved successfully`,
+    data: result,
+  });
+});
 const getRelatedCourses = catchAsync(async (req, res) => {
     const {courseId} = req.params
     const result = await CourseServices.getRelatedCoursesFromDB(courseId as string,req.query);

@@ -127,8 +127,6 @@ export const CourseProgressRoutes = router;
 ### Course Progress
 
 - `POST /course-progress/complete-video` - Complete video
-- `POST /course-progress/68b3300607f690e58fd61521/progress` - Complete video
-- `GET /course-certificate/verify` - Verify certificates
 
 ### Blog
 

@@ -19,10 +19,14 @@ model User {
   bio           String?
   contactNumber String
   gender        Gender
-  dob           DateTime?
+  dob           DateTime
   address       String?
   introduction  String?
   photoUrl      String?
+
+  isEmailVerified         Boolean   @default(false)
+  emailVerificationCode   String?
+  emailVerificationExpiry DateTime?
 
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
@@ -158,6 +162,7 @@ model Book {
   bookName         String
   authorName       String
   price            Float
+  discountPrice    Float
   brand            String
   description      String
   language         String
@@ -205,18 +210,19 @@ model OrderBookItem {
 }
 
 model Course {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  courseTitle String
-  mentorName  String
-  category    String
-  price       Float
-  totalVideo  Int
-  language    String
-  duration    String
-  description String
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseTitle   String
+  mentorName    String
+  category      String
+  price         Float
+  discountPrice Float
+  totalVideo    Int
+  language      String
+  duration      String
+  description   String
+  isPublished   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   courseModules     CourseModule[]
   courseCertificate CourseCertificate[]
@@ -395,6 +401,7 @@ model Counter {
 enum Gender {
   MALE
   FEMALE
+  OTHER
 }
 
 enum UserStatus {

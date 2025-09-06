@@ -149,6 +149,35 @@ const changePassword = async (user: JwtPayload, payload: ChangePasswordPayload) 
 };
 
 // ================= FORGOT PASSWORD (Send OTP) =================
+// const forgotPassword = async (payload: { email: string }) => {
+//   const userData = await prisma.user.findUniqueOrThrow({
+//     where: {
+//       email: payload.email,
+//       status: UserStatus.ACTIVE,
+//     },
+//   });
+
+//   // generate 6 digit OTP
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//   // save OTP in DB with expiry
+//   await prisma.resetToken.create({
+//     data: {
+//       email: userData.email,
+//       otp,
+//       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+//     },
+//   });
+
+//   // send email
+//   await emailSender(
+//     userData.email,
+//     "Password Reset OTP",
+//     await EmailTemplates.temp1(otp as unknown as number)
+//   );
+
+//   return { message: "OTP sent to email" };
+// };
 const forgotPassword = async (payload: { email: string }) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
@@ -156,29 +185,69 @@ const forgotPassword = async (payload: { email: string }) => {
       status: UserStatus.ACTIVE,
     },
   });
-
-  // generate 6 digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // save OTP in DB with expiry
-  await prisma.resetToken.create({
-    data: {
+  const resetPassToken = JWTHelpers.generateToken(
+    {
       email: userData.email,
-      otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+      role: userData.role,
     },
-  });
-
-  // send email
+    config.jwt.reset_pass_secret as Secret,
+    config.jwt.reset_pass_expires_in as string
+  );
+  const resetPassLink =
+    config.reset_pass_link + `?email=${userData.email}&token=${resetPassToken}`;
   await emailSender(
     userData.email,
-    "Password Reset OTP",
-    await EmailTemplates.temp1(otp as unknown as number)
+    "Reset Your Password",
+    `
+  <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; padding: 40px;">
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
+
+      <!-- Header -->
+      <div style="background: linear-gradient(90deg, #4f46e5, #6366f1); color: #ffffff; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 700;">Reset Your Password</h1>
+        <p style="margin: 8px 0 0 0; font-size: 16px;">We received a request to reset your password</p>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 40px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi <strong>${userData.firstName}</strong>,</p>
+        <p>Click the button below to securely reset your password. This link will expire in <strong>30 minutes</strong>.</p>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${resetPassLink}" 
+             style="background: linear-gradient(90deg, #4f46e5, #6366f1); 
+                    color: #ffffff; 
+                    padding: 14px 30px; 
+                    text-decoration: none; 
+                    border-radius: 8px; 
+                    font-size: 18px; 
+                    font-weight: 600;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+                    display: inline-block;
+                    transition: all 0.3s;">
+            Reset Password
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #555555;">
+          If the button above doesn’t work, copy and paste this link into your browser:<br>
+          <a href="${resetPassLink}" style="color: #4f46e5; word-break: break-all;">${resetPassLink}</a>
+        </p>
+
+        <p style="font-size: 16px; color: #555555; margin-top: 30px;">Thank you,<br><strong>Livieeo Team</strong></p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #f0f2f5; color: #888888; padding: 20px; text-align: center; font-size: 12px;">
+        &copy; ${new Date().getFullYear()} Livieeo. All rights reserved.<br>
+        If you didn't request this, please ignore this email.
+      </div>
+
+    </div>
+  </div>
+  `
   );
-
-  return { message: "OTP sent to email" };
 };
-
 // ================= VERIFY OTP =================
 const verifyOtp = async (payload: { email: string; otp: string }) => {
   const token = await prisma.resetToken.findFirst({

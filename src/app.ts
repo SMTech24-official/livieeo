@@ -11,9 +11,15 @@ import { visitorLogger } from "./app/middlewares/visitorLogger";
 const app: Application = express();
 
 // here use the webhook json data hanlding middleware
-app.use(WebHookRoutes);
+app.use("/api/v1",WebHookRoutes);
 
-app.use(cors());
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001", "https://livieeo-frontend.vercel.app"], // frontend URL
+    credentials: true, // allow credentials (cookies, auth headers)
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,7 +30,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 
-app.use(router);
+app.use("/api/v1",router);
 app.use(globalErrorHandler);
 
 app.use((req: Request, res: Response, next: NextFunction) => {

@@ -8,7 +8,6 @@ import { IGenericResponse } from "../../../interfaces/common";
 import { OrderCourse } from "@prisma/client";
 import QueryBuilder from "../../../helpers/queryBuilder";
 
-
 const createCourseOrderIntoDB = async (payload: { courseIds: string[] }, user: JwtPayload) => {
   const userId = user.id;
   const { courseIds } = payload;
@@ -32,14 +31,14 @@ const createCourseOrderIntoDB = async (payload: { courseIds: string[] }, user: J
     throw new ApiError(httpStatus.BAD_REQUEST, `Already purchased: ${boughtNames}`);
   }
 
-  const totalAmount = courses.reduce((sum, c) => sum + c.price, 0);
+  const totalAmount = courses.reduce((sum, c) => sum + c.discountPrice, 0);
 
   const order = await prisma.orderCourse.create({
     data: { userId, amount: totalAmount, paymentStatus: "PENDING", paymentMethod: "STRIPE" },
   });
 
   await prisma.orderCourseItem.createMany({
-    data: courses.map(c => ({ orderId: order.id, courseId: c.id, price: c.price, quantity: 1 })),
+    data: courses.map(c => ({ orderId: order.id, courseId: c.id, price: c.discountPrice, quantity: 1 })),
   });
 
   const session = await stripe.checkout.sessions.create({
@@ -48,7 +47,7 @@ const createCourseOrderIntoDB = async (payload: { courseIds: string[] }, user: J
       price_data: {
         currency: "usd",
         product_data: { name: c.courseTitle, description: c.description ?? "" },
-        unit_amount: Math.round(c.price * 100),
+        unit_amount: Math.round(c.discountPrice * 100),
       },
       quantity: 1,
     })),

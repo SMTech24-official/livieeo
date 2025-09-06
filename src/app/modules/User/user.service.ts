@@ -9,6 +9,7 @@ import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
 import { getNextAdminId, getNextUserId } from "./userId";
 import { JwtPayload } from "jsonwebtoken";
+import emailSender from "../Auth/emailSender";
 
 
 interface ICustomerResponse {
@@ -21,30 +22,99 @@ interface ICustomerResponse {
     photoUrl?: string | null;
     totalSpent: number;
 }
+const generateVerificationCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+};
 
+// const registerUserIntoDB = async (payload: User, file: IFile) => {
+//     const user = await prisma.user.findUnique({
+//         where: {
+//             email: payload.email,
+//         },
+//     })
+
+//     if (user) {
+//         throw new ApiError(httpStatus.CONFLICT, "User already exists");
+//     }
+//     if (file) {
+//         const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+//         payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
+//     }
+//     const hashedPassword: string = await bcrypt.hash(payload.password, 12);
+//     payload.userId = await getNextUserId();
+//     payload.password = hashedPassword;
+//     const result = await prisma.user.create({
+//         data: payload,
+//     });
+//     return result;
+// }
 
 const registerUserIntoDB = async (payload: User, file: IFile) => {
-    const user = await prisma.user.findUnique({
-        where: {
-            email: payload.email,
-        },
-    })
+  // 1. Check if user exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+  if (existingUser) {
+    throw new ApiError(httpStatus.CONFLICT, "User already exists");
+  }
 
-    if (user) {
-        throw new ApiError(httpStatus.CONFLICT, "User already exists");
-    }
-    if (file) {
-        const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-        payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
-    }
-    const hashedPassword: string = await bcrypt.hash(payload.password, 12);
-    payload.userId = await getNextUserId();
-    payload.password = hashedPassword;
-    const result = await prisma.user.create({
-        data: payload,
-    });
-    return result;
-}
+  // 2. Upload photo if exists
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
+  }
+
+  // 3. Hash password
+  const hashedPassword = await bcrypt.hash(payload.password, 12);
+  payload.password = hashedPassword;
+  payload.userId = await getNextUserId();
+
+  // 4. Generate verification code
+  const verificationCode = generateVerificationCode();
+  const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+  payload.emailVerificationCode = verificationCode;
+  payload.emailVerificationExpiry = expiry;
+
+  // 5. Save user in DB (unverified)
+  const result = await prisma.user.create({ data: payload });
+
+  // 6. Send verification email
+  await emailSender(
+    payload.email,
+    "Email Verification Code",
+    `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Email Verification</h2>
+        <p>Hi ${payload.firstName},</p>
+        <p>Your verification code is:</p>
+        <h1 style="color: #4f46e5;">${verificationCode}</h1>
+        <p>This code will expire in 10 minutes.</p>
+      </div>
+    `
+  );
+
+  return {
+    message: "User registered successfully. Please verify your email.",
+    userId: result.userId,
+  };
+};
+
+const verifyEmail = async (userId: string, code: string) => {
+  const user = await prisma.user.findUnique({ where: { userId } });
+
+  if (!user) throw new ApiError(404, "User not found");
+  if (user.isEmailVerified) throw new ApiError(400, "Email already verified");
+  if (user.emailVerificationCode !== code) throw new ApiError(400, "Invalid code");
+  if (user.emailVerificationExpiry! < new Date())
+    throw new ApiError(400, "Code expired");
+
+  await prisma.user.update({
+    where: { userId },
+    data: { isEmailVerified: true, emailVerificationCode: null, emailVerificationExpiry: null },
+  });
+
+  return { message: "Email verified successfully!" };
+};
 const createAdminIntoDB = async (payload: User, file: IFile) => {
     const user = await prisma.user.findUnique({
         where: {
@@ -426,6 +496,7 @@ const editAdminSetting = async (id: string, payload: Partial<User>) => {
 }
 export const UserServices = {
     registerUserIntoDB,
+    verifyEmail,
     createAdminIntoDB,
     getAllUserFromDB,
     getAllCustomersFromDB,

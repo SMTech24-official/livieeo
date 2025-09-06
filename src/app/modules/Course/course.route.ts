@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { CourseControllers } from "./course.controller";
+import auth from "../../middlewares/auth";
+import { UserRole } from "@prisma/client";
 
 const router = Router();
 
@@ -10,6 +12,6 @@ router.patch("/:courseId/published-status", CourseControllers.updatePublishedSta
 router.delete("/:courseId", CourseControllers.deleteCourse);
 router.put("/:courseId", CourseControllers.updateCourse);
 router.get("/:courseId/related-courses", CourseControllers.getRelatedCourses);
-router.get("/:courseId", CourseControllers.getSingleCourse);
+router.get("/:courseId",auth(UserRole.USER), CourseControllers.getSingleCourse);
 
 export const CourseRoutes = router;

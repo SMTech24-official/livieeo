@@ -15,6 +15,18 @@ const registerUser = catchAsync(async (req, res) => {
         data: result,
     });
 })
+const verifyEmail = catchAsync(async (req, res) => {
+    const { userId } = req.params;
+    const { code } = req.body;
+    const result = await UserServices.verifyEmail(userId as string, code);
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: `email verify successfully!`,
+        data: result,
+    });
+})
+
 const createAdmin = catchAsync(async (req, res) => {
     const result = await UserServices.createAdminIntoDB(req.body, req.file as IFile);
     sendResponse(res, {
@@ -95,5 +107,6 @@ export const UserController = {
     getAllCustomer,
     updateProfile,
     updateUserRole,
-    editAdminSetting
+    editAdminSetting,
+    verifyEmail
 }

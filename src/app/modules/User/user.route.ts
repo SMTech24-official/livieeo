@@ -6,6 +6,7 @@ import textToJSONParser from "../../middlewares/textToJsonParser";
 const router = Router()
 
 router.post("/register", fileUploader.upload.single("file"),textToJSONParser, UserController.registerUser)
+router.post("/verify-email/:userId", UserController.verifyEmail)
 router.post("/create-admin", fileUploader.upload.single("file"),textToJSONParser, UserController.createAdmin)
 router.get("/", UserController.getAllUser)
 router.get("/customers", UserController.getAllCustomer)
