@@ -19,7 +19,7 @@ model User {
   bio           String?
   contactNumber String
   gender        Gender
-  dob           DateTime
+  dob           DateTime?
   address       String?
   introduction  String?
   photoUrl      String?
