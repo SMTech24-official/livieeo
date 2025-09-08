@@ -59,7 +59,7 @@ const getRelatedPodcasts = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Published podcasts retrieved successfully",
+        message: "Related podcasts retrieved successfully",
         meta: podcasts.meta,
         data: podcasts.data
     })

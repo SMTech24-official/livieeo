@@ -27,7 +27,7 @@ const createCourseOrderIntoDB = async (payload: { courseIds: string[] }, user: J
   });
   if (alreadyBought.length) {
     const boughtNames = courses.filter(c => alreadyBought.map(a => a.courseId).includes(c.id))
-                              .map(c => c.courseTitle).join(", ");
+      .map(c => c.courseTitle).join(", ");
     throw new ApiError(httpStatus.BAD_REQUEST, `Already purchased: ${boughtNames}`);
   }
 
@@ -88,7 +88,8 @@ const getAllOrderedCoursesFromDB = async (
   return { meta, data: orders };
 };
 
-const getMyOrderedCoursesFromDB = async (query: Record<string, any>, userEmail: string): Promise<IGenericResponse<OrderCourse[]>> => {
+const getMyOrderedCoursesFromDB = async (query: Record<string, any>, userId: string): Promise<IGenericResponse<OrderCourse[]>> => {
+  console.log("USERiD", userId)
   const queryBuilder = new QueryBuilder(prisma.orderCourse, query);
   const myCourses = await queryBuilder
     .range()
@@ -100,9 +101,7 @@ const getMyOrderedCoursesFromDB = async (query: Record<string, any>, userEmail: 
     .execute(
       {
         where: {
-          user: {
-            email: userEmail
-          },
+          userId,
           paymentStatus: "PAID"
         },
         include: {

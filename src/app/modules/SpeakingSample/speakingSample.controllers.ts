@@ -25,7 +25,8 @@ const getAllSpeakingSample = catchAsync(async (req, res) => {
     });
 })
 const getRelatedSpeakingSample = catchAsync(async (req, res) => {
-    const result = await SpeakingSampleServices.getAllSpeakingSampleFromDB(req.query);
+    const {speakingSampleId} = req.params
+    const result = await SpeakingSampleServices.getRelatedSpeakingSamplesFromDB(speakingSampleId as string,req.query);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

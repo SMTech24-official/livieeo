@@ -91,7 +91,7 @@ const getRelatedPodcastsFromDB = async (
       where: {
         id: { not: podcastId }, // নিজের podcast বাদ
         category: {
-          equals: currentPodcast.category,
+          contains: currentPodcast.category,
           mode: "insensitive", // ✅ Case-insensitive match
         },
         isPublished: true,

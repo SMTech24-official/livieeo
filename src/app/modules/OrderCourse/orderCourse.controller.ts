@@ -26,7 +26,7 @@ const getAllOrderedCourses = catchAsync(async(req,res)=> {
 })
 const getMyOrderedCourses = catchAsync(async(req,res)=> {
     const user = req.user as JwtPayload;
-    const result = await OrderCourseServices.getMyOrderedCoursesFromDB(req.query,user.email);
+    const result = await OrderCourseServices.getMyOrderedCoursesFromDB(req.query,user.id);
     sendResponse(res,{
         statusCode: httpStatus.CREATED, 
         success: true,

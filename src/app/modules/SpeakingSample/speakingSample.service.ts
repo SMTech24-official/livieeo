@@ -17,7 +17,7 @@ const getAllSpeakingSampleFromDB = async (query: Record<string, any>): Promise<I
     const queryBuilder = new QueryBuilder(prisma.speakingSample, query)
     const speakingSamples = await queryBuilder
         .range()
-        .search(["category","sampleTitle", "content"])
+        .search(["category", "sampleTitle", "content"])
         .filter(["category"])
         .sort()
         .paginate()
@@ -52,7 +52,7 @@ const getRelatedSpeakingSamplesFromDB = async (
     const queryBuilder = new QueryBuilder(prisma.speakingSample, query);
     const speakingSamples = await queryBuilder
         .range()
-        .search(["category","sampleTitle", "content"])
+        .search(["category", "sampleTitle", "content"])
         .filter(["category"])
         .sort()
         .paginate()
@@ -60,7 +60,10 @@ const getRelatedSpeakingSamplesFromDB = async (
         .execute({
             where: {
                 id: { not: sampleId }, // নিজের exclude
-                category: currentSample.category // একই category
+                category: {
+                    contains: currentSample.category,
+                    mode: "insensitive", // ✅ Case-insensitive match
+                },
             },
             orderBy: {
                 createdAt: "desc"

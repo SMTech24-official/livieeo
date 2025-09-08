@@ -57,8 +57,9 @@ const getAllCustomer = catchAsync(async (req, res) => {
     });
 })
 const getCustomerById = catchAsync(async (req, res) => {
-    const { userId } = req.params
-    const result = await UserServices.getCustomerByIdFromDB(userId as string);
+    // const { userId } = req.params
+    const user = req.user as JwtPayload
+    const result = await UserServices.getCustomerByIdFromDB(user.id as string);
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,

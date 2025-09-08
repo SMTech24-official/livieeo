@@ -136,9 +136,6 @@ class QueryBuilder {
     const dateRanges = this.query.dateRange
       ? (this.query.dateRange as string).split(";")
       : [];
-
-    console.log(`see date ranges:`, dateRanges);
-
     if (dateRanges.length > 0) {
       const rangeFilters: Record<string, any>[] = [];
 

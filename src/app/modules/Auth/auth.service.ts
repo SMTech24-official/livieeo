@@ -194,7 +194,7 @@ const forgotPassword = async (payload: { email: string }) => {
     config.jwt.reset_pass_expires_in as string
   );
   const resetPassLink =
-    config.reset_pass_link + `?email=${userData.email}&token=${resetPassToken}`;
+    config.reset_pass_link + `/auth/?email=${userData.email}&token=${resetPassToken}`;
   await emailSender(
     userData.email,
     "Reset Your Password",

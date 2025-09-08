@@ -5,8 +5,9 @@ import sendResponse from "../../../shared/sendResponse"
 import httpStatus from 'http-status'
 
 const saveContact = catchAsync(async(req,res)=> {
-    const user = req.user as JwtPayload
-    const result = await NewsletterServices.subscribeNewsletter(user)
+    const user = req.user
+    console.log(user)
+    const result = await NewsletterServices.subscribeNewsletter(req.body,user as JwtPayload)
     
     sendResponse(res,{
         statusCode: httpStatus.CREATED,
@@ -16,6 +17,6 @@ const saveContact = catchAsync(async(req,res)=> {
     })
 })
 
-export const ContactControllers = {
+export const NewsletterControllers = {
     saveContact
 }

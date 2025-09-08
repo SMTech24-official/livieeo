@@ -241,6 +241,7 @@ const getRelatedCoursesFromDB = async (
     .execute({
       where: {
         id: { not: courseId }, // নিজের course বাদ যাবে
+        // { equals: currentCourse.category }
         category: currentCourse.category, // একই category এর course
         isPublished: true, // শুধু published course
       },

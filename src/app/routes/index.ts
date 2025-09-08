@@ -18,6 +18,7 @@ import { OrderBookRoutes } from "../modules/OrderBook/orderBook.route";
 import { OrderCourseRoutes } from "../modules/OrderCourse/orderCourse.route";
 import { DashboardRoutes } from "../modules/Dashboard/dashboard.route";
 import { CourseProgressRoutes } from "../modules/CourseProgress/courseProgress.route";
+import { NewsletterRoutes } from "../modules/Newsletter/newsletter.route";
 
 const router = Router();
 
@@ -77,6 +78,10 @@ const moduleRoutes = [
   {
     path: "/contact",
     route: ContactRoutes,
+  },
+  {
+    path: "/newsletter",
+    route: NewsletterRoutes,
   },
   {
     path: "/booking-book-speaker",

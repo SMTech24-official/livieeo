@@ -332,7 +332,7 @@ model Blog {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   blogTitle    String
   content      String
-  category     String[]
+  category     String
   featureMedia String[]
   isPublished  Boolean  @default(false)
   publishDate  DateTime @default(now())
