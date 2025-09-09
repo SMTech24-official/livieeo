@@ -28,6 +28,7 @@ export declare const DashboardServices: {
         profileImage: string | null;
     }[]>;
     getTopSellingBooks: () => Promise<{
+        progress: number;
         bookId: string;
         bookName: string | undefined;
         authorName: string | undefined;
@@ -36,6 +37,7 @@ export declare const DashboardServices: {
         cover: string | undefined;
     }[]>;
     getTopSellingCourses: () => Promise<{
+        progress: number;
         courseId: string;
         courseTitle: string | undefined;
         mentorName: string | undefined;

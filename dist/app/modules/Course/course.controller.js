@@ -57,7 +57,7 @@ const getRelatedCourses = (0, catchAsync_1.default)(async (req, res) => {
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: `Published courses retrieved successfully`,
+        message: `Related courses retrieved successfully`,
         meta: result.meta,
         data: result.data,
     });

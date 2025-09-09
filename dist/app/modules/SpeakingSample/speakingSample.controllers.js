@@ -29,7 +29,8 @@ const getAllSpeakingSample = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 const getRelatedSpeakingSample = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await speakingSample_service_1.SpeakingSampleServices.getAllSpeakingSampleFromDB(req.query);
+    const { speakingSampleId } = req.params;
+    const result = await speakingSample_service_1.SpeakingSampleServices.getRelatedSpeakingSamplesFromDB(speakingSampleId, req.query);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,

@@ -45,7 +45,8 @@ const getSingleBlogFromDB = async (blogId) => {
 };
 const getPublishedBlogsFromDB = async (query) => {
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.blog, query);
-    const blogs = await queryBuilder.range()
+    const blogs = await queryBuilder
+        // .range()
         .search(["blogTitle", "category"])
         .filter(["category"])
         .sort()
@@ -73,7 +74,7 @@ const getRelatedBlogsFromDB = async (blogId, query) => {
     // 2) QueryBuilder দিয়ে related blogs আনবো
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.blog, query);
     const blogs = await queryBuilder
-        .range()
+        // .range()
         .search(["blogTitle", "category"])
         .filter(["category"])
         .sort()
@@ -82,7 +83,7 @@ const getRelatedBlogsFromDB = async (blogId, query) => {
         .execute({
         where: {
             id: { not: blogId }, // নিজের ব্লগ বাদ
-            category: { hasSome: currentBlog.category }, // একই category (array field তাই `hasSome`)
+            category: { equals: currentBlog.category }, // একই category (array field তাই `hasSome`)
             isPublished: true,
         },
         orderBy: {
@@ -119,7 +120,7 @@ const deleteBlogFromDB = async (id) => {
     if (!existingBlog) {
         throw new Error('Blog not found');
     }
-    const result = await prisma_1.default.blog.delete({
+    await prisma_1.default.blog.delete({
         where: { id }
     });
     return { message: 'Blog deleted successfully' };

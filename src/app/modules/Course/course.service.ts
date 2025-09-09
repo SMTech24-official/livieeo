@@ -38,6 +38,7 @@ interface CourseDetailsView {
     videos: {
       id: string;
       videoTitle: string;
+      fileUrl: string
       order: number;
       status: VideoStatus;
     }[];
@@ -146,7 +147,7 @@ const getSingleCourseFromDB = async (
         status = "locked";
       }
 
-      return { id: v.id, videoTitle: v.videoTitle, order: v.order, status };
+      return { id: v.id, videoTitle: v.videoTitle,videoUrl:v.fileUrl, order: v.order, status };
     });
 
     const isModuleCompleted = m.courseModuleVideos.every((v: any) => completedSet.has(v.id));

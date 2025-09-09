@@ -20,6 +20,7 @@ const orderBook_route_1 = require("../modules/OrderBook/orderBook.route");
 const orderCourse_route_1 = require("../modules/OrderCourse/orderCourse.route");
 const dashboard_route_1 = require("../modules/Dashboard/dashboard.route");
 const courseProgress_route_1 = require("../modules/CourseProgress/courseProgress.route");
+const newsletter_route_1 = require("../modules/Newsletter/newsletter.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -77,6 +78,10 @@ const moduleRoutes = [
     {
         path: "/contact",
         route: contact_route_1.ContactRoutes,
+    },
+    {
+        path: "/newsletter",
+        route: newsletter_route_1.NewsletterRoutes,
     },
     {
         path: "/booking-book-speaker",

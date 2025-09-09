@@ -55,7 +55,10 @@ const getRelatedSpeakingSamplesFromDB = async (sampleId, query) => {
         .execute({
         where: {
             id: { not: sampleId }, // নিজের exclude
-            category: currentSample.category // একই category
+            category: {
+                contains: currentSample.category,
+                mode: "insensitive", // ✅ Case-insensitive match
+            },
         },
         orderBy: {
             createdAt: "desc"

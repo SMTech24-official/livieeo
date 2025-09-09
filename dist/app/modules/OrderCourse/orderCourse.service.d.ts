@@ -9,6 +9,6 @@ export declare const OrderCourseServices: {
         paymentUrl: string | null;
     }>;
     getAllOrderedCoursesFromDB: (query: Record<string, any>) => Promise<IGenericResponse<OrderCourse[]>>;
-    getMyOrderedCoursesFromDB: (query: Record<string, any>, userEmail: string) => Promise<IGenericResponse<OrderCourse[]>>;
+    getMyOrderedCoursesFromDB: (query: Record<string, any>, userId: string) => Promise<IGenericResponse<OrderCourse[]>>;
 };
 //# sourceMappingURL=orderCourse.service.d.ts.map

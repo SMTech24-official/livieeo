@@ -10,7 +10,7 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const client_1 = require("@prisma/client");
 const router = (0, express_1.Router)();
 router.post("/create", (0, auth_1.default)(client_1.UserRole.USER), orderBook_controller_1.OrderBookControllers.createBookOrder);
-router.get("/", orderBook_controller_1.OrderBookControllers.getAllOrderedBooks);
+router.get("/", (0, auth_1.default)(client_1.UserRole.USER), orderBook_controller_1.OrderBookControllers.getAllOrderedBooks);
 router.get("/my-books", (0, auth_1.default)(client_1.UserRole.USER), orderBook_controller_1.OrderBookControllers.getMyOrderedBooks);
 exports.OrderBookRoutes = router;
 //# sourceMappingURL=orderBook.route.js.map

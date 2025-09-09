@@ -145,7 +145,7 @@ const forgotPassword = async (payload) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.reset_pass_secret, config_1.default.jwt.reset_pass_expires_in);
-    const resetPassLink = config_1.default.reset_pass_link + `?email=${userData.email}&token=${resetPassToken}`;
+    const resetPassLink = config_1.default.reset_pass_link + `/auth/?email=${userData.email}&token=${resetPassToken}`;
     await (0, emailSender_1.default)(userData.email, "Reset Your Password", `
   <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; padding: 40px;">
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">

@@ -6,7 +6,7 @@ export declare const BlogServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        category: string[];
+        category: string;
         isPublished: boolean;
         publishDate: Date;
         blogTitle: string;
@@ -19,7 +19,7 @@ export declare const BlogServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        category: string[];
+        category: string;
         isPublished: boolean;
         publishDate: Date;
         blogTitle: string;
@@ -33,7 +33,7 @@ export declare const BlogServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        category: string[];
+        category: string;
         isPublished: boolean;
         publishDate: Date;
         blogTitle: string;
@@ -45,7 +45,7 @@ export declare const BlogServices: {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        category: string[];
+        category: string;
         isPublished: boolean;
         publishDate: Date;
         blogTitle: string;

@@ -38,16 +38,20 @@ const totalRevenue = async () => {
 const bookSalesCount = async () => {
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-    const bookSales = await prisma_1.default.orderBook.count({
+    // এখানে aggregate ব্যবহার করা হলো
+    const result = await prisma_1.default.orderBook.aggregate({
+        _sum: {
+            amount: true, // ⭐ total dollar sum বের করবে
+        },
         where: {
             createdAt: {
                 gte: startOfMonth,
-                lte: endOfMonth
+                lte: endOfMonth,
             },
-            paymentStatus: client_1.PaymentStatus.PAID
-        }
+            paymentStatus: client_1.PaymentStatus.PAID, // শুধু paid order গুনবে
+        },
     });
-    return bookSales;
+    return result._sum.amount || 0; // যদি null হয় তাহলে 0 return করব
 };
 const courseEnrollments = async () => {
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -139,6 +143,38 @@ const getRecentActivities = async () => {
 };
 exports.getRecentActivities = getRecentActivities;
 // Top Selling Books
+// const getTopSellingBooks = async () => {
+//   const result = await prisma.orderBookItem.groupBy({
+//     by: ["bookId"],
+//     _sum: {
+//       quantity: true,
+//     },
+//     orderBy: {
+//       _sum: {
+//         quantity: "desc",
+//       },
+//     },
+//     take: 5,
+//   });
+//   // book details join করতে হবে
+//   const books = await Promise.all(
+//     result.map(async (item) => {
+//       const book = await prisma.book.findUnique({
+//         where: { id: item.bookId },
+//       });
+//       return {
+//         bookId: item.bookId,
+//         bookName: book?.bookName,
+//         authorName: book?.authorName,
+//         totalSold: item._sum.quantity || 0,
+//         price: book?.price,
+//         cover: book?.bookCover,
+//       };
+//     })
+//   );
+//   return books;
+// };
+// Top Selling Books
 const getTopSellingBooks = async () => {
     const result = await prisma_1.default.orderBookItem.groupBy({
         by: ["bookId"],
@@ -166,8 +202,45 @@ const getTopSellingBooks = async () => {
             cover: book?.bookCover,
         };
     }));
-    return books;
+    // 📌 সর্বোচ্চ sold বের করা
+    const maxSold = Math.max(...books.map((b) => b.totalSold));
+    // 📌 percentage field যোগ করা
+    const booksWithProgress = books.map((b) => ({
+        ...b,
+        progress: maxSold > 0 ? Math.round((b.totalSold / maxSold) * 100) : 0,
+    }));
+    return booksWithProgress;
 };
+// Top Selling Courses
+// const getTopSellingCourses = async () => {
+//   const result = await prisma.orderCourseItem.groupBy({
+//     by: ["courseId"],
+//     _sum: {
+//       quantity: true,
+//     },
+//     orderBy: {
+//       _sum: {
+//         quantity: "desc",
+//       },
+//     },
+//     take: 5,
+//   });
+//   const courses = await Promise.all(
+//     result.map(async (item) => {
+//       const course = await prisma.course.findUnique({
+//         where: { id: item.courseId },
+//       });
+//       return {
+//         courseId: item.courseId,
+//         courseTitle: course?.courseTitle,
+//         mentorName: course?.mentorName,
+//         totalSold: item._sum.quantity || 0,
+//         price: course?.price,
+//       };
+//     })
+//   );
+//   return courses;
+// };
 // Top Selling Courses
 const getTopSellingCourses = async () => {
     const result = await prisma_1.default.orderCourseItem.groupBy({
@@ -194,7 +267,14 @@ const getTopSellingCourses = async () => {
             price: course?.price,
         };
     }));
-    return courses;
+    // 📌 সর্বোচ্চ sold বের করা
+    const maxSold = Math.max(...courses.map((c) => c.totalSold));
+    // 📌 percentage field যোগ করা
+    const coursesWithProgress = courses.map((c) => ({
+        ...c,
+        progress: maxSold > 0 ? Math.round((c.totalSold / maxSold) * 100) : 0,
+    }));
+    return coursesWithProgress;
 };
 exports.DashboardServices = {
     totalRevenue,

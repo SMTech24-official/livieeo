@@ -94,7 +94,7 @@ const getSingleCourseFromDB = async (courseId, userId) => {
             else {
                 status = "locked";
             }
-            return { id: v.id, videoTitle: v.videoTitle, order: v.order, status };
+            return { id: v.id, videoTitle: v.videoTitle, videoUrl: v.fileUrl, order: v.order, status };
         });
         const isModuleCompleted = m.courseModuleVideos.every((v) => completedSet.has(v.id));
         if (isModuleCompleted)
@@ -176,6 +176,7 @@ const getRelatedCoursesFromDB = async (courseId, query) => {
         .execute({
         where: {
             id: { not: courseId }, // নিজের course বাদ যাবে
+            // { equals: currentCourse.category }
             category: currentCourse.category, // একই category এর course
             isPublished: true, // শুধু published course
         },

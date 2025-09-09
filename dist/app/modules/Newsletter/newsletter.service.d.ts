@@ -1,6 +1,7 @@
 import { JwtPayload } from "jsonwebtoken";
+import { Newsletter } from "@prisma/client";
 export declare const NewsletterServices: {
-    subscribeNewsletter: (user: JwtPayload) => Promise<{
+    subscribeNewsletter: (payload: Newsletter, user: JwtPayload) => Promise<{
         id: string;
         email: string;
         createdAt: Date;

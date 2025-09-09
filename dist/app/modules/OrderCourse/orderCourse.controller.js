@@ -30,7 +30,7 @@ const getAllOrderedCourses = (0, catchAsync_1.default)(async (req, res) => {
 });
 const getMyOrderedCourses = (0, catchAsync_1.default)(async (req, res) => {
     const user = req.user;
-    const result = await orderCourse_service_1.OrderCourseServices.getMyOrderedCoursesFromDB(req.query, user.email);
+    const result = await orderCourse_service_1.OrderCourseServices.getMyOrderedCoursesFromDB(req.query, user.id);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
         success: true,

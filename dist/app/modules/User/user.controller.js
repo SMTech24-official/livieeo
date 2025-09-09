@@ -59,8 +59,9 @@ const getAllCustomer = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 const getCustomerById = (0, catchAsync_1.default)(async (req, res) => {
-    const { userId } = req.params;
-    const result = await user_service_1.UserServices.getCustomerByIdFromDB(userId);
+    // const { userId } = req.params
+    const user = req.user;
+    const result = await user_service_1.UserServices.getCustomerByIdFromDB(user.id);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
         success: true,

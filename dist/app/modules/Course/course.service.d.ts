@@ -27,6 +27,7 @@ interface CourseDetailsView {
         videos: {
             id: string;
             videoTitle: string;
+            fileUrl: string;
             order: number;
             status: VideoStatus;
         }[];

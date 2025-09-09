@@ -9,6 +9,7 @@ const createBookingBookSpeakerIntoDB = async (payload) => {
     const result = await prisma_1.default.bookingBookSpeaker.create({ data: payload });
     return result;
 };
+// const getAll
 exports.BookingBookSpeakerServices = {
     createBookingBookSpeakerIntoDB
 };

@@ -32,7 +32,7 @@ export declare const UserServices: {
         bio: string | null;
         contactNumber: string;
         gender: import("@prisma/client").$Enums.Gender;
-        dob: Date;
+        dob: Date | null;
         address: string | null;
         introduction: string | null;
         photoUrl: string | null;
@@ -86,7 +86,7 @@ export declare const UserServices: {
         bio: string | null;
         contactNumber: string;
         gender: import("@prisma/client").$Enums.Gender;
-        dob: Date;
+        dob: Date | null;
         address: string | null;
         introduction: string | null;
         photoUrl: string | null;
@@ -108,7 +108,7 @@ export declare const UserServices: {
         bio: string | null;
         contactNumber: string;
         gender: import("@prisma/client").$Enums.Gender;
-        dob: Date;
+        dob: Date | null;
         address: string | null;
         introduction: string | null;
         photoUrl: string | null;
@@ -130,7 +130,7 @@ export declare const UserServices: {
         bio: string | null;
         contactNumber: string;
         gender: import("@prisma/client").$Enums.Gender;
-        dob: Date;
+        dob: Date | null;
         address: string | null;
         introduction: string | null;
         photoUrl: string | null;
