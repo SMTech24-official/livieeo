@@ -6,6 +6,9 @@ const createBookingBookSpeakerIntoDB = async(payload: BookingBookSpeaker)=> {
     return result
 }
 
+// const getAll
+
+
 export const BookingBookSpeakerServices = {
     createBookingBookSpeakerIntoDB
 }

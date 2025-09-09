@@ -88,35 +88,78 @@ const getAllOrderedCoursesFromDB = async (
   return { meta, data: orders };
 };
 
-const getMyOrderedCoursesFromDB = async (query: Record<string, any>, userId: string): Promise<IGenericResponse<OrderCourse[]>> => {
-  console.log("USERiD", userId)
+// const getMyOrderedCoursesFromDB = async (query: Record<string, any>, userId: string): Promise<IGenericResponse<OrderCourse[]>> => {
+//   console.log("USERiD", userId)
+//   const queryBuilder = new QueryBuilder(prisma.orderCourse, query);
+//   const myCourses = await queryBuilder
+//     .range()
+//     .search(["courseTitle"])
+//     .filter()
+//     .sort()
+//     .paginate()
+//     .fields()
+//     .execute(
+//       {
+//         where: {
+//           userId,
+//           paymentStatus: "PAID"
+//         },
+//         include: {
+//           user: true,
+//           items: {
+//             include: {
+//               course: true,
+//             },
+//           },
+//         },
+//       }
+//     );
+//   const meta = await queryBuilder.countTotal();
+//   return { meta, data: myCourses }
+// }
+
+
+const getMyOrderedCoursesFromDB = async (
+  query: Record<string, any>,
+  userId: string
+): Promise<IGenericResponse<OrderCourse[]>> => {
   const queryBuilder = new QueryBuilder(prisma.orderCourse, query);
+
   const myCourses = await queryBuilder
     .range()
-    .search([""])
     .filter()
     .sort()
     .paginate()
     .fields()
-    .execute(
-      {
-        where: {
-          userId,
-          paymentStatus: "PAID"
-        },
-        include: {
-          user: true,
-          items: {
-            include: {
-              course: true,
+    .execute({
+      where: {
+        userId,
+        paymentStatus: "PAID",
+        items: {
+          some: {
+            course: {
+              courseTitle: {
+                contains: query.searchTerm || "", // 🔍 এখানে search হবে
+                mode: "insensitive",
+              },
             },
           },
         },
-      }
-    );
+      },
+      include: {
+        user: true,
+        items: {
+          include: {
+            course: true,
+          },
+        },
+      },
+    });
+
   const meta = await queryBuilder.countTotal();
-  return { meta, data: myCourses }
-}
+
+  return { meta, data: myCourses };
+};
 export const OrderCourseServices = {
   createCourseOrderIntoDB,
   getAllOrderedCoursesFromDB,
