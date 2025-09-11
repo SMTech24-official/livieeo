@@ -6,7 +6,7 @@ import { OrderCourseControllers } from "./orderCourse.controller"
 const router = Router()
 
 router.post("/create",auth(UserRole.USER), OrderCourseControllers.createCourseOrder)
-router.get("/", OrderCourseControllers.getAllOrderedCourses)
+router.get("/",auth(UserRole.USER), OrderCourseControllers.getAllOrderedCourses)
 router.get("/my-courses",auth(UserRole.USER), OrderCourseControllers.getMyOrderedCourses)
 
 export const OrderCourseRoutes = router

@@ -6,6 +6,6 @@ import { NewsletterControllers } from "./newsletter.controller";
 
 const router = Router()
 
-router.post("/subscribe-newsletter",auth(UserRole.USER), NewsletterControllers.saveContact)
+router.post("/subscribe-newsletter",auth(UserRole.ADMIN,UserRole.USER), NewsletterControllers.saveContact)
 
 export const NewsletterRoutes = router

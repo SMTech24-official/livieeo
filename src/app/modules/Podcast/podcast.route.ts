@@ -16,20 +16,21 @@ router.post(
     { name: "thumbImage", maxCount: 1 },
     { name: "podcastFiles", maxCount: 5 },
   ]),
+  auth(UserRole.ADMIN),
   textToJSONParser,
   PodcastControllers.createPodcast
 );
 
-router.get("/", PodcastControllers.getAllPodcasts);
-router.get("/published-podcast", PodcastControllers.getPublishedPodcasts);
-router.patch("/:id", fileUploader.upload.array("podcastFiles", 5), textToJSONParser, PodcastControllers.updatePodcast);
-router.delete("/:id", PodcastControllers.deletePodcast);
-router.patch("/podcast-status/:id", PodcastControllers.updatePodcastStatus);
+router.get("/",auth(UserRole.ADMIN), PodcastControllers.getAllPodcasts);
+router.get("/published-podcast",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getPublishedPodcasts);
+router.patch("/:id",auth(UserRole.ADMIN), fileUploader.upload.array("podcastFiles", 5), textToJSONParser, PodcastControllers.updatePodcast);
+router.delete("/:id",auth(UserRole.ADMIN), PodcastControllers.deletePodcast);
+router.patch("/podcast-status/:id",auth(UserRole.ADMIN), PodcastControllers.updatePodcastStatus);
 
 router.post("/log-play/:podcastId",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.logPodcastPlay);
-router.get("/activities", PodcastControllers.getActivities);
+router.get("/activities",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getActivities);
 router.get("/my-recent-podcasts",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getMyRecentPodcasts);
-router.get("/:podcastId/related-podcasts",PodcastControllers.getRelatedPodcasts)
-router.get("/:podcastId",PodcastControllers.getSinglePodcast)
+router.get("/:podcastId/related-podcasts",auth(UserRole.ADMIN,UserRole.USER),PodcastControllers.getRelatedPodcasts)
+router.get("/:podcastId",auth(UserRole.ADMIN,UserRole.USER),PodcastControllers.getSinglePodcast)
 
 export const PodcastRoutes = router;
