@@ -39,11 +39,10 @@ const verifyOtp = z.object({
 });
 
 // reset password validation
-const resetPassword = z.object({
+const resetPasswordValidation = z.object({
   body: z.object({
-    email: z.string({ message: "Email is required" }).email("Invalid email"),
-    otp: z.string({ message: "OTP is required" }).length(6, "OTP must be 6 digits"),
-    newPassword: z.string({ message: "New password is required" }),
+    token: z.string({ message: "Token is required" }),
+    newPassword: z.string({ message: "New Password is required" }),
   }),
 });
 
@@ -53,5 +52,5 @@ export const AuthValidator = {
   changePassword,
   forgotPassword,
   verifyOtp,
-  resetPassword,
+  resetPasswordValidation,
 };

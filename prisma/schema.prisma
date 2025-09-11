@@ -28,16 +28,17 @@ model User {
   emailVerificationCode   String?
   emailVerificationExpiry DateTime?
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  education         Education[]
-  socialLinks       SocialLinks[]
-  orderBook         OrderBook[]
-  orderCourse       OrderCourse[]
-  activity          Activity[]
-  courseCertificate CourseCertificate[]
-  podcastActivity   PodcastActivity[]
-  courseProgress    CourseProgress[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  education          Education[]
+  socialLinks        SocialLinks[]
+  orderBook          OrderBook[]
+  orderCourse        OrderCourse[]
+  activity           Activity[]
+  courseCertificate  CourseCertificate[]
+  podcastActivity    PodcastActivity[]
+  courseProgress     CourseProgress[]
+  bookingBookSpeaker BookingBookSpeaker[]
 
   @@map("users")
 }
@@ -121,6 +122,8 @@ model BookSpeaker {
 
 model BookingBookSpeaker {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id])
   firstName     String
   lastName      String
   contactNumber String
@@ -220,6 +223,7 @@ model Course {
   language      String
   duration      String
   description   String
+  thumbImage    String?
   isPublished   Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -292,8 +296,9 @@ model CourseModule {
 
 model CourseModuleVideo {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  thumbImage     String?
   videoTitle     String
-  fileUrl        String
+  fileUrl        String?
   order          Int          @default(0)
   courseModuleId String       @db.ObjectId
   courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
@@ -349,6 +354,7 @@ model Podcast {
   category        String
   constent        String
   featureMedia    String[]
+  thumbImage      String?
   isPublished     Boolean           @default(false)
   publishDate     DateTime          @default(now())
   createdAt       DateTime          @default(now())

@@ -7,7 +7,19 @@ import { UserRole } from "@prisma/client";
 
 const router = Router();
 
-router.post("/create", fileUploader.upload.array("podcastFiles", 5), textToJSONParser,PodcastControllers.createPodcast);
+// router.post("/create", fileUploader.upload.array("podcastFiles", 5), textToJSONParser,PodcastControllers.createPodcast);
+
+// podcast.route.ts
+router.post(
+  "/create",
+  fileUploader.upload.fields([
+    { name: "thumbImage", maxCount: 1 },
+    { name: "podcastFiles", maxCount: 5 },
+  ]),
+  textToJSONParser,
+  PodcastControllers.createPodcast
+);
+
 router.get("/", PodcastControllers.getAllPodcasts);
 router.get("/published-podcast", PodcastControllers.getPublishedPodcasts);
 router.patch("/:id", fileUploader.upload.array("podcastFiles", 5), textToJSONParser, PodcastControllers.updatePodcast);

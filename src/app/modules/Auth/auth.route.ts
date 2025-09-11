@@ -38,7 +38,7 @@ router.post(
 // reset password (with OTP)
 router.post(
   "/reset-password",
-  validateRequest(AuthValidator.resetPassword),
+  validateRequest(AuthValidator.resetPasswordValidation),
   AuthControllers.resetPassword
 );
 

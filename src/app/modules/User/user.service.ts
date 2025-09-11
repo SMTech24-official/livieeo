@@ -26,29 +26,6 @@ const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
 };
 
-// const registerUserIntoDB = async (payload: User, file: IFile) => {
-//     const user = await prisma.user.findUnique({
-//         where: {
-//             email: payload.email,
-//         },
-//     })
-
-//     if (user) {
-//         throw new ApiError(httpStatus.CONFLICT, "User already exists");
-//     }
-//     if (file) {
-//         const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-//         payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
-//     }
-//     const hashedPassword: string = await bcrypt.hash(payload.password, 12);
-//     payload.userId = await getNextUserId();
-//     payload.password = hashedPassword;
-//     const result = await prisma.user.create({
-//         data: payload,
-//     });
-//     return result;
-// }
-
 const registerUserIntoDB = async (payload: User, file: IFile) => {
   // 1. Check if user exists
   const existingUser = await prisma.user.findUnique({
@@ -205,100 +182,6 @@ const getAllCustomersFromDB = async (
     return { meta, data: formattedUsers };
 };
 
-// const getCustomerByIdFromDB = async (id: string) => {
-//   const user = await prisma.user.findUnique({
-//     where: { userId: id },
-//     include: {
-//       education: true,
-//       socialLinks: true,
-//       orderBook: {
-//         include: {
-//           items: {
-//             include: { book: true },
-//           },
-//         },
-//       },
-//       orderCourse: {
-//         include: {
-//           items: {
-//             include: { course: true },
-//           },
-//         },
-//       },
-//       courseCertificate: {
-//         include: { course: true },
-//       },
-//     },
-//   });
-
-//   if (!user) {
-//     throw new Error("User not found");
-//   }
-
-//   // 🧮 Overview calculation
-//   const completedCourse = user.courseCertificate.length; // কতগুলো course certificate পেয়েছে
-//   const totalBooks = user.orderBook.reduce(
-//     (sum, ob) => sum + ob.items.reduce((q, item) => q + item.quantity, 0),
-//     0
-//   );
-
-//   const totalPurchased = 
-//     user.orderBook.reduce((sum, ob) => sum + ob.amount, 0) +
-//     user.orderCourse.reduce((sum, oc) => sum + oc.amount, 0);
-
-//   // 🛒 Orders list (book + course merge করে)
-//   const orders = [
-//     ...user.orderBook.flatMap((ob) =>
-//       ob.items.map((item) => ({
-//         type: "Book",
-//         title: item.book.bookName,
-//         price: item.price * item.quantity,
-//         status: ob.paymentStatus,
-//         createdAt: ob.createdAt,
-//       }))
-//     ),
-//     ...user.orderCourse.flatMap((oc) =>
-//       oc.items.map((item) => ({
-//         type: "Course",
-//         title: item.course.courseTitle,
-//         price: item.price * item.quantity,
-//         status: oc.paymentStatus,
-//         createdAt: oc.createdAt,
-//       }))
-//     ),
-//   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-//   // 🎯 Response object
-//   return {
-//     id: user.userId,
-//     name: `${user.firstName} ${user.lastName ?? ""}`,
-//     email: user.email,
-//     contactNumber: user.contactNumber,
-//     gender: user.gender,
-//     address: user.address,
-//     bio: user.bio,
-//     photoUrl: user.photoUrl,
-//     introduction: user.introduction,
-
-//     education: user.education.map((edu) => ({
-//       degree: edu.degree,
-//       institution: edu.institution,
-//       field: edu.field,
-//     })),
-//     socialLinks: user.socialLinks[0] ?? {},
-
-//     overview: {
-//       completedCourse,
-//       totalBooks,
-//       totalPurchased,
-//     },
-
-//     orders,
-//   };
-// };
-
-
-
 
 
 const getCustomerByIdFromDB = async (id: string) => {
@@ -373,6 +256,7 @@ const getCustomerByIdFromDB = async (id: string) => {
     id: user.userId ?? user.id,
     name: `${user.firstName} ${user.lastName ?? ""}`,
     email: user.email,
+    role: user.role,
     contactNumber: user.contactNumber,
     gender: user.gender,
     address: user.address,
@@ -421,14 +305,6 @@ const getAllAdminFromDB = async (query: Record<string, any>): Promise<IGenericRe
     return { meta, data: users }
 }
 
-// const getCuctomerByIdFromDB = async (id: string) => {
-//     const result = await prisma.user.findUniqueOrThrow({
-//         where: {
-//             id
-//         }
-//     })
-//     return result
-// }
 const updateProfile = async (payload: Partial<User>, user: JwtPayload, file?: IFile) => {
     const userExists = await prisma.user.findUnique({
         where: {

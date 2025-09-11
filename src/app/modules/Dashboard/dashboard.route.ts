@@ -1,16 +1,13 @@
 import { Router } from "express";
 import { DashboardControllers } from "./dashboard.controller";
+import auth from "../../middlewares/auth";
+import { UserRole } from "@prisma/client";
 
 const router = Router()
 
-router.get("/total-revenue", DashboardControllers.totalRevenue)
-router.get("/book-sales-count", DashboardControllers.bookSalesCount)
-router.get("/course-enrollments", DashboardControllers.courseEnrollments)
-router.get("/speaking-inquiries", DashboardControllers.speakingInquires)
-router.get("/new-members-this-month", DashboardControllers.newMemberOfThisMonth)
-router.get("/web-visitors-this-month", DashboardControllers.webVisitorOfThisMonth)
-router.get("/recent-activities", DashboardControllers.getRecentActivities)
-router.get("/top-selling-books", DashboardControllers.getTopSellingBooks)
-router.get("/top-selling-courses", DashboardControllers.getTopSellingCourses)
+router.get("/dashboard-stats",auth(UserRole.ADMIN), DashboardControllers.dashboardStats)
+router.get("/recent-activities",auth(UserRole.ADMIN), DashboardControllers.getRecentActivities)
+router.get("/top-selling-books",auth(UserRole.ADMIN), DashboardControllers.getTopSellingBooks)
+router.get("/top-selling-courses",auth(UserRole.ADMIN), DashboardControllers.getTopSellingCourses)
 
 export const DashboardRoutes = router;

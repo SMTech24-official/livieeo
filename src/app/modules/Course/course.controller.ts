@@ -3,9 +3,10 @@ import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 import { CourseServices } from "./course.service";
 import { JwtPayload } from "jsonwebtoken";
+import { IFile } from "../../../interfaces/file";
 
 const createCourse = catchAsync(async (req, res) => {
-    const result = await CourseServices.createCourseIntoDB(req.body);
+    const result = await CourseServices.createCourseIntoDB(req.body,req.file as IFile);
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,

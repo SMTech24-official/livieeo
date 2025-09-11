@@ -6,19 +6,40 @@ import { PodcastServices } from "./podcast.service";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from "http-status"
 
+// const createPodcast = catchAsync(async (req, res) => {
+//     const payload = req.body;
+//     const podcastFiles = req.files as IFile[];
+
+//     const result = await PodcastServices.createPodcastIntoDB(payload, podcastFiles);
+
+//     sendResponse(res, {
+//         statusCode: 201,
+//         success: true,
+//         message: "Podcast created successfully",
+//         data: result
+//     })
+// })
+
+// podcast.controller.ts
 const createPodcast = catchAsync(async (req, res) => {
-    const payload = req.body;
-    const podcastFiles = req.files as IFile[];
+  const files = req.files as {
+    thumbImage?: Express.Multer.File[];
+    podcastFiles?: Express.Multer.File[];
+  };
 
-    const result = await PodcastServices.createPodcastIntoDB(payload, podcastFiles);
+  const thumbImageFile = files.thumbImage ? (files.thumbImage[0] as IFile) : undefined;
+  const podcastFiles = files.podcastFiles ? (files.podcastFiles as IFile[]) : [];
 
-    sendResponse(res, {
-        statusCode: 201,
-        success: true,
-        message: "Podcast created successfully",
-        data: result
-    })
-})
+  const result = await PodcastServices.createPodcastIntoDB(req.body, thumbImageFile, podcastFiles);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Podcast created successfully",
+    data: result,
+  });
+});
+
 const getAllPodcasts = catchAsync(async (req, res) => {
     const podcasts = await PodcastServices.getAllPodcastFromDB(req.query);
 

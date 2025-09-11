@@ -1,120 +1,188 @@
 import { ActivityType, PaymentStatus } from "@prisma/client";
 import prisma from "../../../shared/prisma";
 
-const totalRevenue = async()=> {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+// const totalRevenue = async()=> {
+//     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
 
-    const bookRevenue = await prisma.orderBook.aggregate({
-        _sum: {
-            amount: true
-        },
-        where: {
-            createdAt: {
-                gte: startOfMonth,
-                lte: endOfMonth
-            },
-            paymentStatus: PaymentStatus.PAID
-        }
-    })
-    const courseRevenue = await prisma.orderCourse.aggregate({
-        _sum: {
-            amount: true
-        },
-        where: {
-            createdAt: {
-                gte: startOfMonth,
-                lte: endOfMonth
-            },
-            paymentStatus: PaymentStatus.PAID
-        }
-    })
-    return (bookRevenue._sum.amount || 0) + (courseRevenue._sum.amount || 0);
-}
-
-
+//     const bookRevenue = await prisma.orderBook.aggregate({
+//         _sum: {
+//             amount: true
+//         },
+//         where: {
+//             createdAt: {
+//                 gte: startOfMonth,
+//                 lte: endOfMonth
+//             },
+//             paymentStatus: PaymentStatus.PAID
+//         }
+//     })
+//     const courseRevenue = await prisma.orderCourse.aggregate({
+//         _sum: {
+//             amount: true
+//         },
+//         where: {
+//             createdAt: {
+//                 gte: startOfMonth,
+//                 lte: endOfMonth
+//             },
+//             paymentStatus: PaymentStatus.PAID
+//         }
+//     })
+//     return (bookRevenue._sum.amount || 0) + (courseRevenue._sum.amount || 0);
+// }
 
 
-const bookSalesCount = async () => {
+
+
+// const bookSalesCount = async () => {
+//   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//   const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+//   // এখানে aggregate ব্যবহার করা হলো
+//   const result = await prisma.orderBook.aggregate({
+//     _sum: {
+//       amount: true, // ⭐ total dollar sum বের করবে
+//     },
+//     where: {
+//       createdAt: {
+//         gte: startOfMonth,
+//         lte: endOfMonth,
+//       },
+//       paymentStatus: PaymentStatus.PAID, // শুধু paid order গুনবে
+//     },
+//   });
+
+//   return result._sum.amount || 0; // যদি null হয় তাহলে 0 return করব
+// };
+// const courseEnrollments = async()=> {
+//     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+//     const courseEnrollments = await prisma.orderCourse.count({
+//         where: {
+//             createdAt: {
+//                 gte: startOfMonth,
+//                 lte: endOfMonth
+//             },
+//             paymentStatus: PaymentStatus.PAID
+//         }
+//     })
+//     return courseEnrollments;
+// }
+
+// const speakingInquires = async()=> {
+//     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+//     const inquiries = await prisma.bookingBookSpeaker.count({
+//         where: {
+//             createdAt: {
+//                 gte: startOfMonth,
+//                 lte: endOfMonth
+//             }
+//         }
+//     })
+//     return inquiries;
+// }
+
+// const newMemberOfThisMonth = async()=> {
+//     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+//     const newMembers = await prisma.user.count({
+//         where: {
+//             createdAt: {
+//                 gte: startOfMonth,
+//                 lte: endOfMonth
+//             }
+//         }
+//     })
+//     return newMembers;
+// }
+
+// const webVisitorOfThisMonth = async()=> {
+//     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//     const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+//     const visitors = await prisma.webVisitor.count({
+//         where: {
+//             createdAt: {
+//                 gte: startOfMonth,
+//                 lte: endOfMonth
+//             }
+//         }
+//     })
+//     return visitors;
+// }
+
+
+
+
+
+const dashboardStats = async () => {
   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
 
-  // এখানে aggregate ব্যবহার করা হলো
-  const result = await prisma.orderBook.aggregate({
-    _sum: {
-      amount: true, // ⭐ total dollar sum বের করবে
-    },
-    where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth,
+  // সবগুলো প্রমিস একসাথে রান করার জন্য Promise.all ব্যবহার করব
+  const [
+    bookRevenue,
+    courseRevenue,
+    bookSales,
+    courseEnrollments,
+    speakingInquiries,
+    newMembers,
+    webVisitors
+  ] = await Promise.all([
+    prisma.orderBook.aggregate({
+      _sum: { amount: true },
+      where: {
+        createdAt: { gte: startOfMonth, lte: endOfMonth },
+        paymentStatus: PaymentStatus.PAID,
       },
-      paymentStatus: PaymentStatus.PAID, // শুধু paid order গুনবে
-    },
-  });
+    }),
+    prisma.orderCourse.aggregate({
+      _sum: { amount: true },
+      where: {
+        createdAt: { gte: startOfMonth, lte: endOfMonth },
+        paymentStatus: PaymentStatus.PAID,
+      },
+    }),
+    prisma.orderBook.aggregate({
+      _sum: { amount: true },
+      where: {
+        createdAt: { gte: startOfMonth, lte: endOfMonth },
+        paymentStatus: PaymentStatus.PAID,
+      },
+    }),
+    prisma.orderCourse.count({
+      where: {
+        createdAt: { gte: startOfMonth, lte: endOfMonth },
+        paymentStatus: PaymentStatus.PAID,
+      },
+    }),
+    prisma.bookingBookSpeaker.count({
+      where: { createdAt: { gte: startOfMonth, lte: endOfMonth } },
+    }),
+    prisma.user.count({
+      where: { createdAt: { gte: startOfMonth, lte: endOfMonth } },
+    }),
+    prisma.webVisitor.count({
+      where: { createdAt: { gte: startOfMonth, lte: endOfMonth } },
+    }),
+  ]);
 
-  return result._sum.amount || 0; // যদি null হয় তাহলে 0 return করব
+  return {
+    totalRevenue:
+      (bookRevenue._sum.amount || 0) + (courseRevenue._sum.amount || 0),
+    bookSalesCount: bookSales._sum.amount || 0,
+    courseEnrollments,
+    speakingInquiries,
+    newMembers,
+    webVisitors,
+  };
 };
-const courseEnrollments = async()=> {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
 
-    const courseEnrollments = await prisma.orderCourse.count({
-        where: {
-            createdAt: {
-                gte: startOfMonth,
-                lte: endOfMonth
-            },
-            paymentStatus: PaymentStatus.PAID
-        }
-    })
-    return courseEnrollments;
-}
-
-const speakingInquires = async()=> {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-
-    const inquiries = await prisma.bookingBookSpeaker.count({
-        where: {
-            createdAt: {
-                gte: startOfMonth,
-                lte: endOfMonth
-            }
-        }
-    })
-    return inquiries;
-}
-
-const newMemberOfThisMonth = async()=> {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-
-    const newMembers = await prisma.user.count({
-        where: {
-            createdAt: {
-                gte: startOfMonth,
-                lte: endOfMonth
-            }
-        }
-    })
-    return newMembers;
-}
-
-const webVisitorOfThisMonth = async()=> {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-
-    const visitors = await prisma.webVisitor.count({
-        where: {
-            createdAt: {
-                gte: startOfMonth,
-                lte: endOfMonth
-            }
-        }
-    })
-    return visitors;
-}
 
 
 export const saveActivity = async (
@@ -317,12 +385,13 @@ const getTopSellingCourses = async () => {
 
 
 export const DashboardServices = {
-    totalRevenue,
-    bookSalesCount,
-    courseEnrollments,
-    speakingInquires,
-    newMemberOfThisMonth,
-    webVisitorOfThisMonth,
+    // totalRevenue,
+    // bookSalesCount,
+    // courseEnrollments,
+    // speakingInquires,
+    // newMemberOfThisMonth,
+    // webVisitorOfThisMonth,
+    dashboardStats,
     getRecentActivities,
     getTopSellingBooks,
     getTopSellingCourses

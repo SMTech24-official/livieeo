@@ -8,16 +8,42 @@ import { JwtPayload } from "jsonwebtoken";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from "http-status"
 
-const createPodcastIntoDB = async (payload: Podcast, podcastFiles: IFile[]) => {
-  if (podcastFiles && podcastFiles.length > 0) {
-    const uploadPodcastImages = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
-    payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+// const createPodcastIntoDB = async (payload: Podcast, podcastFiles: IFile[]) => {
+//   if (podcastFiles && podcastFiles.length > 0) {
+//     const uploadPodcastImages = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
+//     payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+//   }
+//   const result = await prisma.podcast.create({
+//     data: payload
+//   });
+//   return result;
+// }
+
+
+// podcast.service.ts
+const createPodcastIntoDB = async (
+  payload: Podcast,
+  thumbImageFile?: IFile,
+  podcastFiles: IFile[] = []
+) => {
+  // 1) Upload thumb image
+  if (thumbImageFile) {
+    const uploadedThumb = await fileUploader.uploadToCloudinary(thumbImageFile);
+    payload.thumbImage = uploadedThumb?.secure_url ?? null;
   }
-  const result = await prisma.podcast.create({
-    data: payload
-  });
+
+  // 2) Upload podcast files
+  if (podcastFiles.length > 0) {
+    const uploadedFiles = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
+    payload.featureMedia = uploadedFiles.map(file => file.secure_url);
+  } else {
+    payload.featureMedia = [];
+  }
+
+  // 3) Save to DB
+  const result = await prisma.podcast.create({ data: payload });
   return result;
-}
+};
 
 const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
   const queryBuilder = new QueryBuilder(prisma.podcast, query)

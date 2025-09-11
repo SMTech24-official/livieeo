@@ -6,6 +6,8 @@ import ApiError from "../../../errors/ApiError";
 import httpStatus from 'http-status'
 import { calcPercent, countTotals, sortCourseDeep } from "../../../helpers/progress";
 import { JwtPayload } from "jsonwebtoken";
+import { IFile } from "../../../interfaces/file";
+import { fileUploader } from "../../../helpers/fileUploader";
 
 
 
@@ -48,7 +50,11 @@ interface CourseDetailsView {
 
 
 
-const createCourseIntoDB = async (payload: Course) => {
+const createCourseIntoDB = async (payload: Course, file: IFile) => {
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    payload.thumbImage = uploadToCloudinary?.secure_url ?? ""
+  }
   const result = await prisma.course.create({
     data: payload
   });
@@ -58,7 +64,7 @@ const createCourseIntoDB = async (payload: Course) => {
 const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
   const queryBuilder = new QueryBuilder(prisma.course, query)
   const courses = await queryBuilder.range()
-    .search(["category","courseTitle","mentorName"])
+    .search(["category", "courseTitle", "mentorName"])
     .filter(["category"])
     .sort()
     .paginate()
@@ -147,7 +153,7 @@ const getSingleCourseFromDB = async (
         status = "locked";
       }
 
-      return { id: v.id, videoTitle: v.videoTitle,videoUrl:v.fileUrl, order: v.order, status };
+      return { id: v.id, videoTitle: v.videoTitle, videoUrl: v.fileUrl, order: v.order, status };
     });
 
     const isModuleCompleted = m.courseModuleVideos.every((v: any) => completedSet.has(v.id));
