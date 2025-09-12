@@ -67,6 +67,16 @@ const getCustomerById = catchAsync(async (req, res) => {
         data: result
     });
 })
+const getUserById = catchAsync(async (req, res) => {
+    const { userId } = req.params
+    const result = await UserServices.getUserByIdFromDB(userId as string);
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: `User retrived successfully`,
+        data: result
+    });
+})
 
 const updateProfile = catchAsync(async (req, res) => {
     const user = req.user as JwtPayload
@@ -105,6 +115,7 @@ export const UserController = {
     getAllUser,
     createAdmin,
     getCustomerById,
+    getUserById,
     getAllCustomer,
     updateProfile,
     updateUserRole,

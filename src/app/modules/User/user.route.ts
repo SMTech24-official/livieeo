@@ -13,6 +13,7 @@ router.post("/create-admin",auth(UserRole.ADMIN), fileUploader.upload.single("fi
 router.get("/",auth(UserRole.USER,UserRole.ADMIN), UserController.getAllUser)
 router.get("/customers",auth(UserRole.ADMIN), UserController.getAllCustomer)
 router.get("/my-info",auth(UserRole.USER,UserRole.ADMIN), UserController.getCustomerById)
+router.get("/:userId",auth(UserRole.USER,UserRole.ADMIN), UserController.getUserById)
 router.put("/update-profile",auth(UserRole.USER,UserRole.ADMIN), fileUploader.upload.single("file"),textToJSONParser, UserController.updateProfile)
 router.patch("/update-role/:id",auth(UserRole.ADMIN), UserController.updateUserRole)
 router.patch("/edit/admin-setting/:id",auth(UserRole.ADMIN), UserController.editAdminSetting)
