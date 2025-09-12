@@ -9,15 +9,28 @@ const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const podcast_service_1 = require("./podcast.service");
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
+// const createPodcast = catchAsync(async (req, res) => {
+//     const payload = req.body;
+//     const podcastFiles = req.files as IFile[];
+//     const result = await PodcastServices.createPodcastIntoDB(payload, podcastFiles);
+//     sendResponse(res, {
+//         statusCode: 201,
+//         success: true,
+//         message: "Podcast created successfully",
+//         data: result
+//     })
+// })
+// podcast.controller.ts
 const createPodcast = (0, catchAsync_1.default)(async (req, res) => {
-    const payload = req.body;
-    const podcastFiles = req.files;
-    const result = await podcast_service_1.PodcastServices.createPodcastIntoDB(payload, podcastFiles);
+    const files = req.files;
+    const thumbImageFile = files.thumbImage ? files.thumbImage[0] : undefined;
+    const podcastFiles = files.podcastFiles ? files.podcastFiles : [];
+    const result = await podcast_service_1.PodcastServices.createPodcastIntoDB(req.body, thumbImageFile, podcastFiles);
     (0, sendResponse_1.default)(res, {
         statusCode: 201,
         success: true,
         message: "Podcast created successfully",
-        data: result
+        data: result,
     });
 });
 const getAllPodcasts = (0, catchAsync_1.default)(async (req, res) => {

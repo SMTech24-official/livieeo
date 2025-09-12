@@ -49,6 +49,37 @@ export declare const UserServices: {
         id: string;
         name: string;
         email: string;
+        role: import("@prisma/client").$Enums.UserRole;
+        contactNumber: string;
+        gender: import("@prisma/client").$Enums.Gender;
+        address: string | null;
+        bio: string | null;
+        photoUrl: string | null;
+        introduction: string | null;
+        education: {
+            degree: string | null;
+            institution: string | null;
+            field: string | null;
+        }[];
+        socialLinks: {};
+        overview: {
+            completedCourse: number;
+            totalBooks: number;
+            totalPurchased: number;
+        };
+        orders: {
+            type: string;
+            title: string;
+            price: number;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            createdAt: Date;
+        }[];
+    }>;
+    getUserByIdFromDB: (id: string) => Promise<{
+        id: string;
+        name: string;
+        email: string;
+        role: import("@prisma/client").$Enums.UserRole;
         contactNumber: string;
         gender: import("@prisma/client").$Enums.Gender;
         address: string | null;

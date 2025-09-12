@@ -14,12 +14,14 @@ export declare const getRecentActivities: () => Promise<{
     profileImage: string | null;
 }[]>;
 export declare const DashboardServices: {
-    totalRevenue: () => Promise<number>;
-    bookSalesCount: () => Promise<number>;
-    courseEnrollments: () => Promise<number>;
-    speakingInquires: () => Promise<number>;
-    newMemberOfThisMonth: () => Promise<number>;
-    webVisitorOfThisMonth: () => Promise<number>;
+    dashboardStats: () => Promise<{
+        totalRevenue: number;
+        bookSalesCount: number;
+        courseEnrollments: number;
+        speakingInquiries: number;
+        newMembers: number;
+        webVisitors: number;
+    }>;
     getRecentActivities: () => Promise<{
         name: string;
         product: string;

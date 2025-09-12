@@ -9,7 +9,7 @@ const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const http_status_1 = __importDefault(require("http-status"));
 const course_service_1 = require("./course.service");
 const createCourse = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await course_service_1.CourseServices.createCourseIntoDB(req.body);
+    const result = await course_service_1.CourseServices.createCourseIntoDB(req.body, req.file);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
         success: true,

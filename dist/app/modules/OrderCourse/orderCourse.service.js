@@ -77,35 +77,6 @@ const getAllOrderedCoursesFromDB = async (query) => {
     const meta = await queryBuilder.countTotal();
     return { meta, data: orders };
 };
-// const getMyOrderedCoursesFromDB = async (query: Record<string, any>, userId: string): Promise<IGenericResponse<OrderCourse[]>> => {
-//   console.log("USERiD", userId)
-//   const queryBuilder = new QueryBuilder(prisma.orderCourse, query);
-//   const myCourses = await queryBuilder
-//     .range()
-//     .search(["courseTitle"])
-//     .filter()
-//     .sort()
-//     .paginate()
-//     .fields()
-//     .execute(
-//       {
-//         where: {
-//           userId,
-//           paymentStatus: "PAID"
-//         },
-//         include: {
-//           user: true,
-//           items: {
-//             include: {
-//               course: true,
-//             },
-//           },
-//         },
-//       }
-//     );
-//   const meta = await queryBuilder.countTotal();
-//   return { meta, data: myCourses }
-// }
 const getMyOrderedCoursesFromDB = async (query, userId) => {
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.orderCourse, query);
     const myCourses = await queryBuilder

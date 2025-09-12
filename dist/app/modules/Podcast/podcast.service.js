@@ -9,14 +9,33 @@ const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const queryBuilder_1 = __importDefault(require("../../../helpers/queryBuilder"));
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
-const createPodcastIntoDB = async (payload, podcastFiles) => {
-    if (podcastFiles && podcastFiles.length > 0) {
-        const uploadPodcastImages = await fileUploader_1.fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
-        payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+// const createPodcastIntoDB = async (payload: Podcast, podcastFiles: IFile[]) => {
+//   if (podcastFiles && podcastFiles.length > 0) {
+//     const uploadPodcastImages = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
+//     payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+//   }
+//   const result = await prisma.podcast.create({
+//     data: payload
+//   });
+//   return result;
+// }
+// podcast.service.ts
+const createPodcastIntoDB = async (payload, thumbImageFile, podcastFiles = []) => {
+    // 1) Upload thumb image
+    if (thumbImageFile) {
+        const uploadedThumb = await fileUploader_1.fileUploader.uploadToCloudinary(thumbImageFile);
+        payload.thumbImage = uploadedThumb?.secure_url ?? null;
     }
-    const result = await prisma_1.default.podcast.create({
-        data: payload
-    });
+    // 2) Upload podcast files
+    if (podcastFiles.length > 0) {
+        const uploadedFiles = await fileUploader_1.fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
+        payload.featureMedia = uploadedFiles.map(file => file.secure_url);
+    }
+    else {
+        payload.featureMedia = [];
+    }
+    // 3) Save to DB
+    const result = await prisma_1.default.podcast.create({ data: payload });
     return result;
 };
 const getAllPodcastFromDB = async (query) => {

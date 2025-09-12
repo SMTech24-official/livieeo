@@ -109,31 +109,6 @@ const changePassword = async (user, payload) => {
     return { message: "Password changed successfully!" };
 };
 // ================= FORGOT PASSWORD (Send OTP) =================
-// const forgotPassword = async (payload: { email: string }) => {
-//   const userData = await prisma.user.findUniqueOrThrow({
-//     where: {
-//       email: payload.email,
-//       status: UserStatus.ACTIVE,
-//     },
-//   });
-//   // generate 6 digit OTP
-//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//   // save OTP in DB with expiry
-//   await prisma.resetToken.create({
-//     data: {
-//       email: userData.email,
-//       otp,
-//       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-//     },
-//   });
-//   // send email
-//   await emailSender(
-//     userData.email,
-//     "Password Reset OTP",
-//     await EmailTemplates.temp1(otp as unknown as number)
-//   );
-//   return { message: "OTP sent to email" };
-// };
 const forgotPassword = async (payload) => {
     const userData = await prisma_1.default.user.findUniqueOrThrow({
         where: {
@@ -145,7 +120,7 @@ const forgotPassword = async (payload) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.reset_pass_secret, config_1.default.jwt.reset_pass_expires_in);
-    const resetPassLink = config_1.default.reset_pass_link + `/auth/?email=${userData.email}&token=${resetPassToken}`;
+    const resetPassLink = `${config_1.default.reset_pass_link}/?email=${userData.email}&token=${resetPassToken}`;
     await (0, emailSender_1.default)(userData.email, "Reset Your Password", `
   <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; padding: 40px;">
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
@@ -159,7 +134,7 @@ const forgotPassword = async (payload) => {
       <!-- Body -->
       <div style="padding: 40px; color: #333333; font-size: 16px; line-height: 1.6;">
         <p>Hi <strong>${userData.firstName}</strong>,</p>
-        <p>Click the button below to securely reset your password. This link will expire in <strong>30 minutes</strong>.</p>
+        <p>Click the button below to securely reset your password. This link will expire in <strong>5 minutes</strong>.</p>
 
         <div style="text-align: center; margin: 40px 0;">
           <a href="${resetPassLink}" 
@@ -195,6 +170,27 @@ const forgotPassword = async (payload) => {
   </div>
   `);
 };
+// ================= RESET PASSWORD (Using Token) =================
+const resetPassword = async (payload) => {
+    try {
+        // Step 1: টোকেন ভেরিফাই করা
+        const decoded = jwtHelper_1.JWTHelpers.verifyToken(payload.token, config_1.default.jwt.reset_pass_secret);
+        if (!decoded?.email) {
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Invalid or expired token");
+        }
+        // Step 2: নতুন পাসওয়ার্ড হ্যাশ করা
+        const hashedPassword = await bcrypt_1.default.hash(payload.newPassword, 12);
+        // Step 3: ইউজারের পাসওয়ার্ড আপডেট করা
+        await prisma_1.default.user.update({
+            where: { email: decoded.email },
+            data: { password: hashedPassword },
+        });
+        return { message: "Password reset successfully" };
+    }
+    catch (error) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Token expired or invalid");
+    }
+};
 // ================= VERIFY OTP =================
 const verifyOtp = async (payload) => {
     const token = await prisma_1.default.resetToken.findFirst({
@@ -207,26 +203,6 @@ const verifyOtp = async (payload) => {
         throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "OTP expired");
     }
     return { message: "OTP verified successfully" };
-};
-// ================= RESET PASSWORD =================
-const resetPassword = async (payload) => {
-    const token = await prisma_1.default.resetToken.findFirst({
-        where: { email: payload.email, otp: payload.otp },
-    });
-    if (!token) {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Invalid OTP");
-    }
-    if (token.expiresAt < new Date()) {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "OTP expired");
-    }
-    const hashedPassword = await bcrypt_1.default.hash(payload.newPassword, 12);
-    await prisma_1.default.user.update({
-        where: { email: payload.email },
-        data: { password: hashedPassword },
-    });
-    // delete OTP after success
-    await prisma_1.default.resetToken.delete({ where: { id: token.id } });
-    return { message: "Password reset successfully" };
 };
 exports.AuthServices = {
     loginUser,

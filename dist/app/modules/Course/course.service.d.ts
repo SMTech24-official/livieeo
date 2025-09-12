@@ -1,5 +1,6 @@
 import { Course, Prisma } from "@prisma/client";
 import { IGenericResponse } from "../../../interfaces/common";
+import { IFile } from "../../../interfaces/file";
 type VideoStatus = "locked" | "current" | "completed";
 interface CourseDetailsView {
     id: string;
@@ -38,7 +39,7 @@ interface CourseDetailsView {
     } | null;
 }
 export declare const CourseServices: {
-    createCourseIntoDB: (payload: Course) => Promise<{
+    createCourseIntoDB: (payload: Course, file: IFile) => Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -52,6 +53,7 @@ export declare const CourseServices: {
         mentorName: string;
         totalVideo: number;
         duration: string;
+        thumbImage: string | null;
     }>;
     getAllCoursesFromDB: (query: Record<string, unknown>) => Promise<IGenericResponse<Course[]>>;
     updatePublishedStatus: (courseId: string) => Promise<{
@@ -68,6 +70,7 @@ export declare const CourseServices: {
         mentorName: string;
         totalVideo: number;
         duration: string;
+        thumbImage: string | null;
     }>;
     updateCourseIntoDB: (courseId: string, payload: Prisma.CourseUpdateInput) => Promise<{
         id: string;
@@ -83,6 +86,7 @@ export declare const CourseServices: {
         mentorName: string;
         totalVideo: number;
         duration: string;
+        thumbImage: string | null;
     }>;
     getPublishedCoursesFromDB: (query: Record<string, unknown>) => Promise<IGenericResponse<Course[]>>;
     deleteCourseFromDB: (id: string) => Promise<{

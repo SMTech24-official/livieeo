@@ -69,6 +69,16 @@ const getCustomerById = (0, catchAsync_1.default)(async (req, res) => {
         data: result
     });
 });
+const getUserById = (0, catchAsync_1.default)(async (req, res) => {
+    const { userId } = req.params;
+    const result = await user_service_1.UserServices.getUserByIdFromDB(userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.CREATED,
+        success: true,
+        message: `User retrived successfully`,
+        data: result
+    });
+});
 const updateProfile = (0, catchAsync_1.default)(async (req, res) => {
     const user = req.user;
     const file = req.file;
@@ -106,6 +116,7 @@ exports.UserController = {
     getAllUser,
     createAdmin,
     getCustomerById,
+    getUserById,
     getAllCustomer,
     updateProfile,
     updateUserRole,

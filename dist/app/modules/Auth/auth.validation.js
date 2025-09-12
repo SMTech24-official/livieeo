@@ -36,11 +36,10 @@ const verifyOtp = zod_1.z.object({
     }),
 });
 // reset password validation
-const resetPassword = zod_1.z.object({
+const resetPasswordValidation = zod_1.z.object({
     body: zod_1.z.object({
-        email: zod_1.z.string({ message: "Email is required" }).email("Invalid email"),
-        otp: zod_1.z.string({ message: "OTP is required" }).length(6, "OTP must be 6 digits"),
-        newPassword: zod_1.z.string({ message: "New password is required" }),
+        token: zod_1.z.string({ message: "Token is required" }),
+        newPassword: zod_1.z.string({ message: "New Password is required" }),
     }),
 });
 exports.AuthValidator = {
@@ -49,6 +48,6 @@ exports.AuthValidator = {
     changePassword,
     forgotPassword,
     verifyOtp,
-    resetPassword,
+    resetPasswordValidation,
 };
 //# sourceMappingURL=auth.validation.js.map

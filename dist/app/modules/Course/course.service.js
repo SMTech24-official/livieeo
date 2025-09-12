@@ -9,7 +9,12 @@ const queryBuilder_1 = __importDefault(require("../../../helpers/queryBuilder"))
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
 const progress_1 = require("../../../helpers/progress");
-const createCourseIntoDB = async (payload) => {
+const fileUploader_1 = require("../../../helpers/fileUploader");
+const createCourseIntoDB = async (payload, file) => {
+    if (file) {
+        const uploadToCloudinary = await fileUploader_1.fileUploader.uploadToCloudinary(file);
+        payload.thumbImage = uploadToCloudinary?.secure_url ?? "";
+    }
     const result = await prisma_1.default.course.create({
         data: payload
     });

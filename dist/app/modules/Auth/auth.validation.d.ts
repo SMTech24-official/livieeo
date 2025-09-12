@@ -28,10 +28,9 @@ export declare const AuthValidator: {
             otp: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;
-    resetPassword: z.ZodObject<{
+    resetPasswordValidation: z.ZodObject<{
         body: z.ZodObject<{
-            email: z.ZodString;
-            otp: z.ZodString;
+            token: z.ZodString;
             newPassword: z.ZodString;
         }, z.core.$strip>;
     }, z.core.$strip>;

@@ -22,6 +22,6 @@ router.post("/forgot-password", (0, validateRequest_1.validateRequest)(auth_vali
 // verify OTP
 router.post("/verify-otp", (0, validateRequest_1.validateRequest)(auth_validation_1.AuthValidator.verifyOtp), auth_controller_1.AuthControllers.verifyOtp);
 // reset password (with OTP)
-router.post("/reset-password", (0, validateRequest_1.validateRequest)(auth_validation_1.AuthValidator.resetPassword), auth_controller_1.AuthControllers.resetPassword);
+router.post("/reset-password", (0, validateRequest_1.validateRequest)(auth_validation_1.AuthValidator.resetPasswordValidation), auth_controller_1.AuthControllers.resetPassword);
 exports.AuthRoutes = router;
 //# sourceMappingURL=auth.route.js.map

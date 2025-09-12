@@ -3,13 +3,14 @@ import { IFile } from "../../../interfaces/file";
 import { IGenericResponse } from "../../../interfaces/common";
 import { JwtPayload } from "jsonwebtoken";
 export declare const PodcastServices: {
-    createPodcastIntoDB: (payload: Podcast, podcastFiles: IFile[]) => Promise<{
+    createPodcastIntoDB: (payload: Podcast, thumbImageFile?: IFile, podcastFiles?: IFile[]) => Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         category: string;
         isPublished: boolean;
         publishDate: Date;
+        thumbImage: string | null;
         featureMedia: string[];
         podcastTitle: string;
         secondaryTitle: string;
@@ -24,6 +25,7 @@ export declare const PodcastServices: {
         category: string;
         isPublished: boolean;
         publishDate: Date;
+        thumbImage: string | null;
         featureMedia: string[];
         podcastTitle: string;
         secondaryTitle: string;
@@ -36,6 +38,7 @@ export declare const PodcastServices: {
         category: string;
         isPublished: boolean;
         publishDate: Date;
+        thumbImage: string | null;
         featureMedia: string[];
         podcastTitle: string;
         secondaryTitle: string;
@@ -48,6 +51,7 @@ export declare const PodcastServices: {
         category: string;
         isPublished: boolean;
         publishDate: Date;
+        thumbImage: string | null;
         featureMedia: string[];
         podcastTitle: string;
         secondaryTitle: string;
@@ -81,6 +85,7 @@ export declare const PodcastServices: {
                 category: string;
                 isPublished: boolean;
                 publishDate: Date;
+                thumbImage: string | null;
                 featureMedia: string[];
                 podcastTitle: string;
                 secondaryTitle: string;
@@ -113,6 +118,7 @@ export declare const PodcastServices: {
                 category: string;
                 isPublished: boolean;
                 publishDate: Date;
+                thumbImage: string | null;
                 featureMedia: string[];
                 podcastTitle: string;
                 secondaryTitle: string;
@@ -130,6 +136,7 @@ export declare const PodcastServices: {
         category: string;
         isPublished: boolean;
         publishDate: Date;
+        thumbImage: string | null;
         featureMedia: string[];
         podcastTitle: string;
         secondaryTitle: string;

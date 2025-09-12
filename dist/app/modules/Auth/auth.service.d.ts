@@ -37,8 +37,7 @@ export declare const AuthServices: {
         message: string;
     }>;
     resetPassword: (payload: {
-        email: string;
-        otp: string;
+        token: string;
         newPassword: string;
     }) => Promise<{
         message: string;
