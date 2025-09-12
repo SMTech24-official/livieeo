@@ -16,6 +16,72 @@ interface ChangePasswordPayload {
 }
 
 // ================= LOGIN =================
+// const loginUser = async (payload: { email: string; password: string }) => {
+//   // 1) ইমেইল দিয়ে ইউজার খোঁজা
+//   const userData = await prisma.user.findUniqueOrThrow({
+//     where: {
+//       email: payload.email,
+//       status: UserStatus.ACTIVE,
+//     },
+//   });
+
+//   // 2) পাসওয়ার্ড চেক করা
+//   const isCorrectPassword: boolean = await bcrypt.compare(
+//     payload.password,
+//     userData.password
+//   );
+
+//   if (!isCorrectPassword) {
+//     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
+//   }
+
+//   // 3) Access Token বানানো
+//   const accessToken = JWTHelpers.generateToken(
+//     {
+//       id: userData.id,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+//       email: userData.email,
+//       role: userData.role,
+//     },
+//     config.jwt.access_secret as Secret,
+//     config.jwt.access_expires_in as string
+//   );
+
+//   // 4) Refresh Token বানানো
+//   const refreshToken = JWTHelpers.generateToken(
+//     {
+//       id: userData.id,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+//       email: userData.email,
+//       role: userData.role,
+//     },
+//     config.jwt.refresh_secret as Secret,
+//     config.jwt.refresh_expires_in as string
+//   );
+
+//   // 5) টোকেন + ইউজার ডেটা রিটার্ন করা
+//   return {
+//     accessToken,
+//     refreshToken,
+//     user: {
+//       id: userData.id,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+//       email: userData.email,
+//       role: userData.role,
+//       status: userData.status,
+//       createdAt: userData.createdAt,
+//     },
+//   };
+// };
+
+
+
+
+
+// ================= LOGIN =================
 const loginUser = async (payload: { email: string; password: string }) => {
   // 1) ইমেইল দিয়ে ইউজার খোঁজা
   const userData = await prisma.user.findUniqueOrThrow({
@@ -25,7 +91,12 @@ const loginUser = async (payload: { email: string; password: string }) => {
     },
   });
 
-  // 2) পাসওয়ার্ড চেক করা
+  // 2) চেক করো ইউজার verified হয়েছে কিনা
+  if (!userData.isEmailVerified) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Please verify your email before login");
+  }
+
+  // 3) পাসওয়ার্ড চেক করা
   const isCorrectPassword: boolean = await bcrypt.compare(
     payload.password,
     userData.password
@@ -35,7 +106,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
   }
 
-  // 3) Access Token বানানো
+  // 4) Access Token বানানো
   const accessToken = JWTHelpers.generateToken(
     {
       id: userData.id,
@@ -48,7 +119,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     config.jwt.access_expires_in as string
   );
 
-  // 4) Refresh Token বানানো
+  // 5) Refresh Token বানানো
   const refreshToken = JWTHelpers.generateToken(
     {
       id: userData.id,
@@ -61,7 +132,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     config.jwt.refresh_expires_in as string
   );
 
-  // 5) টোকেন + ইউজার ডেটা রিটার্ন করা
+  // 6) টোকেন + ইউজার ডেটা রিটার্ন করা
   return {
     accessToken,
     refreshToken,
