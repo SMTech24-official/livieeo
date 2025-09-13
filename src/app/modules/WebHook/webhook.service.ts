@@ -27,7 +27,7 @@ const handleStripeWebHook = async (rawBody: Buffer, signature: string) => {
     const orderId = session.metadata?.orderId;
     const orderType = session.metadata?.orderType;
 
-    console.log("📦 orderId:", orderId, " orderType:", orderType);
+    console.log("📦 orderId:", orderId, " orderType:", orderType,);
 
     if (!orderId || !orderType) {
       console.warn("⚠️ No orderId/orderType found in session.metadata");
@@ -137,7 +137,20 @@ const handleStripeWebHook = async (rawBody: Buffer, signature: string) => {
 
         break;
       }
-
+      case "SUBSCRIPTION": {
+        await prisma.subscription.update({
+          where: { id: orderId },
+          data: {
+            paymentStatus:
+              event.type === "checkout.session.completed"
+                ? PaymentStatus.PAID
+                : PaymentStatus.CANCELED,
+            transactionId: session.payment_intent ?? session.id,
+          },
+        });
+        console.log("✅ Subscription Updated");
+        break;
+      }
       default:
         console.warn(`⚠️ Unknown order type: ${orderType}`);
     }

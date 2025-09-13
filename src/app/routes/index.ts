@@ -19,6 +19,7 @@ import { OrderCourseRoutes } from "../modules/OrderCourse/orderCourse.route";
 import { DashboardRoutes } from "../modules/Dashboard/dashboard.route";
 import { CourseProgressRoutes } from "../modules/CourseProgress/courseProgress.route";
 import { NewsletterRoutes } from "../modules/Newsletter/newsletter.route";
+import { SubscriptionRoutes } from "../modules/Subscription/subscription.route";
 
 const router = Router();
 
@@ -102,6 +103,10 @@ const moduleRoutes = [
   {
     path: "/dashboard",
     route: DashboardRoutes,
+  },
+  {
+    path: "/subscription",
+    route: SubscriptionRoutes,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

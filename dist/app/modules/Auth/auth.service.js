@@ -13,6 +13,62 @@ const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const jwtHelper_1 = require("../../../helpers/jwtHelper");
 const emailSender_1 = __importDefault(require("./emailSender"));
 // ================= LOGIN =================
+// const loginUser = async (payload: { email: string; password: string }) => {
+//   // 1) ইমেইল দিয়ে ইউজার খোঁজা
+//   const userData = await prisma.user.findUniqueOrThrow({
+//     where: {
+//       email: payload.email,
+//       status: UserStatus.ACTIVE,
+//     },
+//   });
+//   // 2) পাসওয়ার্ড চেক করা
+//   const isCorrectPassword: boolean = await bcrypt.compare(
+//     payload.password,
+//     userData.password
+//   );
+//   if (!isCorrectPassword) {
+//     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
+//   }
+//   // 3) Access Token বানানো
+//   const accessToken = JWTHelpers.generateToken(
+//     {
+//       id: userData.id,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+//       email: userData.email,
+//       role: userData.role,
+//     },
+//     config.jwt.access_secret as Secret,
+//     config.jwt.access_expires_in as string
+//   );
+//   // 4) Refresh Token বানানো
+//   const refreshToken = JWTHelpers.generateToken(
+//     {
+//       id: userData.id,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+//       email: userData.email,
+//       role: userData.role,
+//     },
+//     config.jwt.refresh_secret as Secret,
+//     config.jwt.refresh_expires_in as string
+//   );
+//   // 5) টোকেন + ইউজার ডেটা রিটার্ন করা
+//   return {
+//     accessToken,
+//     refreshToken,
+//     user: {
+//       id: userData.id,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+//       email: userData.email,
+//       role: userData.role,
+//       status: userData.status,
+//       createdAt: userData.createdAt,
+//     },
+//   };
+// };
+// ================= LOGIN =================
 const loginUser = async (payload) => {
     // 1) ইমেইল দিয়ে ইউজার খোঁজা
     const userData = await prisma_1.default.user.findUniqueOrThrow({
@@ -21,12 +77,16 @@ const loginUser = async (payload) => {
             status: client_1.UserStatus.ACTIVE,
         },
     });
-    // 2) পাসওয়ার্ড চেক করা
+    // 2) চেক করো ইউজার verified হয়েছে কিনা
+    if (!userData.isEmailVerified) {
+        throw new ApiError_1.default(http_status_1.default.FORBIDDEN, "Please verify your email before login");
+    }
+    // 3) পাসওয়ার্ড চেক করা
     const isCorrectPassword = await bcrypt_1.default.compare(payload.password, userData.password);
     if (!isCorrectPassword) {
         throw new ApiError_1.default(http_status_1.default.UNAUTHORIZED, "Incorrect password");
     }
-    // 3) Access Token বানানো
+    // 4) Access Token বানানো
     const accessToken = jwtHelper_1.JWTHelpers.generateToken({
         id: userData.id,
         firstName: userData.firstName,
@@ -34,7 +94,7 @@ const loginUser = async (payload) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
-    // 4) Refresh Token বানানো
+    // 5) Refresh Token বানানো
     const refreshToken = jwtHelper_1.JWTHelpers.generateToken({
         id: userData.id,
         firstName: userData.firstName,
@@ -42,7 +102,7 @@ const loginUser = async (payload) => {
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.refresh_secret, config_1.default.jwt.refresh_expires_in);
-    // 5) টোকেন + ইউজার ডেটা রিটার্ন করা
+    // 6) টোকেন + ইউজার ডেটা রিটার্ন করা
     return {
         accessToken,
         refreshToken,

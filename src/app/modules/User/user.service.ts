@@ -75,7 +75,53 @@ const registerUserIntoDB = async (payload: User, file: IFile) => {
     userId: result.userId,
   };
 };
+const resendOtp = async (email: string) => {
+  // 1) ইউজার খুঁজে বের করা
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
 
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // 2) চেক করা, ইমেইল আগেই ভেরিফাই করা হয়ে গেছে কিনা
+  if (user.isEmailVerified) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email already verified");
+  }
+
+  // 3) নতুন OTP generate করা
+  const newVerificationCode = generateVerificationCode();
+  const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 মিনিট valid থাকবে
+
+  // 4) DB-তে update করা
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerificationCode: newVerificationCode,
+      emailVerificationExpiry: expiry,
+    },
+  });
+
+  // 5) নতুন OTP ইমেইলে পাঠানো
+  await emailSender(
+    user.email,
+    "Email Verification Code (Resent)",
+    `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Email Verification</h2>
+        <p>Hi ${user.firstName},</p>
+        <p>Your new verification code is:</p>
+        <h1 style="color: #4f46e5;">${newVerificationCode}</h1>
+        <p>This code will expire in 10 minutes.</p>
+      </div>
+    `
+  );
+
+  return {
+    message: "New OTP sent to your email.",
+  };
+};
 const verifyEmail = async (userId: string, code: string) => {
   const user = await prisma.user.findUnique({ where: { userId } });
 
@@ -477,5 +523,6 @@ export const UserServices = {
     getUserByIdFromDB,
     updateProfile,
     updateUserRole,
-    editAdminSetting
+    editAdminSetting,
+    resendOtp
 }

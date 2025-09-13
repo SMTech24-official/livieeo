@@ -15,6 +15,16 @@ const registerUser = catchAsync(async (req, res) => {
         data: result,
     });
 })
+const resendOtp = catchAsync(async (req, res) => {
+    const {email} = req.body
+    const result = await UserServices.resendOtp(email);
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: `Otp resend successfully !`,
+        data: result,
+    });
+})
 const verifyEmail = catchAsync(async (req, res) => {
     const { userId } = req.params;
     const { code } = req.body;
@@ -36,6 +46,7 @@ const createAdmin = catchAsync(async (req, res) => {
         data: result,
     });
 })
+
 const getAllUser = catchAsync(async (req, res) => {
     const result = await UserServices.getAllUserFromDB(req.query);
     sendResponse(res, {
@@ -120,5 +131,6 @@ export const UserController = {
     updateProfile,
     updateUserRole,
     editAdminSetting,
-    verifyEmail
+    verifyEmail,
+    resendOtp
 }
