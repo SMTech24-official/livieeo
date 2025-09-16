@@ -5,8 +5,28 @@ import httpStatus from "http-status"
 import stripe from "../../../helpers/stripe";
 import config from "../../../config";
 import { IGenericResponse } from "../../../interfaces/common";
-import { Subscription } from "@prisma/client";
+import { Subscription, SubscriptionStatus } from "@prisma/client";
 import QueryBuilder from "../../../helpers/queryBuilder";
+
+
+type IMySubscriptionResponse = {
+  overview: {
+    planName: string;
+    price: number;
+    sessions: number;
+    nextBillingDate: Date | null;
+  } | null;
+  history: {
+    id: string;
+    date: Date;
+    planName: string;
+    paymentMethod: string;
+    status: string;
+    amount: number;
+    transactionId: string | null;
+  }[];
+};
+
 
 const createSubscriptionIntoDB = async (
   planId: string,
@@ -111,7 +131,7 @@ const connectSubscriptionIntoDB = async (subscriptionId: string) => {
     data: {
       status: "CONNECTED",
       startDate: new Date(),
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // ধরো ১ মাস
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     },
     include: {
       user: true,
@@ -120,15 +140,17 @@ const connectSubscriptionIntoDB = async (subscriptionId: string) => {
   });
 };
 
-// ✅ User: My subscriptions (with query builder)
-const getUserSubscriptionsFromDB = async (
+const getMySubscriptionFromDB = async (
   userId: string,
   query: Record<string, unknown>
-): Promise<IGenericResponse<Subscription[]>> => {
+): Promise<IGenericResponse<IMySubscriptionResponse>> => {
+  console.log("userId", userId);
+
+  // 👇 QueryBuilder দিয়ে Payment History আনবো
   const queryBuilder = new QueryBuilder(prisma.subscription, query);
 
-  const subscriptions = await queryBuilder
-    .filter(["status", "paymentStatus"]) // user can filter
+  const paymentHistory = await queryBuilder
+    .filter(["paymentStatus", "paymentMethod"])
     .sort()
     .paginate()
     .fields()
@@ -140,12 +162,43 @@ const getUserSubscriptionsFromDB = async (
 
   const meta = await queryBuilder.countTotal();
 
-  return { meta, data: subscriptions };
+  // 👇 Active subscription আলাদাভাবে আনবো
+  const activeSubscription = await prisma.subscription.findFirst({
+    where: { userId, status: SubscriptionStatus.CONNECTED },
+    include: { plan: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // 👇 Final Response
+  return {
+    meta,
+    data: {
+      overview: activeSubscription
+        ? {
+            planName: activeSubscription.plan.name,
+            price: activeSubscription.plan.price,
+            sessions: activeSubscription.plan.sessions,
+            nextBillingDate: activeSubscription.endDate,
+          }
+        : null,
+      history: paymentHistory.map((sub:any) => ({
+        id: sub.id,
+        date: sub.createdAt,
+        planName: sub.plan.name,
+        paymentMethod: sub.paymentMethod,
+        status: sub.paymentStatus,
+        amount: sub.plan.price,
+        transactionId: sub.transactionId,
+      })),
+    },
+  };
 };
+
+
 
 export const SubscriptionServices = {
   createSubscriptionIntoDB,
   getAllSubscriptionsFromDB,
   connectSubscriptionIntoDB,
-  getUserSubscriptionsFromDB,
+  getMySubscriptionFromDB,
 };

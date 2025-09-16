@@ -235,6 +235,7 @@ model Course {
   orderCourse       OrderCourse[]
   orderCourseItem   OrderCourseItem[]
   courseProgress    CourseProgress[]
+  courseModuleVideo CourseModuleVideo[]
 
   @@map("courses")
 }
@@ -302,6 +303,8 @@ model CourseModuleVideo {
   videoTitle     String
   fileUrl        String?
   order          Int          @default(0)
+  courseId       String       @db.ObjectId
+  course         Course       @relation(fields: [courseModuleId], references: [id])
   courseModuleId String       @db.ObjectId
   courseModule   CourseModule @relation(fields: [courseModuleId], references: [id])
 

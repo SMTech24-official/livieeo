@@ -1,8 +1,3 @@
-// const createSubscriptionIntoDB = async (
-//   planId: string,
-//   user: JwtPayload
-// )
-
 import { JwtPayload } from "jsonwebtoken";
 import catchAsync from "../../../shared/catchAsync";
 import { SubscriptionServices } from "./subscription.service";
@@ -21,12 +16,6 @@ const createSubscription = catchAsync(async(req,res)=> {
   });
 })
 
-// export const SubscriptionServices = {
-//   createSubscriptionIntoDB,
-//   getAllSubscriptionsFromDB,
-//   connectSubscriptionIntoDB,
-//   getUserSubscriptionsFromDB,
-// };
 
 const getAllSubscriptions = catchAsync(async(req,res)=> {
     const result = await SubscriptionServices.getAllSubscriptionsFromDB(req.query)
@@ -38,7 +27,30 @@ const getAllSubscriptions = catchAsync(async(req,res)=> {
   });
 })
 
+const connectSubscription = catchAsync(async(req,res)=> {
+  const {subscriptionId} = req.params
+  const result = await SubscriptionServices.connectSubscriptionIntoDB(subscriptionId as string)
+    sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Subscription connected successfully !",
+    data: result,
+  });
+})
+const getMySubscription = catchAsync(async(req,res)=> {
+  const user = req.user
+  const result = await SubscriptionServices.getMySubscriptionFromDB(user?.id as string,req.query)
+    sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "My subscription retrived successfully !",
+    data: result,
+  });
+})
+
 export const SubscriptionControllers = {
   createSubscription,
-  getAllSubscriptions
+  getAllSubscriptions,
+  connectSubscription,
+  getMySubscription
 };

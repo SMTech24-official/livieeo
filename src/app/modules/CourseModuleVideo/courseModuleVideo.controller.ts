@@ -23,19 +23,33 @@ const createCourseModuleVideo = catchAsync(async (req, res) => {
     video?: Express.Multer.File[];
   };
 
-  const thumbImageFile = files.thumbImage ? (files.thumbImage[0] as IFile) : undefined;
-  const videoFile = files.video ? (files.video[0] as IFile) : undefined;
+  // ✅ Make sure body is always array
+  const payload = Array.isArray(req.body) ? req.body : [req.body];
+
+  // ✅ Convert each file into a map with index key
+  const fileMap: Record<string, IFile> = {};
+
+  if (files?.thumbImage) {
+    files.thumbImage.forEach((file, index) => {
+      fileMap[`thumb-${index}`] = file as IFile;
+    });
+  }
+
+  if (files?.video) {
+    files.video.forEach((file, index) => {
+      fileMap[`video-${index}`] = file as IFile;
+    });
+  }
 
   const result = await CourseModuleVideoServices.createCourseModuleVideoIntoDB(
-    req.body,
-    thumbImageFile,
-    videoFile
+    payload,
+    fileMap
   );
 
   sendResponse(res, {
-    statusCode: httpStatus.CREATED,
+    statusCode: 200,
     success: true,
-    message: `Course Module Video created successfully`,
+    message: "Videos created successfully",
     data: result,
   });
 });

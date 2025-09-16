@@ -13,8 +13,8 @@ const router = Router()
 router.post(
   "/create",
   fileUploader.upload.fields([
-    { name: "thumbImage", maxCount: 1 },
-    { name: "video", maxCount: 1 },
+    { name: "thumbImage", maxCount: 20 }, // multiple thumbs
+    { name: "video", maxCount: 20 }, // multiple videos
   ]),
   auth(UserRole.ADMIN),
   textToJSONParser,

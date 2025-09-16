@@ -1,21 +1,36 @@
 import { CourseModule } from "@prisma/client";
 import prisma from "../../../shared/prisma";
-import ApiError from "../../../errors/ApiError";
 
-const createCourseModuleIntoDB = async(payload: CourseModule)=> {
-    const course = await prisma.course.findUnique({
-        where: {
-            id: payload.courseId
+const createCourseModuleIntoDB = async (payload: CourseModule[]) => {
+  // payload হবে array of modules
+  const result = await Promise.all(
+    payload.map(async (item) => {
+      // 1) Check if module already exists (if id is given)
+      if (item.id) {
+        const isExist = await prisma.courseModule.findFirst({
+          where: { id: item.id },
+        });
+        if (isExist) {
+          return null; // skip existing
         }
+      }
+
+      // 2) Create new course module
+      const newModule = await prisma.courseModule.create({
+        data: {
+          moduleTitle: item.moduleTitle,
+          courseId: item.courseId,
+          order: item.order ?? 0, // optional ordering
+        },
+      });
+
+      return newModule;
     })
-    if(!course){
-        throw new ApiError(404,"Course not found !")
-    }
-    const result = await prisma.courseModule.create({
-        data: payload
-    })
-    return result;
-}
+  );
+
+  return result.filter(Boolean); // remove null values
+};
+
 
 const getAllCourseModulesFromDB = async() => {
     const result = await prisma.courseModule.findMany();

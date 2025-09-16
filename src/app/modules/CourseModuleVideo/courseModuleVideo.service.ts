@@ -4,50 +4,49 @@ import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
 import ApiError from "../../../errors/ApiError";
 
-// const createCourseModuleVideoIntoDB = async (payload: CourseModuleVideo, file: IFile) => {
-//     const courseModule = await prisma.courseModule.findUnique({
-//         where: {
-//             id: payload.courseModuleId
-//         }
-//     })
-//     if(!courseModule){
-//         throw new ApiError(404,"Course module not found !")
-//     }
-//     const uploadToCloudinary = await fileUploader.uploadVideoToCloudinary(file);
-//     payload.fileUrl = uploadToCloudinary?.secure_url ?? "";
-//     const result = await prisma.courseModuleVideo.create({data: payload});
-//     return result
-// }
-
-
-// courseModuleVideo.service.ts
 const createCourseModuleVideoIntoDB = async (
-  payload: CourseModuleVideo,
-  thumbImage?: IFile,
-  video?: IFile
+  payload: CourseModuleVideo[],
+  files?: Record<string, IFile>
 ) => {
-  const courseModule = await prisma.courseModule.findUnique({
-    where: { id: payload.courseModuleId },
-  });
+  const results = await Promise.all(
+    payload.map(async (item, index) => {
+      // 1) Check course module exists
+      const courseModule = await prisma.courseModule.findUnique({
+        where: { id: item.courseModuleId },
+      });
 
-  if (!courseModule) {
-    throw new ApiError(404, "Course module not found !");
-  }
+      if (!courseModule) {
+        throw new ApiError(404, "Course module not found !");
+      }
 
-  // 1) Thumb image upload
-  if (thumbImage) {
-    const uploadThumb = await fileUploader.uploadToCloudinary(thumbImage);
-    payload.thumbImage = uploadThumb?.secure_url ?? "";
-  }
+      // 2) If id exists, check duplicate
+      if (item.id) {
+        const isExist = await prisma.courseModuleVideo.findFirst({
+          where: { id: item.id },
+        });
+        if (isExist) return null;
+      }
 
-  // 2) Video upload
-  if (video) {
-    const uploadVideo = await fileUploader.uploadVideoToCloudinary(video);
-    payload.fileUrl = uploadVideo?.secure_url ?? "";
-  }
+      // 3) Handle thumb upload (if exists)
+      const thumbFile = files?.[`thumb-${index}`];
+      if (thumbFile) {
+        const uploadThumb = await fileUploader.uploadToCloudinary(thumbFile);
+        item.thumbImage = uploadThumb?.secure_url ?? "";
+      }
 
-  const result = await prisma.courseModuleVideo.create({ data: payload });
-  return result;
+      // 4) Handle video upload (if exists)
+      const videoFile = files?.[`video-${index}`];
+      if (videoFile) {
+        const uploadVideo = await fileUploader.uploadVideoToCloudinary(videoFile);
+        item.fileUrl = uploadVideo?.secure_url ?? "";
+      }
+
+      // 5) Create video record
+      return prisma.courseModuleVideo.create({ data: item });
+    })
+  );
+
+  return results.filter((x): x is NonNullable<typeof x> => Boolean(x));
 };
 
 const getAllCourseModuleVideosFromDB = async () => {
