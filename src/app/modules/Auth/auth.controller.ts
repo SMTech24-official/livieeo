@@ -3,30 +3,33 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { AuthServices } from "./auth.service";
 import httpStatus from "http-status";
-
+ 
 // ================= LOGIN =================
 const loginUser = catchAsync(async (req, res) => {
   const result = await AuthServices.loginUser(req.body);
-  const { refreshToken } = result;
-
-  res.cookie("refreshToken", refreshToken, {
-    secure: false,
+ 
+  const cookieOptions = {
+    secure: process.env.NODE_ENV === "production",
     httpOnly: true,
-  });
-
+  };
+ 
+  console.log(result,'checking result is here');
+ 
+  res.cookie("refreshToken", result?.accessToken, cookieOptions);
+ 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Logged in successfully!",
-    data: { accessToken: result.accessToken, user: result.user },
+    data: result,
   });
 });
-
+ 
 // ================= REFRESH TOKEN =================
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
   const result = await AuthServices.refreshToken(refreshToken);
-
+ 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -34,12 +37,12 @@ const refreshToken = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+ 
 // ================= CHANGE PASSWORD =================
 const changePassword = catchAsync(async (req, res) => {
   const user = req.user as JwtPayload;
   const result = await AuthServices.changePassword(user, req.body);
-
+ 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -47,11 +50,11 @@ const changePassword = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+ 
 // ================= FORGOT PASSWORD (Send OTP) =================
 const forgotPassword = catchAsync(async (req, res) => {
   const result = await AuthServices.forgotPassword(req.body);
-
+ 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -59,11 +62,11 @@ const forgotPassword = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+ 
 // ================= VERIFY OTP =================
 const verifyOtp = catchAsync(async (req, res) => {
   const result = await AuthServices.verifyOtp(req.body);
-
+ 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -71,11 +74,11 @@ const verifyOtp = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+ 
 // ================= RESET PASSWORD =================
 const resetPassword = catchAsync(async (req, res) => {
   const result = await AuthServices.resetPassword(req.body);
-
+ 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -83,7 +86,7 @@ const resetPassword = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+ 
 export const AuthControllers = {
   loginUser,
   refreshToken,
@@ -92,3 +95,4 @@ export const AuthControllers = {
   verifyOtp,
   resetPassword,
 };
+ 

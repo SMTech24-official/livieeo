@@ -88,9 +88,16 @@ const getRelatedPodcasts = catchAsync(async (req, res) => {
 
 const updatePodcast = catchAsync(async (req, res) => {
     const id = req.params.id as string;
+
     const payload = req.body;
-    const podcastFiles = req.files as IFile[];
-    const updatedPodcast = await PodcastServices.updatePodcast(id, payload,podcastFiles);
+    const files = req.files as {
+        thumbImage?: Express.Multer.File[];
+        podcastFiles?: Express.Multer.File[];
+    };
+    const thumbImageFile = files.thumbImage ? (files.thumbImage[0] as IFile) : undefined;
+    const podcastFiles = files.podcastFiles ? (files.podcastFiles as IFile[]) : [];
+
+    const updatedPodcast = await PodcastServices.updatePodcast(id, payload,thumbImageFile,podcastFiles);
     sendResponse(res, {
         statusCode: 200,
         success: true,

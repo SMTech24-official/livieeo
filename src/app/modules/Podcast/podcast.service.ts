@@ -136,10 +136,16 @@ const getRelatedPodcastsFromDB = async (
   return { meta, data: podcasts };
 };
 
-const updatePodcast = async (id: string, payload: Partial<Podcast>, podcastFiles?: IFile[]) => {
+const updatePodcast = async (id: string, payload: Partial<Podcast>,   thumbImageFile?: IFile, podcastFiles?: IFile[]) => {
   if (podcastFiles && podcastFiles.length > 0) {
     const uploadPodcastImages = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
     payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+  }
+  if (thumbImageFile) {
+    const uploadThumbImageFile = await fileUploader.uploadToCloudinary(thumbImageFile);
+    if (uploadThumbImageFile) {
+      payload.thumbImage = uploadThumbImageFile.secure_url;
+    }
   }
   const updatedPodcast = await prisma.podcast.update({
     where: { id },

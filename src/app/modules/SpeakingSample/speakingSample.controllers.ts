@@ -46,8 +46,12 @@ const getSpeakingSampleById = catchAsync(async (req, res) => {
     });
 })
 const updateSpeakingSample = catchAsync(async (req, res) => {
-    const {speakingSampleId} = req.params
-    const result = await SpeakingSampleServices.updateSpeakingSampleIntoDB(speakingSampleId as string,req.body);
+    const file:IFile | any = req.file;
+    console.log(file)
+    const reqBody = req.body;
+    const {speakingSampleId}= req.params
+    console.log(speakingSampleId)
+    const result = await SpeakingSampleServices.updateSpeakingSampleIntoDB(speakingSampleId as string,reqBody,file);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

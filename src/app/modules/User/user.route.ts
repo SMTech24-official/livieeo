@@ -9,7 +9,7 @@ const router = Router()
 
 router.post("/register", fileUploader.upload.single("file"), textToJSONParser, UserController.registerUser)
 router.post("/resend-otp", UserController.resendOtp)
-router.post("/verify-email/:userId", UserController.verifyEmail)
+router.post("/verify-email", UserController.verifyEmail)
 router.post("/create-admin", auth(UserRole.ADMIN), fileUploader.upload.single("file"), textToJSONParser, UserController.createAdmin)
 router.get("/", auth(UserRole.USER, UserRole.ADMIN), UserController.getAllUser)
 router.get("/customers", auth(UserRole.ADMIN), UserController.getAllCustomer)

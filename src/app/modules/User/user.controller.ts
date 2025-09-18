@@ -4,7 +4,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { UserServices } from "./user.service";
 import httpStatus from "http-status";
-
+ 
 const registerUser = catchAsync(async (req, res) => {
     const file = req.file as IFile;
     const result = await UserServices.registerUserIntoDB(req.body, file);
@@ -16,7 +16,7 @@ const registerUser = catchAsync(async (req, res) => {
     });
 })
 const resendOtp = catchAsync(async (req, res) => {
-    const {email} = req.body
+    const {email } = req.body
     const result = await UserServices.resendOtp(email);
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
@@ -25,10 +25,10 @@ const resendOtp = catchAsync(async (req, res) => {
         data: result,
     });
 })
+ 
 const verifyEmail = catchAsync(async (req, res) => {
-    const { userId } = req.params;
-    const { code } = req.body;
-    const result = await UserServices.verifyEmail(userId as string, code);
+    const { code , email} = req.body;
+    const result = await UserServices.verifyEmail(email as string, code);
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
@@ -36,7 +36,7 @@ const verifyEmail = catchAsync(async (req, res) => {
         data: result,
     });
 })
-
+ 
 const createAdmin = catchAsync(async (req, res) => {
     const result = await UserServices.createAdminIntoDB(req.body, req.file as IFile);
     sendResponse(res, {
@@ -46,7 +46,7 @@ const createAdmin = catchAsync(async (req, res) => {
         data: result,
     });
 })
-
+ 
 const getAllUser = catchAsync(async (req, res) => {
     const result = await UserServices.getAllUserFromDB(req.query);
     sendResponse(res, {
@@ -88,7 +88,7 @@ const getUserById = catchAsync(async (req, res) => {
         data: result
     });
 })
-
+ 
 const updateProfile = catchAsync(async (req, res) => {
     const user = req.user as JwtPayload
     const file = req.file as IFile;
@@ -134,3 +134,4 @@ export const UserController = {
     verifyEmail,
     resendOtp
 }
+ 

@@ -10,8 +10,8 @@ import { fileUploader } from "../../../helpers/fileUploader";
 import { getNextAdminId, getNextUserId } from "./userId";
 import { JwtPayload } from "jsonwebtoken";
 import emailSender from "../Auth/emailSender";
-
-
+ 
+ 
 interface ICustomerResponse {
     id: string;
     name: string;
@@ -22,39 +22,43 @@ interface ICustomerResponse {
     photoUrl?: string | null;
     totalSpent: number;
 }
+ 
+ 
 const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
 };
-
+ 
 const registerUserIntoDB = async (payload: User, file: IFile) => {
-  // 1. Check if user exists
+try{
+    // 1. Check if user exists
   const existingUser = await prisma.user.findUnique({
     where: { email: payload.email },
   });
+ 
   if (existingUser) {
     throw new ApiError(httpStatus.CONFLICT, "User already exists");
   }
-
+ 
   // 2. Upload photo if exists
   if (file) {
-    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    const uploadToCloudinary = await fileUploader?.uploadToCloudinary(file);
     payload.photoUrl = uploadToCloudinary?.secure_url ?? null;
   }
-
+ 
   // 3. Hash password
   const hashedPassword = await bcrypt.hash(payload.password, 12);
   payload.password = hashedPassword;
   payload.userId = await getNextUserId();
-
+ 
   // 4. Generate verification code
   const verificationCode = generateVerificationCode();
   const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
   payload.emailVerificationCode = verificationCode;
   payload.emailVerificationExpiry = expiry;
-
+ 
   // 5. Save user in DB (unverified)
   const result = await prisma.user.create({ data: payload });
-
+ 
   // 6. Send verification email
   await emailSender(
     payload.email,
@@ -69,32 +73,36 @@ const registerUserIntoDB = async (payload: User, file: IFile) => {
       </div>
     `
   );
-
+ 
   return {
     message: "User registered successfully. Please verify your email.",
     userId: result.userId,
   };
+}catch(error: any){
+  console.log(error,'checking error');
+}
 };
+ 
+ 
 const resendOtp = async (email: string) => {
-  // 1) ইউজার খুঁজে বের করা
+ 
   const user = await prisma.user.findUnique({
     where: { email },
   });
-
+ 
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
-
-  // 2) চেক করা, ইমেইল আগেই ভেরিফাই করা হয়ে গেছে কিনা
+ 
+ 
   if (user.isEmailVerified) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email already verified");
   }
-
-  // 3) নতুন OTP generate করা
+ 
   const newVerificationCode = generateVerificationCode();
-  const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 মিনিট valid থাকবে
-
-  // 4) DB-তে update করা
+  const expiry = new Date(Date.now() + 10 * 60 * 1000);
+ 
+ 
   await prisma.user.update({
     where: { id: user.id },
     data: {
@@ -102,8 +110,8 @@ const resendOtp = async (email: string) => {
       emailVerificationExpiry: expiry,
     },
   });
-
-  // 5) নতুন OTP ইমেইলে পাঠানো
+ 
+ 
   await emailSender(
     user.email,
     "Email Verification Code (Resent)",
@@ -117,25 +125,27 @@ const resendOtp = async (email: string) => {
       </div>
     `
   );
-
+ 
   return {
     message: "New OTP sent to your email.",
   };
 };
-const verifyEmail = async (userId: string, code: string) => {
-  const user = await prisma.user.findUnique({ where: { userId } });
-
+ 
+const verifyEmail = async (email: string, code: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+ 
   if (!user) throw new ApiError(404, "User not found");
   if (user.isEmailVerified) throw new ApiError(400, "Email already verified");
   if (user.emailVerificationCode !== code) throw new ApiError(400, "Invalid code");
   if (user.emailVerificationExpiry! < new Date())
+ 
     throw new ApiError(400, "Code expired");
-
+ 
   await prisma.user.update({
-    where: { userId },
+    where: { id: user.id },
     data: { isEmailVerified: true, emailVerificationCode: null, emailVerificationExpiry: null },
   });
-
+ 
   return { message: "Email verified successfully!" };
 };
 const createAdminIntoDB = async (payload: User, file: IFile) => {
@@ -160,7 +170,7 @@ const createAdminIntoDB = async (payload: User, file: IFile) => {
     });
     return result;
 }
-
+ 
 const getAllUserFromDB = async (query: Record<string, any>): Promise<IGenericResponse<User[]>> => {
     const queryBuilder = new QueryBuilder(prisma.user, query);
     const users = await queryBuilder
@@ -184,13 +194,13 @@ const getAllUserFromDB = async (query: Record<string, any>): Promise<IGenericRes
     const meta = await queryBuilder.countTotal();
     return { meta, data: users }
 }
-
-
+ 
+ 
 const getAllCustomersFromDB = async (
     query: Record<string, any>
 ): Promise<IGenericResponse<ICustomerResponse[]>> => {
     const queryBuilder = new QueryBuilder(prisma.user, query);
-
+ 
     const users = await queryBuilder
         .range()
         .search(["firstName", "email"])
@@ -205,14 +215,14 @@ const getAllCustomersFromDB = async (
                 orderCourse: true
             },
         });
-
+ 
     // map করে নতুন ডাটা বানালাম
     const formattedUsers: ICustomerResponse[] = users.map((user: any) => {
         const totalBook = user.orderBook.reduce((sum: number, ob: any) => sum + ob.amount, 0);
         const totalCourse = user.orderCourse.reduce((sum: number, oc: any) => sum + oc.amount, 0);
-
+ 
         return {
-            id: user.userId,
+            id: user.id,
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
             contactNumber: user.contactNumber,
@@ -222,17 +232,17 @@ const getAllCustomersFromDB = async (
             sales: totalBook + totalCourse
         };
     });
-
+ 
     const meta = await queryBuilder.countTotal();
-
+ 
     return { meta, data: formattedUsers };
 };
-
-
-
+ 
+ 
+ 
 const getCustomerByIdFromDB = async (id: string) => {
   let user = null;
-
+ 
   if (!user) {
     user = await prisma.user.findUnique({
       where: { id }, // _id field (MongoDB ObjectId)
@@ -259,22 +269,22 @@ const getCustomerByIdFromDB = async (id: string) => {
       },
     });
   }
-
+ 
   if (!user) {
     throw new Error("User not found");
   }
-
+ 
   // 🧮 Overview calculation
   const completedCourse = user.courseCertificate.length;
   const totalBooks = user.orderBook.reduce(
     (sum, ob) => sum + ob.items.reduce((q, item) => q + item.quantity, 0),
     0
   );
-
+ 
   const totalPurchased =
     user.orderBook.reduce((sum, ob) => sum + ob.amount, 0) +
     user.orderCourse.reduce((sum, oc) => sum + oc.amount, 0);
-
+ 
   // 🛒 Orders list
   const orders = [
     ...user.orderBook.flatMap((ob) =>
@@ -296,7 +306,7 @@ const getCustomerByIdFromDB = async (id: string) => {
       }))
     ),
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
+ 
   // 🎯 Response object
   return {
     id: user.userId ?? user.id,
@@ -309,26 +319,26 @@ const getCustomerByIdFromDB = async (id: string) => {
     bio: user.bio,
     photoUrl: user.photoUrl,
     introduction: user.introduction,
-
+ 
     education: user.education.map((edu) => ({
       degree: edu.degree,
       institution: edu.institution,
       field: edu.field,
     })),
     socialLinks: user.socialLinks[0] ?? {},
-
+ 
     overview: {
       completedCourse,
       totalBooks,
       totalPurchased,
     },
-
+ 
     orders,
   };
 };
 const getUserByIdFromDB = async (id: string) => {
   let user = null;
-
+ 
   if (!user) {
     user = await prisma.user.findUnique({
       where: { id }, // _id field (MongoDB ObjectId)
@@ -355,22 +365,22 @@ const getUserByIdFromDB = async (id: string) => {
       },
     });
   }
-
+ 
   if (!user) {
     throw new Error("User not found");
   }
-
+ 
   // 🧮 Overview calculation
   const completedCourse = user.courseCertificate.length;
   const totalBooks = user.orderBook.reduce(
     (sum, ob) => sum + ob.items.reduce((q, item) => q + item.quantity, 0),
     0
   );
-
+ 
   const totalPurchased =
     user.orderBook.reduce((sum, ob) => sum + ob.amount, 0) +
     user.orderCourse.reduce((sum, oc) => sum + oc.amount, 0);
-
+ 
   // 🛒 Orders list
   const orders = [
     ...user.orderBook.flatMap((ob) =>
@@ -392,10 +402,10 @@ const getUserByIdFromDB = async (id: string) => {
       }))
     ),
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
+ 
   // 🎯 Response object
   return {
-    id: user.userId ?? user.id,
+    id: user.id,
     name: `${user.firstName} ${user.lastName ?? ""}`,
     email: user.email,
     role: user.role,
@@ -405,24 +415,24 @@ const getUserByIdFromDB = async (id: string) => {
     bio: user.bio,
     photoUrl: user.photoUrl,
     introduction: user.introduction,
-
+ 
     education: user.education.map((edu) => ({
       degree: edu.degree,
       institution: edu.institution,
       field: edu.field,
     })),
     socialLinks: user.socialLinks[0] ?? {},
-
+ 
     overview: {
       completedCourse,
       totalBooks,
       totalPurchased,
     },
-
+ 
     orders,
   };
 };
-
+ 
 const getAllAdminFromDB = async (query: Record<string, any>): Promise<IGenericResponse<User[]>> => {
     const queryBuilder = new QueryBuilder(prisma.user, query);
     const users = await queryBuilder
@@ -446,7 +456,7 @@ const getAllAdminFromDB = async (query: Record<string, any>): Promise<IGenericRe
     const meta = await queryBuilder.countTotal();
     return { meta, data: users }
 }
-
+ 
 const updateProfile = async (payload: Partial<User>, user: JwtPayload, file?: IFile) => {
     const userExists = await prisma.user.findUnique({
         where: {
@@ -503,7 +513,7 @@ const editAdminSetting = async (id: string, payload: Partial<User>) => {
     if (payload.email !== undefined) updateData.email = payload.email;
     if (payload.address !== undefined) updateData.address = payload.address;
     if (payload.introduction !== undefined) updateData.introduction = payload.introduction;
-
+ 
     const result = await prisma.user.update({
         where: {
             id

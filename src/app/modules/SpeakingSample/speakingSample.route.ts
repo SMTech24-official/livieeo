@@ -9,8 +9,8 @@ const router = Router()
 
 router.post("/create",auth(UserRole.ADMIN), fileUploader.upload.single("video"), textToJSONParser, SpeakingSampleControllers.createSpeakingSample)
 router.get("/:speakingSampleId",auth(UserRole.ADMIN,UserRole.USER), SpeakingSampleControllers.getSpeakingSampleById)
-router.get("/:speakingSampleId",auth(UserRole.ADMIN), SpeakingSampleControllers.updateSpeakingSample)
-router.get("/:speakingSampleId",auth(UserRole.ADMIN), SpeakingSampleControllers.deleteSpeakingSample)
+router.patch("/:speakingSampleId",auth(UserRole.ADMIN), fileUploader.upload.single("video"),SpeakingSampleControllers.updateSpeakingSample)
+router.delete("/:speakingSampleId",auth(UserRole.ADMIN), SpeakingSampleControllers.deleteSpeakingSample)
 router.get("/", SpeakingSampleControllers.getAllSpeakingSample)
 router.get("/:speakingSampleId/related-speaking-sample",auth(UserRole.ADMIN,UserRole.USER), SpeakingSampleControllers.getRelatedSpeakingSample)
 

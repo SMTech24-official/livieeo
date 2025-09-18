@@ -74,23 +74,42 @@ const getRelatedSpeakingSamplesFromDB = async (
 
     return { meta, data: speakingSamples };
 }
-const updateSpeakingSampleIntoDB = async (speakingSampleId: string, payload: Partial<SpeakingSample>) => {
-    const speakingSample = await prisma.speakingSample.findUnique({
-        where: {
-            id: speakingSampleId
-        }
-    })
-    if (!speakingSample) {
-        throw new ApiError(404, "Speaking sample not found !")
-    }
-    const result = await prisma.speakingSample.update({
-        where: {
-            id: speakingSampleId
-        },
-        data: payload
-    })
-    return result
-}
+
+
+const updateSpeakingSampleIntoDB = async (
+  speakingSampleId: string,
+  payload: Partial<SpeakingSample> & { data?: string },
+  file?: Express.Multer.File
+) => {
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadVideoToCloudinary(file);
+    payload.featureMedia = uploadToCloudinary?.secure_url ?? "";
+  }
+
+  // 👇 Fix: Parse and merge if payload.data is a JSON string
+  if (payload.data && typeof payload.data === "string") {
+    const parsed = JSON.parse(payload.data);
+    delete payload.data;
+    Object.assign(payload, parsed); // merge fields into payload
+  }
+
+  const speakingSample = await prisma.speakingSample.findUnique({
+    where: { id: speakingSampleId },
+  });
+
+  if (!speakingSample) {
+    throw new ApiError(404, "Speaking sample not found !");
+  }
+
+  const result = await prisma.speakingSample.update({
+    where: { id: speakingSampleId },
+    data: payload, // ✅ now only valid fields like sampleTitle, content, category, featureMedia
+  });
+
+  return result;
+};
+
+
 const deleteSpeakingSampleFromDB = async (speakingSampleId: string) => {
     const speakingSample = await prisma.speakingSample.findUnique({
         where: {

@@ -23,7 +23,18 @@ router.post(
 
 router.get("/",auth(UserRole.ADMIN), PodcastControllers.getAllPodcasts);
 router.get("/published-podcast",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getPublishedPodcasts);
-router.patch("/:id",auth(UserRole.ADMIN), fileUploader.upload.array("podcastFiles", 5), textToJSONParser, PodcastControllers.updatePodcast);
+
+router.patch(
+  "/:id",
+  fileUploader.upload.fields([
+    { name: "thumbImage", maxCount: 1 },
+    { name: "podcastFiles", maxCount: 5 },
+  ]),
+  auth(UserRole.ADMIN),
+  textToJSONParser,
+  PodcastControllers.updatePodcast
+);
+
 router.delete("/:id",auth(UserRole.ADMIN), PodcastControllers.deletePodcast);
 router.patch("/podcast-status/:id",auth(UserRole.ADMIN), PodcastControllers.updatePodcastStatus);
 
