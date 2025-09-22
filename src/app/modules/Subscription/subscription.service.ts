@@ -1,13 +1,16 @@
 import { JwtPayload } from "jsonwebtoken";
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiError";
-import httpStatus from "http-status"
+import httpStatus from "http-status";
 import stripe from "../../../helpers/stripe";
 import config from "../../../config";
 import { IGenericResponse } from "../../../interfaces/common";
-import { Subscription, SubscriptionStatus } from "@prisma/client";
+import {
+  SubscriptionName,
+  Subscription,
+  SubscriptionStatus,
+} from "@prisma/client";
 import QueryBuilder from "../../../helpers/queryBuilder";
-
 
 type IMySubscriptionResponse = {
   overview: {
@@ -27,16 +30,19 @@ type IMySubscriptionResponse = {
   }[];
 };
 
-
-const createSubscriptionIntoDB = async (
-  planId: string,
-  user: JwtPayload
-) => {
+const createSubscriptionIntoDB = async (planName: string, user: JwtPayload) => {
   const userId = user.id;
+
+  if (!["BASIC", "PREMIUM", "PLATINUM"].includes(planName.toUpperCase())) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid Subscription Plan provided"
+    );
+  }
 
   // 1️⃣ Find plan
   const plan = await prisma.subscriptionPlan.findUnique({
-    where: { id: planId },
+    where: { name: planName.toUpperCase() as SubscriptionName },
   });
 
   if (!plan) {
@@ -101,7 +107,25 @@ const createSubscriptionIntoDB = async (
 const getAllSubscriptionsFromDB = async (
   query: Record<string, unknown>
 ): Promise<IGenericResponse<Subscription[]>> => {
-  const queryBuilder = new QueryBuilder(prisma.subscription, query);
+  const queryBuilder = new QueryBuilder(prisma.subscription, {});
+
+  const extraQuery: Record<string, any> = {};
+  if (query.status) {
+    extraQuery["status"] = {
+      equals: (query.status as string).toUpperCase(),
+    };
+
+    if (
+      !["PENDING", "COMPLETED", "CANCELED"].includes(
+        extraQuery["status"].equals
+      )
+    ) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Invalid Status. Supported: `PENDING`, `COMPLETED`, `CANCELED`"
+      );
+    }
+  }
 
   const subscriptions = await queryBuilder
     .search(["status", "paymentStatus"]) // search fields
@@ -110,6 +134,7 @@ const getAllSubscriptionsFromDB = async (
     .paginate()
     .fields()
     .execute({
+      where: extraQuery,
       include: {
         user: true,
         plan: true,
@@ -119,7 +144,7 @@ const getAllSubscriptionsFromDB = async (
       },
     });
 
-  const meta = await queryBuilder.countTotal();
+  const meta = await queryBuilder.rawFilter(extraQuery).countTotal();
 
   return { meta, data: subscriptions };
 };
@@ -129,7 +154,7 @@ const connectSubscriptionIntoDB = async (subscriptionId: string) => {
   return prisma.subscription.update({
     where: { id: subscriptionId },
     data: {
-      status: "CONNECTED",
+      status: "COMPLETED",
       startDate: new Date(),
       endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     },
@@ -164,7 +189,7 @@ const getMySubscriptionFromDB = async (
 
   // 👇 Active subscription আলাদাভাবে আনবো
   const activeSubscription = await prisma.subscription.findFirst({
-    where: { userId, status: SubscriptionStatus.CONNECTED },
+    where: { userId, status: SubscriptionStatus.COMPLETED },
     include: { plan: true },
     orderBy: { createdAt: "desc" },
   });
@@ -181,7 +206,7 @@ const getMySubscriptionFromDB = async (
             nextBillingDate: activeSubscription.endDate,
           }
         : null,
-      history: paymentHistory.map((sub:any) => ({
+      history: paymentHistory.map((sub: any) => ({
         id: sub.id,
         date: sub.createdAt,
         planName: sub.plan.name,
@@ -193,8 +218,6 @@ const getMySubscriptionFromDB = async (
     },
   };
 };
-
-
 
 export const SubscriptionServices = {
   createSubscriptionIntoDB,

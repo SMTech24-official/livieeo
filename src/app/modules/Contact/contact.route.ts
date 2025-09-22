@@ -3,8 +3,8 @@ import { ContactControllers } from "./contact.controller";
 import auth from "../../middlewares/auth";
 import { UserRole } from "@prisma/client";
 
-const router = Router()
+const router = Router();
 
-router.post('/',auth(UserRole.USER,UserRole.ADMIN), ContactControllers.saveContact)
+router.post("/", ContactControllers.saveContact);
 
-export const ContactRoutes = router
+export const ContactRoutes = router;

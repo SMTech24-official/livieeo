@@ -6,7 +6,7 @@ import { IGenericResponse } from "../../../interfaces/common";
 import QueryBuilder from "../../../helpers/queryBuilder";
 import { JwtPayload } from "jsonwebtoken";
 import ApiError from "../../../errors/ApiError";
-import httpStatus from "http-status"
+import httpStatus from "http-status";
 
 // const createPodcastIntoDB = async (payload: Podcast, podcastFiles: IFile[]) => {
 //   if (podcastFiles && podcastFiles.length > 0) {
@@ -18,7 +18,6 @@ import httpStatus from "http-status"
 //   });
 //   return result;
 // }
-
 
 // podcast.service.ts
 const createPodcastIntoDB = async (
@@ -34,8 +33,10 @@ const createPodcastIntoDB = async (
 
   // 2) Upload podcast files
   if (podcastFiles.length > 0) {
-    const uploadedFiles = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
-    payload.featureMedia = uploadedFiles.map(file => file.secure_url);
+    const uploadedFiles = await fileUploader.uploadMultipleVideoToCloudinary(
+      podcastFiles
+    );
+    payload.featureMedia = uploadedFiles.map((file) => file.secure_url);
   } else {
     payload.featureMedia = [];
   }
@@ -45,9 +46,12 @@ const createPodcastIntoDB = async (
   return result;
 };
 
-const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
-  const queryBuilder = new QueryBuilder(prisma.podcast, query)
-  const podcasts = await queryBuilder.range()
+const getAllPodcastFromDB = async (
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Podcast[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.podcast, query);
+  const podcasts = await queryBuilder
+    .range()
     .search(["category", "podcastTitle", "secondaryTitle"])
     .filter(["category"])
     .sort()
@@ -55,15 +59,15 @@ const getAllPodcastFromDB = async (query: Record<string, unknown>): Promise<IGen
     .fields()
     .execute({
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
   const meta = await queryBuilder.countTotal();
-  return { meta, data: podcasts }
-}
+  return { meta, data: podcasts };
+};
 const getSinglePodcastFromDB = async (podcastId: string) => {
   const podcast = await prisma.podcast.findUnique({
-    where: { id: podcastId }
+    where: { id: podcastId },
   });
 
   if (!podcast) {
@@ -72,9 +76,12 @@ const getSinglePodcastFromDB = async (podcastId: string) => {
 
   return podcast;
 };
-const getPublishedPodcastFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Podcast[]>> => {
-  const queryBuilder = new QueryBuilder(prisma.podcast, query)
-  const podcasts = await queryBuilder.range()
+const getPublishedPodcastFromDB = async (
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Podcast[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.podcast, query);
+  const podcasts = await queryBuilder
+    .range()
     .search(["category", "podcastTitle", "secondaryTitle"])
     .filter()
     .sort()
@@ -82,15 +89,15 @@ const getPublishedPodcastFromDB = async (query: Record<string, unknown>): Promis
     .fields()
     .execute({
       where: {
-        isPublished: true
+        isPublished: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
   const meta = await queryBuilder.countTotal();
-  return { meta, data: podcasts }
-}
+  return { meta, data: podcasts };
+};
 const getRelatedPodcastsFromDB = async (
   podcastId: string,
   query: Record<string, unknown>
@@ -127,88 +134,113 @@ const getRelatedPodcastsFromDB = async (
       },
     });
 
-  const meta = await queryBuilder.countTotal();
-
-  if (!podcasts || podcasts.length === 0) {
-    throw new ApiError(404, "No related podcasts found");
-  }
+  const meta = await queryBuilder
+    .rawFilter({
+      id: { not: podcastId }, // নিজের podcast বাদ
+      category: {
+        contains: currentPodcast.category,
+        mode: "insensitive", // ✅ Case-insensitive match
+      },
+      isPublished: true,
+    })
+    .countTotal();
 
   return { meta, data: podcasts };
 };
 
-const updatePodcast = async (id: string, payload: Partial<Podcast>,   thumbImageFile?: IFile, podcastFiles?: IFile[]) => {
+const updatePodcast = async (
+  id: string,
+  payload: Partial<Podcast>,
+  thumbImageFile?: IFile,
+  podcastFiles?: IFile[]
+) => {
   if (podcastFiles && podcastFiles.length > 0) {
-    const uploadPodcastImages = await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
-    payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+    const uploadPodcastImages =
+      await fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
+    payload.featureMedia =
+      uploadPodcastImages.map((img) => img.secure_url) ?? [];
   }
   if (thumbImageFile) {
-    const uploadThumbImageFile = await fileUploader.uploadToCloudinary(thumbImageFile);
+    const uploadThumbImageFile = await fileUploader.uploadToCloudinary(
+      thumbImageFile
+    );
     if (uploadThumbImageFile) {
       payload.thumbImage = uploadThumbImageFile.secure_url;
     }
   }
   const updatedPodcast = await prisma.podcast.update({
     where: { id },
-    data: payload
+    data: payload,
   });
   return updatedPodcast;
-}
+};
 const deletePodcast = async (id: string) => {
   const deletedPodcast = await prisma.podcast.delete({
-    where: { id }
+    where: { id },
   });
   return deletedPodcast;
-}
+};
 const updatePodcastStatus = async (id: string) => {
   const updatedPodcast = await prisma.podcast.update({
     where: { id },
-    data: { isPublished: true, publishDate: new Date() }
+    data: { isPublished: true, publishDate: new Date() },
   });
   return updatedPodcast;
-}
-const logPodcastPlay = async (payload: PodcastActivity, user: JwtPayload, podcastId: string) => {
+};
+const logPodcastPlay = async (
+  payload: PodcastActivity,
+  user: JwtPayload,
+  podcastId: string
+) => {
   const podcast = await prisma.podcast.findUnique({
     where: {
-      id: podcastId
-    }
-  })
+      id: podcastId,
+    },
+  });
   if (!podcast) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Podcast not found !")
+    throw new ApiError(httpStatus.NOT_FOUND, "Podcast not found !");
   }
   // payload.userId = user.id
   // payload.podcastId = podcastId
   const activity = await prisma.podcastActivity.create({
     data: {
       userId: user.id,
-      podcastId
-    }
-  })
-  return activity
-}
-const getActivities = async (query: { user?: JwtPayload; type: "PODCAST", page?: number; limit: number }) => {
-  const page = Math.max(Number(query.page) || 1, 1)
-  const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100)
-  const skip = (page - 1) * limit
-  const where: any = {}
-  if (query?.user?.id) where.userId = query?.user?.id
-  if (query?.type) where.type = query.type
+      podcastId,
+    },
+  });
+  return activity;
+};
+const getActivities = async (query: {
+  user?: JwtPayload;
+  type: "PODCAST";
+  page?: number;
+  limit: number;
+}) => {
+  const page = Math.max(Number(query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100);
+  const skip = (page - 1) * limit;
+  const where: any = {};
+  if (query?.user?.id) where.userId = query?.user?.id;
+  if (query?.type) where.type = query.type;
   const [data, total] = await prisma.$transaction([
     prisma.podcastActivity.findMany({
       where,
       skip,
       take: limit,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       include: {
-        podcast: true
-      }
+        podcast: true,
+      },
     }),
-    prisma.podcastActivity.count({ where })
-  ])
-  return { meta: { page, limit, total, pages: Math.ceil(total / limit) }, data }
-}
-
+    prisma.podcastActivity.count({ where }),
+  ]);
+  return {
+    meta: { page, limit, total, pages: Math.ceil(total / limit) },
+    data,
+  };
+};
 
 // final
 const getMyRecentPodcasts = async (
@@ -315,7 +347,6 @@ const getMyRecentPodcasts = async (
   };
 };
 
-
 export const PodcastServices = {
   createPodcastIntoDB,
   getAllPodcastFromDB,
@@ -327,5 +358,5 @@ export const PodcastServices = {
   getActivities,
   getMyRecentPodcasts,
   getRelatedPodcastsFromDB,
-  getSinglePodcastFromDB
+  getSinglePodcastFromDB,
 };

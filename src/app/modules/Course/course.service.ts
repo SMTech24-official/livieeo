@@ -3,14 +3,15 @@ import prisma from "../../../shared/prisma";
 import { IGenericResponse } from "../../../interfaces/common";
 import QueryBuilder from "../../../helpers/queryBuilder";
 import ApiError from "../../../errors/ApiError";
-import httpStatus from 'http-status'
-import { calcPercent, countTotals, sortCourseDeep } from "../../../helpers/progress";
+import httpStatus from "http-status";
+import {
+  calcPercent,
+  countTotals,
+  sortCourseDeep,
+} from "../../../helpers/progress";
 import { JwtPayload } from "jsonwebtoken";
 import { IFile } from "../../../interfaces/file";
 import { fileUploader } from "../../../helpers/fileUploader";
-
-
-
 
 type VideoStatus = "locked" | "current" | "completed";
 
@@ -40,7 +41,7 @@ interface CourseDetailsView {
     videos: {
       id: string;
       videoTitle: string;
-      fileUrl: string
+      fileUrl: string;
       order: number;
       status: VideoStatus;
     }[];
@@ -48,22 +49,23 @@ interface CourseDetailsView {
   certificate?: { certificateNo: string; certificateUrl: string } | null;
 }
 
-
-
 const createCourseIntoDB = async (payload: Course, file: IFile) => {
   if (file) {
     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-    payload.thumbImage = uploadToCloudinary?.secure_url ?? ""
+    payload.thumbImage = uploadToCloudinary?.secure_url ?? "";
   }
   const result = await prisma.course.create({
-    data: payload
+    data: payload,
   });
   return result;
-}
+};
 
-const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
-  const queryBuilder = new QueryBuilder(prisma.course, query)
-  const courses = await queryBuilder.range()
+const getAllCoursesFromDB = async (
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Course[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.course, query);
+  const courses = await queryBuilder
+    .range()
     .search(["category", "courseTitle", "mentorName"])
     .filter(["category"])
     .sort()
@@ -80,15 +82,9 @@ const getAllCoursesFromDB = async (query: Record<string, unknown>): Promise<IGen
       },
     });
   const meta = await queryBuilder.countTotal();
-  if (!courses || courses.length === 0) {
-    throw new ApiError(404, "No courses found");
-  }
 
-  return { meta, data: courses }
+  return { meta, data: courses };
 };
-
-
-
 
 const getSingleCourseFromDB = async (
   courseId: string,
@@ -97,14 +93,16 @@ const getSingleCourseFromDB = async (
   const courseRaw = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
-      courseModules: { include: { courseModuleVideos: true }, orderBy: { order: "asc" } },
+      courseModules: {
+        include: { courseModuleVideos: true },
+        orderBy: { order: "asc" },
+      },
     },
   });
   if (!courseRaw) throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
 
   const course = sortCourseDeep(courseRaw);
   const { totalModules, totalVideos } = countTotals(course);
-
 
   let purchased = false;
   let percentCompleted = 0;
@@ -113,7 +111,6 @@ const getSingleCourseFromDB = async (
   let currentVideoId: string | null = null;
   let completedSet = new Set<string>();
   let certInfo: CourseDetailsView["certificate"] = null;
-
 
   let progress: any = null;
   if (userId) {
@@ -125,15 +122,22 @@ const getSingleCourseFromDB = async (
 
     if (progress) {
       completedSet = new Set(progress.completedVideos);
-      percentCompleted = calcPercent(progress.completedVideos.length, totalVideos);
+      percentCompleted = calcPercent(
+        progress.completedVideos.length,
+        totalVideos
+      );
 
-      
       currentVideoId = progress.currentVideoId ?? null;
 
-      
       if (progress.isCompleted) {
-        const cert = await prisma.courseCertificate.findFirst({ where: { userId, courseId } });
-        if (cert) certInfo = { certificateNo: cert.certificateNo, certificateUrl: cert.certificateUrl };
+        const cert = await prisma.courseCertificate.findFirst({
+          where: { userId, courseId },
+        });
+        if (cert)
+          certInfo = {
+            certificateNo: cert.certificateNo,
+            certificateUrl: cert.certificateUrl,
+          };
       }
     }
   }
@@ -153,10 +157,18 @@ const getSingleCourseFromDB = async (
         status = "locked";
       }
 
-      return { id: v.id, videoTitle: v.videoTitle, videoUrl: v.fileUrl, order: v.order, status };
+      return {
+        id: v.id,
+        videoTitle: v.videoTitle,
+        videoUrl: v.fileUrl,
+        order: v.order,
+        status,
+      };
     });
 
-    const isModuleCompleted = m.courseModuleVideos.every((v: any) => completedSet.has(v.id));
+    const isModuleCompleted = m.courseModuleVideos.every((v: any) =>
+      completedSet.has(v.id)
+    );
     if (isModuleCompleted) completedModulesCount++;
 
     return {
@@ -191,12 +203,12 @@ const getSingleCourseFromDB = async (
   };
 };
 
-
-
-
-const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Course[]>> => {
-  const queryBuilder = new QueryBuilder(prisma.course, query)
-  const courses = await queryBuilder.range()
+const getPublishedCoursesFromDB = async (
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Course[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.course, query);
+  const courses = await queryBuilder
+    .range()
     .search(["courseTitle"])
     .filter()
     .sort()
@@ -204,7 +216,7 @@ const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promis
     .fields()
     .execute({
       where: {
-        isPublished: true
+        isPublished: true,
       },
       include: {
         courseModules: {
@@ -215,12 +227,13 @@ const getPublishedCoursesFromDB = async (query: Record<string, unknown>): Promis
         courseCertificate: true, // প্রতিটি course এর certificate
       },
     });
-  const meta = await queryBuilder.countTotal();
-  if (!courses || courses.length === 0) {
-    throw new ApiError(404, "No courses found");
-  }
+  const meta = await queryBuilder
+    .rawFilter({
+      isPublished: true,
+    })
+    .countTotal();
 
-  return { meta, data: courses }
+  return { meta, data: courses };
 };
 const getRelatedCoursesFromDB = async (
   courseId: string,
@@ -265,11 +278,14 @@ const getRelatedCoursesFromDB = async (
       },
     });
 
-  const meta = await queryBuilder.countTotal();
-
-  if (!courses || courses.length === 0) {
-    throw new ApiError(404, "No related courses found");
-  }
+  const meta = await queryBuilder
+    .rawFilter({
+      id: { not: courseId }, // নিজের course বাদ যাবে
+      // { equals: currentCourse.category }
+      category: currentCourse.category, // একই category এর course
+      isPublished: true, // শুধু published course
+    })
+    .countTotal();
 
   return { meta, data: courses };
 };
@@ -287,8 +303,11 @@ const updatePublishedStatus = async (courseId: string) => {
     data: { isPublished: true },
   });
   return result;
-}
-const updateCourseIntoDB = async (courseId: string, payload: Prisma.CourseUpdateInput) => {
+};
+const updateCourseIntoDB = async (
+  courseId: string,
+  payload: Prisma.CourseUpdateInput
+) => {
   // 1️⃣ Course আছে কিনা check করা
   const existingCourse = await prisma.course.findUnique({
     where: { id: courseId },
@@ -379,7 +398,6 @@ const deleteCourseFromDB = async (id: string) => {
   });
 };
 
-
 export const CourseServices = {
   createCourseIntoDB,
   getAllCoursesFromDB,
@@ -388,5 +406,5 @@ export const CourseServices = {
   getPublishedCoursesFromDB,
   deleteCourseFromDB,
   getRelatedCoursesFromDB,
-  getSingleCourseFromDB
-}
+  getSingleCourseFromDB,
+};

@@ -52,7 +52,7 @@ const getAllUser = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
-        message: `Users retrived successfully`,
+        message: `Users retrieved successfully`,
         meta: result.meta,
         data: result.data,
     });
@@ -62,7 +62,7 @@ const getAllCustomer = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
-        message: `Customers retrived successfully`,
+        message: `Customers retrieved successfully`,
         meta: result.meta,
         data: result.data,
     });
@@ -74,7 +74,7 @@ const getCustomerById = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
-        message: `Customer retrived successfully`,
+        message: `Customer retrieved successfully`,
         data: result
     });
 })
@@ -84,7 +84,7 @@ const getUserById = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
-        message: `User retrived successfully`,
+        message: `User retrieved successfully`,
         data: result
     });
 })

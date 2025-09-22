@@ -6,35 +6,41 @@ import { IGenericResponse } from "../../../interfaces/common";
 import QueryBuilder from "../../../helpers/queryBuilder";
 import ApiError from "../../../errors/ApiError";
 
-const createBlogIntoDB = async (payload: Prisma.BlogCreateInput, blogImages: IFile[]) => {
-    if (blogImages && blogImages.length > 0) {
-        const uploadBlogImages = await fileUploader.uploadMultipleToCloudinary(blogImages);
-        payload.featureMedia = uploadBlogImages.map(img => img.secure_url) ?? [];
-    }
-    const result = await prisma.blog.create({
-        data: payload
+const createBlogIntoDB = async (
+  payload: Prisma.BlogCreateInput,
+  blogImages: IFile[]
+) => {
+  if (blogImages && blogImages.length > 0) {
+    const uploadBlogImages = await fileUploader.uploadMultipleToCloudinary(
+      blogImages
+    );
+    payload.featureMedia = uploadBlogImages.map((img) => img.secure_url) ?? [];
+  }
+  const result = await prisma.blog.create({
+    data: payload,
+  });
+  return result;
+};
+
+const getAllBlogsFromDB = async (
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Blog[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.blog, query);
+  const blogs = await queryBuilder
+    .range()
+    .search(["blogTitle", "category"])
+    .filter(["category"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-    return result;
-}
-
-const getAllBlogsFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Blog[]>> => {
-    const queryBuilder = new QueryBuilder(prisma.blog, query)
-    const blogs = await queryBuilder.range()
-        .search(["blogTitle","category"])
-        .filter(["category"])
-        .sort()
-        .paginate()
-        .fields()
-        .execute({
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
-    const meta = await queryBuilder.countTotal();
-    return { meta, data: blogs }
-}
-
-
+  const meta = await queryBuilder.countTotal();
+  return { meta, data: blogs };
+};
 
 const getSingleBlogFromDB = async (blogId: string) => {
   const blog = await prisma.blog.findUnique({
@@ -47,26 +53,28 @@ const getSingleBlogFromDB = async (blogId: string) => {
 
   return blog;
 };
-const getPublishedBlogsFromDB = async (query: Record<string, unknown>): Promise<IGenericResponse<Blog[]>> => {
-    const queryBuilder = new QueryBuilder(prisma.blog, query)
-    const blogs = await queryBuilder
+const getPublishedBlogsFromDB = async (
+  query: Record<string, unknown>
+): Promise<IGenericResponse<Blog[]>> => {
+  const queryBuilder = new QueryBuilder(prisma.blog, query);
+  const blogs = await queryBuilder
     // .range()
-        .search(["blogTitle","category"])
-        .filter(["category"])
-        .sort()
-        .paginate()
-        .fields()
-        .execute({
-            where: {
-                isPublished: true
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
-    const meta = await queryBuilder.countTotal();
-    return { meta, data: blogs }
-}
+    .search(["blogTitle", "category"])
+    .filter(["category"])
+    .sort()
+    .paginate()
+    .fields()
+    .execute({
+      where: {
+        isPublished: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  const meta = await queryBuilder.countTotal();
+  return { meta, data: blogs };
+};
 const getRelatedBlogsFromDB = async (
   blogId: string,
   query: Record<string, unknown>
@@ -101,66 +109,74 @@ const getRelatedBlogsFromDB = async (
       },
     });
 
-  const meta = await queryBuilder.countTotal();
-
-  if (!blogs || blogs.length === 0) {
-    throw new ApiError(404, "No related blogs found");
-  }
+  const meta = await queryBuilder
+    .rawFilter({
+      id: { not: blogId }, // নিজের ব্লগ বাদ
+      category: { equals: currentBlog.category }, // একই category (array field তাই `hasSome`)
+      isPublished: true,
+    })
+    .countTotal();
 
   return { meta, data: blogs };
 };
-const updateBlogIntoDB = async (id: string, payload: Partial<Blog>, blogImages: IFile[]) => {
-    const existingBlog = await prisma.blog.findUnique({
-        where: { id }
-    })
-    if (!existingBlog) {
-        throw new Error('Blog not found');
-    }
-    if (blogImages && blogImages.length > 0) {
-        const uploadBlogImages = await fileUploader.uploadMultipleToCloudinary(blogImages);
-        payload.featureMedia = uploadBlogImages.map(img => img.secure_url) ?? [];
-    }
-    const result = await prisma.blog.update({
-        where: { id },
-        data: payload
-    });
-    return result;
-}
+const updateBlogIntoDB = async (
+  id: string,
+  payload: Partial<Blog>,
+  blogImages: IFile[]
+) => {
+  const existingBlog = await prisma.blog.findUnique({
+    where: { id },
+  });
+  if (!existingBlog) {
+    throw new Error("Blog not found");
+  }
+  if (blogImages && blogImages.length > 0) {
+    const uploadBlogImages = await fileUploader.uploadMultipleToCloudinary(
+      blogImages
+    );
+    payload.featureMedia = uploadBlogImages.map((img) => img.secure_url) ?? [];
+  }
+  const result = await prisma.blog.update({
+    where: { id },
+    data: payload,
+  });
+  return result;
+};
 
 const deleteBlogFromDB = async (id: string) => {
-    const existingBlog = await prisma.blog.findUnique({
-        where: { id }
-    })
-    if (!existingBlog) {
-        throw new Error('Blog not found');
-    }
-    await prisma.blog.delete({
-        where: { id }
-    });
-    return { message: 'Blog deleted successfully'};
-}
+  const existingBlog = await prisma.blog.findUnique({
+    where: { id },
+  });
+  if (!existingBlog) {
+    throw new Error("Blog not found");
+  }
+  await prisma.blog.delete({
+    where: { id },
+  });
+  return { message: "Blog deleted successfully" };
+};
 
 const updatePublishedStatus = async (blogId: string) => {
-    const existingBlog = await prisma.blog.findUnique({
-        where: { id:blogId }
-    })
-    if (!existingBlog) {
-        throw new Error('Blog not found');
-    }
-    const result = await prisma.blog.update({
-        where: { id: blogId },
-        data: { isPublished: true, publishDate: new Date() },
-    });
-    return result;
-}
+  const existingBlog = await prisma.blog.findUnique({
+    where: { id: blogId },
+  });
+  if (!existingBlog) {
+    throw new Error("Blog not found");
+  }
+  const result = await prisma.blog.update({
+    where: { id: blogId },
+    data: { isPublished: true, publishDate: new Date() },
+  });
+  return result;
+};
 
 export const BlogServices = {
-    createBlogIntoDB,
-    getAllBlogsFromDB,
-    getPublishedBlogsFromDB,
-    updateBlogIntoDB,
-    deleteBlogFromDB,
-    updatePublishedStatus,
-    getRelatedBlogsFromDB,
-    getSingleBlogFromDB
-}
+  createBlogIntoDB,
+  getAllBlogsFromDB,
+  getPublishedBlogsFromDB,
+  updateBlogIntoDB,
+  deleteBlogFromDB,
+  updatePublishedStatus,
+  getRelatedBlogsFromDB,
+  getSingleBlogFromDB,
+};

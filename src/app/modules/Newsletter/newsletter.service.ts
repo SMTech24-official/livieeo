@@ -1,25 +1,24 @@
 import { JwtPayload } from "jsonwebtoken";
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiError";
-import httpStatus from 'http-status'
+import httpStatus from "http-status";
 import emailSender from "../Auth/emailSender";
 import { Newsletter } from "@prisma/client";
 
-const subscribeNewsletter = async (payload: Newsletter,user: JwtPayload) => {
-    console.log("user service", user)
-    const existSubscribe = await prisma.newsletter.findUnique({
-        where: {
-            email: user.email
-        }
-    })
-    if (existSubscribe) {
-        throw new ApiError(httpStatus.CONFLICT, "You are already subscribe")
-    }
-    const result = await prisma.newsletter.create({
-        data: payload
-    })
-    await emailSender(
-    user.email,
+const subscribeNewsletter = async (payload: Newsletter) => {
+  const existSubscribe = await prisma.newsletter.findUnique({
+    where: {
+      email: payload.email,
+    },
+  });
+  if (existSubscribe) {
+    throw new ApiError(httpStatus.CONFLICT, "You are already subscribed");
+  }
+  const result = await prisma.newsletter.create({
+    data: payload,
+  });
+  await emailSender(
+    payload.email,
     "Newsletter Subscription",
     `
 <!DOCTYPE html>
@@ -96,7 +95,7 @@ const subscribeNewsletter = async (payload: Newsletter,user: JwtPayload) => {
         Welcome to Our Newsletter
     </div>
     <div class="content">
-        <p>Hi ${user.firstName},</p>
+        <p>Hi,</p>
         <p>Thank you for subscribing to our newsletter! We're excited to have you onboard.</p>
         <p>You'll now receive the latest updates, tips, and exclusive offers directly in your inbox.</p>
     </div>
@@ -107,10 +106,10 @@ const subscribeNewsletter = async (payload: Newsletter,user: JwtPayload) => {
 </body>
 </html>
 `
-);
-    return result
-}
+  );
+  return result;
+};
 
 export const NewsletterServices = {
-    subscribeNewsletter
-}
+  subscribeNewsletter,
+};

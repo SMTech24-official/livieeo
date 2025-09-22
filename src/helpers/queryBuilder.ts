@@ -179,11 +179,11 @@ class QueryBuilder {
   // }
 
   async execute(extraOptions: Record<string, any> = {}) {
-  return this.model.findMany({
-    ...this.prismaQuery,
-    ...extraOptions,
-  });
-}
+    return this.model.findMany({
+      ...this.prismaQuery,
+      ...extraOptions,
+    });
+  }
 
   // Count Total
   async countTotal() {

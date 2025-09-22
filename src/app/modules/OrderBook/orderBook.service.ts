@@ -8,7 +8,6 @@
 // import { IGenericResponse } from "../../../interfaces/common";
 // import QueryBuilder from "../../../helpers/queryBuilder";
 
-
 // const createBookOrderIntoDB = async (
 //   payload: { bookIds: string[] },
 //   user: JwtPayload
@@ -91,8 +90,6 @@
 //   getAllOrderedBooksFromDB
 // }
 
-
-
 import { ActivityType, OrderBook } from "@prisma/client";
 import { JwtPayload } from "jsonwebtoken";
 import prisma from "../../../shared/prisma";
@@ -123,35 +120,35 @@ const createBookOrderIntoDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, "No books found !");
   }
 
-  // 🔎 check if user already bought any of these books
-  const alreadyBought = await prisma.orderBookItem.findMany({
-    where: {
-      bookId: { in: bookIds },
-      order: {
-        userId,
-        paymentStatus: "PAID",
-      },
-    },
-    select: { bookId: true },
-  });
+  // 🔎 check if user already bought any of these books - No Need
+  // const alreadyBought = await prisma.orderBookItem.findMany({
+  //   where: {
+  //     bookId: { in: bookIds },
+  //     order: {
+  //       userId,
+  //       paymentStatus: "PAID",
+  //     },
+  //   },
+  //   select: { bookId: true },
+  // });
 
-  if (alreadyBought.length > 0) {
-    const boughtBookIds = alreadyBought.map((b) => b.bookId);
-    const boughtBookNames = books
-      .filter((b) => boughtBookIds.includes(b.id))
-      .map((b) => b.bookName)
-      .join(", ");
+  // if (alreadyBought.length > 0) {
+  //   const boughtBookIds = alreadyBought.map((b) => b.bookId);
+  //   const boughtBookNames = books
+  //     .filter((b) => boughtBookIds.includes(b.id))
+  //     .map((b) => b.bookName)
+  //     .join(", ");
 
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `You have already purchased these books: ${boughtBookNames}`
-    );
-  }
+  //   throw new ApiError(
+  //     httpStatus.BAD_REQUEST,
+  //     `You have already purchased these books: ${boughtBookNames}`
+  //   );
+  // }
 
   // total amount calculate
   const totalAmount = books.reduce((sum, book) => sum + book.discountPrice, 0);
   const totalBooks = books.length;
-  const bookNames = books.map(book => book.bookName).join(", ");
+  const bookNames = books.map((book) => book.bookName).join(", ");
 
   // 1️⃣ create order
   const order = await prisma.orderBook.create({
@@ -185,7 +182,7 @@ const createBookOrderIntoDB = async (
         },
         unit_amount: Math.round(book.discountPrice * 100), // convert to cents
       },
-      quantity: totalBooks,
+      quantity: 1,
     })),
     mode: "payment",
     success_url: `${config.stripe.success_url}`,
@@ -196,7 +193,7 @@ const createBookOrderIntoDB = async (
       userId,
     },
   });
-  saveActivity(userId, bookNames, ActivityType.BOOK)
+  saveActivity(userId, bookNames, ActivityType.BOOK);
   return {
     orderId: order.id,
     paymentUrl: session.url,
@@ -235,7 +232,10 @@ const getAllOrderedBooksFromDB = async (
 // ==========================
 // GET MY ORDERS SERVICE
 // ==========================
-const getMyOrderedBooksFromDB = async (query: Record<string, any>, userEmail: string): Promise<IGenericResponse<OrderBook[]>> => {
+const getMyOrderedBooksFromDB = async (
+  query: Record<string, any>,
+  userEmail: string
+): Promise<IGenericResponse<OrderBook[]>> => {
   const queryBuilder = new QueryBuilder(prisma.orderBook, query);
   const myBooks = await queryBuilder
     .range()
@@ -247,9 +247,9 @@ const getMyOrderedBooksFromDB = async (query: Record<string, any>, userEmail: st
     .execute({
       where: {
         user: {
-          email: userEmail
+          email: userEmail,
         },
-        paymentStatus: "PAID"
+        paymentStatus: "PAID",
       },
       include: {
         user: true,
@@ -261,11 +261,11 @@ const getMyOrderedBooksFromDB = async (query: Record<string, any>, userEmail: st
       },
     });
   const meta = await queryBuilder.countTotal();
-  return { meta, data: myBooks }
-}
+  return { meta, data: myBooks };
+};
 
 export const OrderBookServices = {
   createBookOrderIntoDB,
   getAllOrderedBooksFromDB,
-  getMyOrderedBooksFromDB
+  getMyOrderedBooksFromDB,
 };

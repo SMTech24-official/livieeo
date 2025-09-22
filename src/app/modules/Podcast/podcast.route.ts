@@ -21,8 +21,8 @@ router.post(
   PodcastControllers.createPodcast
 );
 
-router.get("/",auth(UserRole.ADMIN), PodcastControllers.getAllPodcasts);
-router.get("/published-podcast",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getPublishedPodcasts);
+router.get("/", PodcastControllers.getAllPodcasts);
+router.get("/published-podcast", PodcastControllers.getPublishedPodcasts);
 
 router.patch(
   "/:id",
@@ -35,13 +35,32 @@ router.patch(
   PodcastControllers.updatePodcast
 );
 
-router.delete("/:id",auth(UserRole.ADMIN), PodcastControllers.deletePodcast);
-router.patch("/podcast-status/:id",auth(UserRole.ADMIN), PodcastControllers.updatePodcastStatus);
+router.delete("/:id", auth(UserRole.ADMIN), PodcastControllers.deletePodcast);
+router.patch(
+  "/podcast-status/:id",
+  auth(UserRole.ADMIN),
+  PodcastControllers.updatePodcastStatus
+);
 
-router.post("/log-play/:podcastId",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.logPodcastPlay);
-router.get("/activities",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getActivities);
-router.get("/my-recent-podcasts",auth(UserRole.ADMIN,UserRole.USER), PodcastControllers.getMyRecentPodcasts);
-router.get("/:podcastId/related-podcasts",auth(UserRole.ADMIN,UserRole.USER),PodcastControllers.getRelatedPodcasts)
-router.get("/:podcastId",auth(UserRole.ADMIN,UserRole.USER),PodcastControllers.getSinglePodcast)
+router.post(
+  "/log-play/:podcastId",
+  auth(UserRole.ADMIN, UserRole.USER),
+  PodcastControllers.logPodcastPlay
+);
+router.get(
+  "/activities",
+  auth(UserRole.ADMIN, UserRole.USER),
+  PodcastControllers.getActivities
+);
+router.get(
+  "/my-recent-podcasts",
+  auth(UserRole.ADMIN, UserRole.USER),
+  PodcastControllers.getMyRecentPodcasts
+);
+router.get(
+  "/:podcastId/related-podcasts",
+  PodcastControllers.getRelatedPodcasts
+);
+router.get("/:podcastId", PodcastControllers.getSinglePodcast);
 
 export const PodcastRoutes = router;

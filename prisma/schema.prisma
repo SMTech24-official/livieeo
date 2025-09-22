@@ -436,15 +436,21 @@ enum PaymentMethod {
   VISA
 }
 
+enum SubscriptionName {
+  BASIC
+  PREMIUM
+  PLATINUM
+}
+
 model SubscriptionPlan {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
+  id            String           @id @default(auto()) @map("_id") @db.ObjectId
+  name          SubscriptionName @unique
   description   String[]
   sessions      Int
   price         Float
   discountPrice Float
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   subscriptions Subscription[]
 
@@ -460,7 +466,7 @@ model Subscription {
   paymentStatus PaymentStatus      @default(PENDING)
   paymentMethod PaymentMethod      @default(STRIPE)
   transactionId String?
-  status        SubscriptionStatus @default(PENDING) // Pending → Connected
+  status        SubscriptionStatus @default(PENDING) // Pending → Completed
   startDate     DateTime?
   endDate       DateTime?
   createdAt     DateTime           @default(now())
@@ -471,6 +477,6 @@ model Subscription {
 
 enum SubscriptionStatus {
   PENDING
-  CONNECTED
+  COMPLETED
   CANCELED
 }

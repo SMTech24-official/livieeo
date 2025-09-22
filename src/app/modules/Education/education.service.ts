@@ -50,9 +50,7 @@ const getEducationByIdFromDB = async (id: string) => {
 const getEducationsFromDB = async () => {
     
     const result = await prisma.education.findMany();
-    if(result.length === 0){
-        throw new ApiError(404,'Education not found !')
-    }
+
     return result;
 }
 
