@@ -211,7 +211,7 @@ const getAllOrderedBooksFromDB = async (
   const orders = await queryBuilder
     .range()
     .search([""])
-    .filter()
+    .filter(["paymentStatus"])
     .sort()
     .paginate()
     .fields()

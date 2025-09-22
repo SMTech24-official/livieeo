@@ -2,9 +2,17 @@ import ApiError from "../../../errors/ApiError";
 import prisma from "../../../shared/prisma";
 import httpStatus from "http-status";
 import { CourseCertificateServices } from "../CourseCertificate/courseCertificate.service";
-import { calcPercent, countTotals, sortCourseDeep } from "../../../helpers/progress"
+import {
+  calcPercent,
+  countTotals,
+  sortCourseDeep,
+} from "../../../helpers/progress";
 
-const completeVideo = async (userId: string, courseId: string, videoId: string) => {
+const completeVideo = async (
+  userId: string,
+  courseId: string,
+  videoId: string
+) => {
   // progress
   let progress = await prisma.courseProgress.findUnique({
     where: { userId_courseId: { userId, courseId } },
@@ -21,17 +29,41 @@ const completeVideo = async (userId: string, courseId: string, videoId: string) 
       },
     },
   });
+
   if (!courseRaw) throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
   const course = sortCourseDeep(courseRaw);
   const modules = course.courseModules;
 
+  console.log(JSON.stringify(course, undefined, 2));
+
   // যে module এ এই ভিডিও আছে
-  const module = modules.find((m: any) => m.courseModuleVideos.some((v: any) => v.id === videoId));
+  const module = modules.find((m: any) =>
+    m.courseModuleVideos.some((v: any) => v.id === videoId)
+  );
   if (!module) throw new ApiError(httpStatus.NOT_FOUND, "Module not found");
 
+  // Find the next video from module, as new videos are not added in the progress.currentVideoId
+  const videos = module.courseModuleVideos;
+  const lastCompleted = progress?.completedVideos?.at(-1);
+
+  const lastIndex = videos.findIndex((v: any) => v.id === lastCompleted);
+
+  let nextVideo: any = null;
+
+  if (lastIndex >= 0 && lastIndex < videos.length - 1) {
+    nextVideo = videos[lastIndex + 1];
+  }
+
   // লকড ভিডিও কিনা?
-  if (!progress.completedVideos.includes(videoId) && videoId !== progress.currentVideoId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "This video is locked. Please complete previous videos first.");
+  if (
+    !progress.completedVideos.includes(videoId) &&
+    videoId !== progress.currentVideoId &&
+    videoId !== nextVideo.id
+  ) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "This video is locked. Please complete previous videos first."
+    );
   }
 
   // progress update build
@@ -49,13 +81,17 @@ const completeVideo = async (userId: string, courseId: string, videoId: string) 
     completedVideos.push(videoId);
 
     // module done?
-    const moduleDone = module.courseModuleVideos.every((v: any) => completedVideos.includes(v.id));
+    const moduleDone = module.courseModuleVideos.every((v: any) =>
+      completedVideos.includes(v.id)
+    );
     if (moduleDone && !completedModules.includes(module.id)) {
       completedModules.push(module.id);
     }
 
     // পরের ভিডিও
-    const idx = module.courseModuleVideos.findIndex((v: any) => v.id === videoId);
+    const idx = module.courseModuleVideos.findIndex(
+      (v: any) => v.id === videoId
+    );
     const nextVideo = module.courseModuleVideos[idx + 1];
 
     if (nextVideo) {
@@ -97,7 +133,9 @@ const completeVideo = async (userId: string, courseId: string, videoId: string) 
   // সার্টিফিকেট (একবারই তৈরি হবে)
   let certDoc = null;
   if (progress.isCompleted) {
-    certDoc = await prisma.courseCertificate.findFirst({ where: { userId, courseId } });
+    certDoc = await prisma.courseCertificate.findFirst({
+      where: { userId, courseId },
+    });
     if (!certDoc) {
       certDoc = await CourseCertificateServices.createCourseCertificateIntoDB(
         { courseId } as any,
@@ -133,13 +171,14 @@ const completeVideo = async (userId: string, courseId: string, videoId: string) 
     percentCompleted: progress.percentCompleted,
     modules: modulesView,
     certificate: certDoc
-      ? { certificateNo: certDoc.certificateNo, certificateUrl: certDoc.certificateUrl }
+      ? {
+          certificateNo: certDoc.certificateNo,
+          certificateUrl: certDoc.certificateUrl,
+        }
       : null,
   };
 };
 
 export const CourseProgressServices = {
-  completeVideo
+  completeVideo,
 };
-
-

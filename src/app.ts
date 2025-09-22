@@ -1,4 +1,10 @@
-import express, { application, Application, NextFunction, Request, Response } from "express";
+import express, {
+  application,
+  Application,
+  NextFunction,
+  Request,
+  Response,
+} from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import router from "./app/routes";
@@ -7,16 +13,21 @@ import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import { WebHookRoutes } from "./app/modules/WebHook/webhook.route";
 import { visitorLogger } from "./app/middlewares/visitorLogger";
 
-
 const app: Application = express();
 
-// here use the webhook json data hanlding middleware
-app.use("/api/v1",WebHookRoutes);
+// Expose uploads folder
+app.use("/api/v1/uploads", express.static("uploads"));
 
+// here use the webhook json data hanlding middleware
+app.use("/api/v1", WebHookRoutes);
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://livieeo-frontend.vercel.app"], // frontend URL
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://livieeo-frontend.vercel.app",
+    ], // frontend URL
     credentials: true, // allow credentials (cookies, auth headers)
   })
 );
@@ -29,8 +40,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello from Livieeo!");
 });
 
-
-app.use("/api/v1",router);
+app.use("/api/v1", router);
 app.use(globalErrorHandler);
 
 app.use((req: Request, res: Response, next: NextFunction) => {

@@ -64,6 +64,7 @@ const getAllCoursesFromDB = async (
   query: Record<string, unknown>
 ): Promise<IGenericResponse<Course[]>> => {
   const queryBuilder = new QueryBuilder(prisma.course, query);
+
   const courses = await queryBuilder
     .range()
     .search(["category", "courseTitle", "mentorName"])
@@ -99,9 +100,13 @@ const getSingleCourseFromDB = async (
       },
     },
   });
+
+  // console.log(JSON.stringify(courseRaw?.courseModules, undefined, 4));
+
   if (!courseRaw) throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
 
   const course = sortCourseDeep(courseRaw);
+
   const { totalModules, totalVideos } = countTotals(course);
 
   let purchased = false;
@@ -159,6 +164,7 @@ const getSingleCourseFromDB = async (
 
       return {
         id: v.id,
+        thumbImage: v.thumbImage,
         videoTitle: v.videoTitle,
         videoUrl: v.fileUrl,
         order: v.order,

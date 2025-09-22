@@ -6,35 +6,38 @@ import { JwtPayload } from "jsonwebtoken";
 import { IFile } from "../../../interfaces/file";
 
 const createCourse = catchAsync(async (req, res) => {
-    const result = await CourseServices.createCourseIntoDB(req.body,req.file as IFile);
-    sendResponse(res, {
-        statusCode: httpStatus.CREATED,
-        success: true,
-        message: `Course created successfully`,
-        data: result,
-    });
-})
+  const result = await CourseServices.createCourseIntoDB(
+    req.body,
+    req.file as IFile
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: `Course created successfully`,
+    data: result,
+  });
+});
 
 const getAllCourses = catchAsync(async (req, res) => {
-    const result = await CourseServices.getAllCoursesFromDB(req.query);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Courses retrieved successfully`,
-        meta: result.meta,
-        data: result.data,
-    });
-})
+  const result = await CourseServices.getAllCoursesFromDB(req.query);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Courses retrieved successfully`,
+    meta: result.meta,
+    data: result.data,
+  });
+});
 const getPublishedCourses = catchAsync(async (req, res) => {
-    const result = await CourseServices.getPublishedCoursesFromDB(req.query);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Published courses retrieved successfully`,
-        meta: result.meta,
-        data: result.data,
-    });
-})
+  const result = await CourseServices.getPublishedCoursesFromDB(req.query);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Published courses retrieved successfully`,
+    meta: result.meta,
+    data: result.data,
+  });
+});
 const getSingleCourse = catchAsync(async (req, res) => {
   if (!req.user) {
     throw new Error("Unauthorized: user not found in request");
@@ -43,7 +46,10 @@ const getSingleCourse = catchAsync(async (req, res) => {
   const { courseId } = req.params;
   const userId = req.user.id;
 
-  const result = await CourseServices.getSingleCourseFromDB(courseId as string, userId);
+  const result = await CourseServices.getSingleCourseFromDB(
+    courseId as string,
+    userId
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -52,58 +58,65 @@ const getSingleCourse = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 const getRelatedCourses = catchAsync(async (req, res) => {
-    const {courseId} = req.params
-    const result = await CourseServices.getRelatedCoursesFromDB(courseId as string,req.query);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Related courses retrieved successfully`,
-        meta: result.meta,
-        data: result.data,
-    });
-})
+  const { courseId } = req.params;
+  const result = await CourseServices.getRelatedCoursesFromDB(
+    courseId as string,
+    req.query
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Related courses retrieved successfully`,
+    meta: result.meta,
+    data: result.data,
+  });
+});
 const updatePublishedStatus = catchAsync(async (req, res) => {
-    const { courseId } = req.params;
-    const result = await CourseServices.updatePublishedStatus(courseId as string);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course published status updated successfully`,
-        data: result,
-    });
-})
+  const { courseId } = req.params;
+  const result = await CourseServices.updatePublishedStatus(courseId as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Course published status updated successfully`,
+    data: result,
+  });
+});
 
 const deleteCourse = catchAsync(async (req, res) => {
-    const { courseId } = req.params;
-    const result = await CourseServices.deleteCourseFromDB(courseId as string);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course deleted successfully`,
-        data: result,
-    });
-})
+  const { courseId } = req.params;
+  const result = await CourseServices.deleteCourseFromDB(courseId as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Course deleted successfully`,
+    data: result,
+  });
+});
 
 const updateCourse = catchAsync(async (req, res) => {
-    const { courseId } = req.params;
-    const payload = req.body;
-    const result = await CourseServices.updateCourseIntoDB(courseId as string, payload);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course updated successfully`,
-        data: result,
-    });
-})
+  const { courseId } = req.params;
+  const payload = req.body;
+  const result = await CourseServices.updateCourseIntoDB(
+    courseId as string,
+    payload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Course updated successfully`,
+    data: result,
+  });
+});
 
 export const CourseControllers = {
-    createCourse,
-    getAllCourses,
-    getPublishedCourses,
-    updatePublishedStatus,
-    deleteCourse,
-    updateCourse,
-    getRelatedCourses,
-    getSingleCourse
-}
+  createCourse,
+  getAllCourses,
+  getPublishedCourses,
+  updatePublishedStatus,
+  deleteCourse,
+  updateCourse,
+  getRelatedCourses,
+  getSingleCourse,
+};

@@ -15,7 +15,6 @@ import httpStatus from "http-status";
 //     });
 // })
 
-
 // courseModuleVideo.controller.ts
 const createCourseModuleVideo = catchAsync(async (req, res) => {
   const files = req.files as {
@@ -54,52 +53,80 @@ const createCourseModuleVideo = catchAsync(async (req, res) => {
   });
 });
 
-
 const getAllCourseModuleVideos = catchAsync(async (req, res) => {
-    const result = await CourseModuleVideoServices.getAllCourseModuleVideosFromDB();
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course Module Videos retrieved successfully`,
-        data: result,
-    });
-})
+  const result =
+    await CourseModuleVideoServices.getAllCourseModuleVideosFromDB();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Course Module Videos retrieved successfully`,
+    data: result,
+  });
+});
 
 const getCourseModuleVideoById = catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const result = await CourseModuleVideoServices.getCourseModuleVideoByIdFromDB(id as string);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course Module Video retrieved successfully`,
-        data: result,
-    });
-})
+  const { id } = req.params;
+  const result = await CourseModuleVideoServices.getCourseModuleVideoByIdFromDB(
+    id as string
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Course Module Video retrieved successfully`,
+    data: result,
+  });
+});
 
 const updateCourseModuleVideo = catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const result = await CourseModuleVideoServices.updateCourseModuleVideoInDB(id as string, req.body);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course Module Video updated successfully`,
-        data: result,
-    });
+  const files = req.files as {
+    thumbImage?: Express.Multer.File[];
+    video?: Express.Multer.File[];
+  };
+
+  const { id } = req.params;
+
+  const payload = req.body;
+
+  const fileMap: Record<string, IFile> = {};
+
+  if (files?.thumbImage?.length) {
+    fileMap["thumbImage"] = files.thumbImage[0] as IFile;
+  }
+
+  if (files?.video?.length) {
+    fileMap["video"] = files.video[0] as IFile;
+  }
+
+  const result = await CourseModuleVideoServices.updateCourseModuleVideoInDB(
+    id as string,
+    payload,
+    fileMap
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Course Module Video updated successfully",
+    data: result,
+  });
 });
+
 const deleteCourseModuleVideo = catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const result = await CourseModuleVideoServices.deleteCourseModuleVideoFromDB(id as string);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Course Module Video deleted successfully`,
-        data: result,
-    });
-})
+  const { id } = req.params;
+  const result = await CourseModuleVideoServices.deleteCourseModuleVideoFromDB(
+    id as string
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Course Module Video deleted successfully`,
+    data: result,
+  });
+});
 export const CourseModuleVideoControllers = {
-    createCourseModuleVideo,
-    getAllCourseModuleVideos,
-    getCourseModuleVideoById,
-    updateCourseModuleVideo,
-    deleteCourseModuleVideo
+  createCourseModuleVideo,
+  getAllCourseModuleVideos,
+  getCourseModuleVideoById,
+  updateCourseModuleVideo,
+  deleteCourseModuleVideo,
 };

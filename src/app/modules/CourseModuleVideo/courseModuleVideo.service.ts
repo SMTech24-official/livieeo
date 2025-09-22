@@ -37,7 +37,9 @@ const createCourseModuleVideoIntoDB = async (
       // 4) Handle video upload (if exists)
       const videoFile = files?.[`video-${index}`];
       if (videoFile) {
-        const uploadVideo = await fileUploader.uploadVideoToCloudinary(videoFile);
+        const uploadVideo = await fileUploader.uploadVideoToCloudinary(
+          videoFile
+        );
         item.fileUrl = uploadVideo?.secure_url ?? "";
       }
 
@@ -50,34 +52,65 @@ const createCourseModuleVideoIntoDB = async (
 };
 
 const getAllCourseModuleVideosFromDB = async () => {
-    const result = await prisma.courseModuleVideo.findMany();
-    return result;
-}
+  const result = await prisma.courseModuleVideo.findMany();
+  return result;
+};
 const getCourseModuleVideoByIdFromDB = async (id: string) => {
-    const result = await prisma.courseModuleVideo.findUnique({
-        where: {
-            id
-        }
-    });
-    return result;
-}
-const updateCourseModuleVideoInDB = async (id: string, payload: CourseModuleVideo) => {
-    const result = await prisma.courseModuleVideo.update({
-        where: { id },
-        data: payload
-    });
-    return result;
-}
+  const result = await prisma.courseModuleVideo.findUnique({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
+
+const updateCourseModuleVideoInDB = async (
+  id: string,
+  payload: CourseModuleVideo,
+  files?: Record<string, IFile>
+) => {
+  // 1) Check that the course module video exists
+  const existingVideo = await prisma.courseModuleVideo.findUnique({
+    where: { id },
+  });
+
+  if (!existingVideo) {
+    throw new ApiError(404, "Course module video not found!");
+  }
+
+  // 3) Handle thumb upload (if exists)
+  const thumbFile = files?.["thumbImage"];
+  if (thumbFile) {
+    const uploadThumb = await fileUploader.uploadToCloudinary(thumbFile);
+    payload.thumbImage = uploadThumb?.secure_url ?? existingVideo.thumbImage;
+  }
+
+  // 4) Handle video upload (if exists)
+  const videoFile = files?.["video"];
+  if (videoFile) {
+    const uploadVideo = await fileUploader.uploadVideoToCloudinary(videoFile);
+    payload.fileUrl = uploadVideo?.secure_url ?? existingVideo.fileUrl;
+  }
+
+  // 5) Update the video record
+  const updatedVideo = await prisma.courseModuleVideo.update({
+    where: { id },
+    data: payload,
+  });
+
+  return updatedVideo;
+};
+
 const deleteCourseModuleVideoFromDB = async (id: string) => {
-    const result = await prisma.courseModuleVideo.delete({
-        where: { id }
-    });
-    return result;
-}
+  const result = await prisma.courseModuleVideo.delete({
+    where: { id },
+  });
+  return result;
+};
 export const CourseModuleVideoServices = {
-    createCourseModuleVideoIntoDB,
-    getAllCourseModuleVideosFromDB,
-    getCourseModuleVideoByIdFromDB,
-    updateCourseModuleVideoInDB,
-    deleteCourseModuleVideoFromDB
-}
+  createCourseModuleVideoIntoDB,
+  getAllCourseModuleVideosFromDB,
+  getCourseModuleVideoByIdFromDB,
+  updateCourseModuleVideoInDB,
+  deleteCourseModuleVideoFromDB,
+};

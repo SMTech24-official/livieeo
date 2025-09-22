@@ -107,25 +107,24 @@ const createSubscriptionIntoDB = async (planName: string, user: JwtPayload) => {
 const getAllSubscriptionsFromDB = async (
   query: Record<string, unknown>
 ): Promise<IGenericResponse<Subscription[]>> => {
-  const queryBuilder = new QueryBuilder(prisma.subscription, {});
+  const queryBuilder = new QueryBuilder(prisma.subscription, query);
 
-  const extraQuery: Record<string, any> = {};
-  if (query.status) {
-    extraQuery["status"] = {
-      equals: (query.status as string).toUpperCase(),
-    };
+  // const extraQuery: Record<string, any> = {};
 
-    if (
-      !["PENDING", "COMPLETED", "CANCELED"].includes(
-        extraQuery["status"].equals
-      )
-    ) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Invalid Status. Supported: `PENDING`, `COMPLETED`, `CANCELED`"
-      );
-    }
-  }
+  // if (query.status) {
+  //   const status = (query.status as string).toUpperCase();
+
+  //   if (!["PENDING", "COMPLETED", "CANCELED"].includes(status)) {
+  //     throw new ApiError(
+  //       httpStatus.BAD_REQUEST,
+  //       "Invalid Status. Supported: `PENDING`, `COMPLETED`, `CANCELED`"
+  //     );
+  //   }
+
+  //   extraQuery["status"] = {
+  //     equals: status,
+  //   };
+  // }
 
   const subscriptions = await queryBuilder
     .search(["status", "paymentStatus"]) // search fields
@@ -134,7 +133,6 @@ const getAllSubscriptionsFromDB = async (
     .paginate()
     .fields()
     .execute({
-      where: extraQuery,
       include: {
         user: true,
         plan: true,
@@ -144,7 +142,7 @@ const getAllSubscriptionsFromDB = async (
       },
     });
 
-  const meta = await queryBuilder.rawFilter(extraQuery).countTotal();
+  const meta = await queryBuilder.countTotal();
 
   return { meta, data: subscriptions };
 };
