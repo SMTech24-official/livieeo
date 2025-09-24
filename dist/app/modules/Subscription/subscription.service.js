@@ -11,11 +11,14 @@ const stripe_1 = __importDefault(require("../../../helpers/stripe"));
 const config_1 = __importDefault(require("../../../config"));
 const client_1 = require("@prisma/client");
 const queryBuilder_1 = __importDefault(require("../../../helpers/queryBuilder"));
-const createSubscriptionIntoDB = async (planId, user) => {
+const createSubscriptionIntoDB = async (planName, user) => {
     const userId = user.id;
+    if (!["BASIC", "PREMIUM", "PLATINUM"].includes(planName.toUpperCase())) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Invalid Subscription Plan provided");
+    }
     // 1️⃣ Find plan
     const plan = await prisma_1.default.subscriptionPlan.findUnique({
-        where: { id: planId },
+        where: { name: planName.toUpperCase() },
     });
     if (!plan) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Subscription plan not found!");
@@ -69,6 +72,19 @@ const createSubscriptionIntoDB = async (planId, user) => {
 // ✅ Admin: Get all subscriptions (with query builder)
 const getAllSubscriptionsFromDB = async (query) => {
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.subscription, query);
+    // const extraQuery: Record<string, any> = {};
+    // if (query.status) {
+    //   const status = (query.status as string).toUpperCase();
+    //   if (!["PENDING", "COMPLETED", "CANCELED"].includes(status)) {
+    //     throw new ApiError(
+    //       httpStatus.BAD_REQUEST,
+    //       "Invalid Status. Supported: `PENDING`, `COMPLETED`, `CANCELED`"
+    //     );
+    //   }
+    //   extraQuery["status"] = {
+    //     equals: status,
+    //   };
+    // }
     const subscriptions = await queryBuilder
         .search(["status", "paymentStatus"]) // search fields
         .filter(["paymentStatus"]) // filterable fields
@@ -92,7 +108,7 @@ const connectSubscriptionIntoDB = async (subscriptionId) => {
     return prisma_1.default.subscription.update({
         where: { id: subscriptionId },
         data: {
-            status: "CONNECTED",
+            status: "COMPLETED",
             startDate: new Date(),
             endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
         },
@@ -119,7 +135,7 @@ const getMySubscriptionFromDB = async (userId, query) => {
     const meta = await queryBuilder.countTotal();
     // 👇 Active subscription আলাদাভাবে আনবো
     const activeSubscription = await prisma_1.default.subscription.findFirst({
-        where: { userId, status: client_1.SubscriptionStatus.CONNECTED },
+        where: { userId, status: client_1.SubscriptionStatus.COMPLETED },
         include: { plan: true },
         orderBy: { createdAt: "desc" },
     });

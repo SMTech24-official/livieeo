@@ -10,6 +10,8 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const client_1 = require("@prisma/client");
 const router = (0, express_1.Router)();
 router.post("/create", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModule_controller_1.CourseModuleControllers.createCourseModule);
+router.put("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModule_controller_1.CourseModuleControllers.updateCourseModule);
+router.delete("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModule_controller_1.CourseModuleControllers.deleteCourseModule);
 router.get("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModule_controller_1.CourseModuleControllers.getCourseModuleById);
 router.get("/", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModule_controller_1.CourseModuleControllers.getAllCourseModules);
 exports.CourseModuleRoutes = router;

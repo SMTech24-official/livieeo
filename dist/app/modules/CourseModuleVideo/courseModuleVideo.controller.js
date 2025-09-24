@@ -63,12 +63,21 @@ const getCourseModuleVideoById = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 const updateCourseModuleVideo = (0, catchAsync_1.default)(async (req, res) => {
+    const files = req.files;
     const { id } = req.params;
-    const result = await courseModuleVideo_service_1.CourseModuleVideoServices.updateCourseModuleVideoInDB(id, req.body);
+    const payload = req.body;
+    const fileMap = {};
+    if (files?.thumbImage?.length) {
+        fileMap["thumbImage"] = files.thumbImage[0];
+    }
+    if (files?.video?.length) {
+        fileMap["video"] = files.video[0];
+    }
+    const result = await courseModuleVideo_service_1.CourseModuleVideoServices.updateCourseModuleVideoInDB(id, payload, fileMap);
     (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
+        statusCode: 200,
         success: true,
-        message: `Course Module Video updated successfully`,
+        message: "Course Module Video updated successfully",
         data: result,
     });
 });
@@ -87,6 +96,6 @@ exports.CourseModuleVideoControllers = {
     getAllCourseModuleVideos,
     getCourseModuleVideoById,
     updateCourseModuleVideo,
-    deleteCourseModuleVideo
+    deleteCourseModuleVideo,
 };
 //# sourceMappingURL=courseModuleVideo.controller.js.map

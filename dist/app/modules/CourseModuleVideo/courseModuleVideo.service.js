@@ -48,21 +48,41 @@ const getAllCourseModuleVideosFromDB = async () => {
 const getCourseModuleVideoByIdFromDB = async (id) => {
     const result = await prisma_1.default.courseModuleVideo.findUnique({
         where: {
-            id
-        }
+            id,
+        },
     });
     return result;
 };
-const updateCourseModuleVideoInDB = async (id, payload) => {
-    const result = await prisma_1.default.courseModuleVideo.update({
+const updateCourseModuleVideoInDB = async (id, payload, files) => {
+    // 1) Check that the course module video exists
+    const existingVideo = await prisma_1.default.courseModuleVideo.findUnique({
         where: { id },
-        data: payload
     });
-    return result;
+    if (!existingVideo) {
+        throw new ApiError_1.default(404, "Course module video not found!");
+    }
+    // 3) Handle thumb upload (if exists)
+    const thumbFile = files?.["thumbImage"];
+    if (thumbFile) {
+        const uploadThumb = await fileUploader_1.fileUploader.uploadToCloudinary(thumbFile);
+        payload.thumbImage = uploadThumb?.secure_url ?? existingVideo.thumbImage;
+    }
+    // 4) Handle video upload (if exists)
+    const videoFile = files?.["video"];
+    if (videoFile) {
+        const uploadVideo = await fileUploader_1.fileUploader.uploadVideoToCloudinary(videoFile);
+        payload.fileUrl = uploadVideo?.secure_url ?? existingVideo.fileUrl;
+    }
+    // 5) Update the video record
+    const updatedVideo = await prisma_1.default.courseModuleVideo.update({
+        where: { id },
+        data: payload,
+    });
+    return updatedVideo;
 };
 const deleteCourseModuleVideoFromDB = async (id) => {
     const result = await prisma_1.default.courseModuleVideo.delete({
-        where: { id }
+        where: { id },
     });
     return result;
 };
@@ -71,6 +91,6 @@ exports.CourseModuleVideoServices = {
     getAllCourseModuleVideosFromDB,
     getCourseModuleVideoByIdFromDB,
     updateCourseModuleVideoInDB,
-    deleteCourseModuleVideoFromDB
+    deleteCourseModuleVideoFromDB,
 };
 //# sourceMappingURL=courseModuleVideo.service.js.map

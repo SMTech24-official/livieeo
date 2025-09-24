@@ -19,7 +19,10 @@ router.post("/create", fileUploader_1.fileUploader.upload.fields([
 ]), (0, auth_1.default)(client_1.UserRole.ADMIN), textToJsonParser_1.default, courseModuleVideo_controller_1.CourseModuleVideoControllers.createCourseModuleVideo);
 router.get("/", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModuleVideo_controller_1.CourseModuleVideoControllers.getAllCourseModuleVideos);
 router.get("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModuleVideo_controller_1.CourseModuleVideoControllers.getCourseModuleVideoById);
-router.patch("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), textToJsonParser_1.default, courseModuleVideo_controller_1.CourseModuleVideoControllers.updateCourseModuleVideo);
+router.put("/:id", fileUploader_1.fileUploader.upload.fields([
+    { name: "thumbImage", maxCount: 1 }, // single thumb
+    { name: "video", maxCount: 1 }, // single video
+]), (0, auth_1.default)(client_1.UserRole.ADMIN), textToJsonParser_1.default, courseModuleVideo_controller_1.CourseModuleVideoControllers.updateCourseModuleVideo);
 router.delete("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), courseModuleVideo_controller_1.CourseModuleVideoControllers.deleteCourseModuleVideo);
 exports.CourseModuleVideoRoutes = router;
 //# sourceMappingURL=courseModuleVideo.route.js.map

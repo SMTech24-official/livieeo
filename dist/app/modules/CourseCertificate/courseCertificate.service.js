@@ -85,7 +85,7 @@ const createCourseCertificateIntoDB = async (payload, userJwt) => {
             courseId,
             userId,
             certificateNo,
-            certificateUrl: upload.secure_url,
+            certificateUrl: `/api/v1/${upload.url}`,
             verifyCode,
         },
     });
@@ -128,7 +128,7 @@ const getMyCertificatesFromDB = async (query, user) => {
         include: {
             course: { select: { courseTitle: true, mentorName: true } },
         },
-        orderBy: { issuedAt: "desc" }
+        orderBy: { issuedAt: "desc" },
     });
     const meta = await queryBuilder.countTotal();
     return { meta, data: certificates };
@@ -136,6 +136,6 @@ const getMyCertificatesFromDB = async (query, user) => {
 exports.CourseCertificateServices = {
     createCourseCertificateIntoDB,
     verifyCourseCertificateFromDB,
-    getMyCertificatesFromDB
+    getMyCertificatesFromDB,
 };
 //# sourceMappingURL=courseCertificate.service.js.map

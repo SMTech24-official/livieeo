@@ -30,12 +30,23 @@ const completeVideo = async (userId, courseId, videoId) => {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Course not found");
     const course = (0, progress_1.sortCourseDeep)(courseRaw);
     const modules = course.courseModules;
+    console.log(JSON.stringify(course, undefined, 2));
     // যে module এ এই ভিডিও আছে
     const module = modules.find((m) => m.courseModuleVideos.some((v) => v.id === videoId));
     if (!module)
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Module not found");
+    // Find the next video from module, as new videos are not added in the progress.currentVideoId
+    const videos = module.courseModuleVideos;
+    const lastCompleted = progress?.completedVideos?.at(-1);
+    const lastIndex = videos.findIndex((v) => v.id === lastCompleted);
+    let nextVideo = null;
+    if (lastIndex >= 0 && lastIndex < videos.length - 1) {
+        nextVideo = videos[lastIndex + 1];
+    }
     // লকড ভিডিও কিনা?
-    if (!progress.completedVideos.includes(videoId) && videoId !== progress.currentVideoId) {
+    if (!progress.completedVideos.includes(videoId) &&
+        videoId !== progress.currentVideoId &&
+        videoId !== nextVideo.id) {
         throw new ApiError_1.default(http_status_1.default.FORBIDDEN, "This video is locked. Please complete previous videos first.");
     }
     // progress update build
@@ -95,7 +106,9 @@ const completeVideo = async (userId, courseId, videoId) => {
     // সার্টিফিকেট (একবারই তৈরি হবে)
     let certDoc = null;
     if (progress.isCompleted) {
-        certDoc = await prisma_1.default.courseCertificate.findFirst({ where: { userId, courseId } });
+        certDoc = await prisma_1.default.courseCertificate.findFirst({
+            where: { userId, courseId },
+        });
         if (!certDoc) {
             certDoc = await courseCertificate_service_1.CourseCertificateServices.createCourseCertificateIntoDB({ courseId }, { id: userId });
         }
@@ -128,11 +141,14 @@ const completeVideo = async (userId, courseId, videoId) => {
         percentCompleted: progress.percentCompleted,
         modules: modulesView,
         certificate: certDoc
-            ? { certificateNo: certDoc.certificateNo, certificateUrl: certDoc.certificateUrl }
+            ? {
+                certificateNo: certDoc.certificateNo,
+                certificateUrl: certDoc.certificateUrl,
+            }
             : null,
     };
 };
 exports.CourseProgressServices = {
-    completeVideo
+    completeVideo,
 };
 //# sourceMappingURL=courseProgress.service.js.map

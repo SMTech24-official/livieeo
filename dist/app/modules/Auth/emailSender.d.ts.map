@@ -1,1 +1,1 @@
-{"version":3,"file":"emailSender.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/Auth/emailSender.ts"],"names":[],"mappings":"AAGA,QAAA,MAAM,WAAW,GAAU,OAAO,MAAM,EAAC,SAAQ,MAAM,EAAE,MAAM,MAAM,qEAoBpE,CAAC;AACF,eAAe,WAAW,CAAC"}
+{"version":3,"file":"emailSender.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/Auth/emailSender.ts"],"names":[],"mappings":"AAGA,QAAA,MAAM,WAAW,GAAU,OAAO,MAAM,EAAE,SAAS,MAAM,EAAE,MAAM,MAAM,qEAoBtE,CAAC;AACF,eAAe,WAAW,CAAC"}

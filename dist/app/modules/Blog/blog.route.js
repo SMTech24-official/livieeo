@@ -12,12 +12,12 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const client_1 = require("@prisma/client");
 const router = (0, express_1.Router)();
 router.post("/create", (0, auth_1.default)(client_1.UserRole.ADMIN), fileUploader_1.fileUploader.upload.array("blogImages", 5), textToJsonParser_1.default, blog_controller_1.BlogControllers.createBlog);
-router.get("/", (0, auth_1.default)(client_1.UserRole.ADMIN), blog_controller_1.BlogControllers.getAllBlogs);
-router.get("/published-blogs", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.USER), blog_controller_1.BlogControllers.getPublishedBlogs);
+router.get("/", blog_controller_1.BlogControllers.getAllBlogs);
+router.get("/published-blogs", blog_controller_1.BlogControllers.getPublishedBlogs);
 router.patch("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), fileUploader_1.fileUploader.upload.array("blogImages", 5), textToJsonParser_1.default, blog_controller_1.BlogControllers.updateBlog);
 router.delete("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), blog_controller_1.BlogControllers.deleteBlog);
 router.patch("/published-status/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), textToJsonParser_1.default, blog_controller_1.BlogControllers.updatePublishedStatus);
-router.get("/:blogId/related-blogs", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.USER), blog_controller_1.BlogControllers.getRelatedBlogs);
-router.get("/:blogId", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.USER), blog_controller_1.BlogControllers.getSingleBlog);
+router.get("/:blogId/related-blogs", blog_controller_1.BlogControllers.getRelatedBlogs);
+router.get("/:blogId", blog_controller_1.BlogControllers.getSingleBlog);
 exports.BlogRoutes = router;
 //# sourceMappingURL=blog.route.js.map

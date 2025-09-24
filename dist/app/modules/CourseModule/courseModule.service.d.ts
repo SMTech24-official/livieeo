@@ -6,6 +6,15 @@ export declare const CourseModuleServices: {
         order: number;
         moduleTitle: string;
     } | null)[]>;
+    updateCourseModuleIntoDB: (moduleId: string, payload: CourseModule) => Promise<{
+        id: string;
+        courseId: string;
+        order: number;
+        moduleTitle: string;
+    }>;
+    deleteCourseModuleFromDB: (id: string) => Promise<{
+        message: string;
+    }>;
     getAllCourseModulesFromDB: () => Promise<{
         id: string;
         courseId: string;

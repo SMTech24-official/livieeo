@@ -29,7 +29,7 @@ const createPodcastIntoDB = async (payload, thumbImageFile, podcastFiles = []) =
     // 2) Upload podcast files
     if (podcastFiles.length > 0) {
         const uploadedFiles = await fileUploader_1.fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
-        payload.featureMedia = uploadedFiles.map(file => file.secure_url);
+        payload.featureMedia = uploadedFiles.map((file) => file.secure_url);
     }
     else {
         payload.featureMedia = [];
@@ -40,7 +40,8 @@ const createPodcastIntoDB = async (payload, thumbImageFile, podcastFiles = []) =
 };
 const getAllPodcastFromDB = async (query) => {
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.podcast, query);
-    const podcasts = await queryBuilder.range()
+    const podcasts = await queryBuilder
+        .range()
         .search(["category", "podcastTitle", "secondaryTitle"])
         .filter(["category"])
         .sort()
@@ -48,15 +49,15 @@ const getAllPodcastFromDB = async (query) => {
         .fields()
         .execute({
         orderBy: {
-            createdAt: 'desc'
-        }
+            createdAt: "desc",
+        },
     });
     const meta = await queryBuilder.countTotal();
     return { meta, data: podcasts };
 };
 const getSinglePodcastFromDB = async (podcastId) => {
     const podcast = await prisma_1.default.podcast.findUnique({
-        where: { id: podcastId }
+        where: { id: podcastId },
     });
     if (!podcast) {
         throw new ApiError_1.default(404, "Podcast not found");
@@ -65,7 +66,8 @@ const getSinglePodcastFromDB = async (podcastId) => {
 };
 const getPublishedPodcastFromDB = async (query) => {
     const queryBuilder = new queryBuilder_1.default(prisma_1.default.podcast, query);
-    const podcasts = await queryBuilder.range()
+    const podcasts = await queryBuilder
+        .range()
         .search(["category", "podcastTitle", "secondaryTitle"])
         .filter()
         .sort()
@@ -73,11 +75,11 @@ const getPublishedPodcastFromDB = async (query) => {
         .fields()
         .execute({
         where: {
-            isPublished: true
+            isPublished: true,
         },
         orderBy: {
-            createdAt: 'desc'
-        }
+            createdAt: "desc",
+        },
     });
     const meta = await queryBuilder.countTotal();
     return { meta, data: podcasts };
@@ -111,16 +113,23 @@ const getRelatedPodcastsFromDB = async (podcastId, query) => {
             createdAt: "desc",
         },
     });
-    const meta = await queryBuilder.countTotal();
-    if (!podcasts || podcasts.length === 0) {
-        throw new ApiError_1.default(404, "No related podcasts found");
-    }
+    const meta = await queryBuilder
+        .rawFilter({
+        id: { not: podcastId }, // নিজের podcast বাদ
+        category: {
+            contains: currentPodcast.category,
+            mode: "insensitive", // ✅ Case-insensitive match
+        },
+        isPublished: true,
+    })
+        .countTotal();
     return { meta, data: podcasts };
 };
 const updatePodcast = async (id, payload, thumbImageFile, podcastFiles) => {
     if (podcastFiles && podcastFiles.length > 0) {
         const uploadPodcastImages = await fileUploader_1.fileUploader.uploadMultipleVideoToCloudinary(podcastFiles);
-        payload.featureMedia = uploadPodcastImages.map(img => img.secure_url) ?? [];
+        payload.featureMedia =
+            uploadPodcastImages.map((img) => img.secure_url) ?? [];
     }
     if (thumbImageFile) {
         const uploadThumbImageFile = await fileUploader_1.fileUploader.uploadToCloudinary(thumbImageFile);
@@ -130,28 +139,28 @@ const updatePodcast = async (id, payload, thumbImageFile, podcastFiles) => {
     }
     const updatedPodcast = await prisma_1.default.podcast.update({
         where: { id },
-        data: payload
+        data: payload,
     });
     return updatedPodcast;
 };
 const deletePodcast = async (id) => {
     const deletedPodcast = await prisma_1.default.podcast.delete({
-        where: { id }
+        where: { id },
     });
     return deletedPodcast;
 };
 const updatePodcastStatus = async (id) => {
     const updatedPodcast = await prisma_1.default.podcast.update({
         where: { id },
-        data: { isPublished: true, publishDate: new Date() }
+        data: { isPublished: true, publishDate: new Date() },
     });
     return updatedPodcast;
 };
 const logPodcastPlay = async (payload, user, podcastId) => {
     const podcast = await prisma_1.default.podcast.findUnique({
         where: {
-            id: podcastId
-        }
+            id: podcastId,
+        },
     });
     if (!podcast) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Podcast not found !");
@@ -161,8 +170,8 @@ const logPodcastPlay = async (payload, user, podcastId) => {
     const activity = await prisma_1.default.podcastActivity.create({
         data: {
             userId: user.id,
-            podcastId
-        }
+            podcastId,
+        },
     });
     return activity;
 };
@@ -181,15 +190,18 @@ const getActivities = async (query) => {
             skip,
             take: limit,
             orderBy: {
-                createdAt: 'desc'
+                createdAt: "desc",
             },
             include: {
-                podcast: true
-            }
+                podcast: true,
+            },
         }),
-        prisma_1.default.podcastActivity.count({ where })
+        prisma_1.default.podcastActivity.count({ where }),
     ]);
-    return { meta: { page, limit, total, pages: Math.ceil(total / limit) }, data };
+    return {
+        meta: { page, limit, total, pages: Math.ceil(total / limit) },
+        data,
+    };
 };
 // final
 const getMyRecentPodcasts = async (user, opts) => {
@@ -283,6 +295,6 @@ exports.PodcastServices = {
     getActivities,
     getMyRecentPodcasts,
     getRelatedPodcastsFromDB,
-    getSinglePodcastFromDB
+    getSinglePodcastFromDB,
 };
 //# sourceMappingURL=podcast.service.js.map

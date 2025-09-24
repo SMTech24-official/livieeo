@@ -28,7 +28,7 @@ export declare const CourseModuleVideoServices: {
         fileUrl: string | null;
         courseModuleId: string;
     } | null>;
-    updateCourseModuleVideoInDB: (id: string, payload: CourseModuleVideo) => Promise<{
+    updateCourseModuleVideoInDB: (id: string, payload: CourseModuleVideo, files?: Record<string, IFile>) => Promise<{
         id: string;
         courseId: string;
         order: number;

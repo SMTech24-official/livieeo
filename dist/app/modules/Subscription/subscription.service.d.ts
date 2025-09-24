@@ -19,7 +19,7 @@ type IMySubscriptionResponse = {
     }[];
 };
 export declare const SubscriptionServices: {
-    createSubscriptionIntoDB: (planId: string, user: JwtPayload) => Promise<{
+    createSubscriptionIntoDB: (planName: string, user: JwtPayload) => Promise<{
         subscriptionId: string;
         paymentUrl: string | null;
     }>;
@@ -48,7 +48,7 @@ export declare const SubscriptionServices: {
             updatedAt: Date;
         };
         plan: {
-            name: string;
+            name: import("@prisma/client").$Enums.SubscriptionName;
             id: string;
             createdAt: Date;
             updatedAt: Date;

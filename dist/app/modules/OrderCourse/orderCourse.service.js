@@ -15,7 +15,9 @@ const createCourseOrderIntoDB = async (payload, user) => {
     const { courseIds } = payload;
     if (!courseIds?.length)
         throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "No course ids provided");
-    const courses = await prisma_1.default.course.findMany({ where: { id: { in: courseIds } } });
+    const courses = await prisma_1.default.course.findMany({
+        where: { id: { in: courseIds } },
+    });
     if (!courses.length)
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "No courses found");
     // Check already purchased
@@ -27,20 +29,32 @@ const createCourseOrderIntoDB = async (payload, user) => {
         select: { courseId: true },
     });
     if (alreadyBought.length) {
-        const boughtNames = courses.filter(c => alreadyBought.map(a => a.courseId).includes(c.id))
-            .map(c => c.courseTitle).join(", ");
+        const boughtNames = courses
+            .filter((c) => alreadyBought.map((a) => a.courseId).includes(c.id))
+            .map((c) => c.courseTitle)
+            .join(", ");
         throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, `Already purchased: ${boughtNames}`);
     }
     const totalAmount = courses.reduce((sum, c) => sum + c.discountPrice, 0);
     const order = await prisma_1.default.orderCourse.create({
-        data: { userId, amount: totalAmount, paymentStatus: "PENDING", paymentMethod: "STRIPE" },
+        data: {
+            userId,
+            amount: totalAmount,
+            paymentStatus: "PENDING",
+            paymentMethod: "STRIPE",
+        },
     });
     await prisma_1.default.orderCourseItem.createMany({
-        data: courses.map(c => ({ orderId: order.id, courseId: c.id, price: c.discountPrice, quantity: 1 })),
+        data: courses.map((c) => ({
+            orderId: order.id,
+            courseId: c.id,
+            price: c.discountPrice,
+            quantity: 1,
+        })),
     });
     const session = await stripe_1.default.checkout.sessions.create({
         payment_method_types: ["card"],
-        line_items: courses.map(c => ({
+        line_items: courses.map((c) => ({
             price_data: {
                 currency: "usd",
                 product_data: { name: c.courseTitle, description: c.description ?? "" },
@@ -60,7 +74,7 @@ const getAllOrderedCoursesFromDB = async (query) => {
     const orders = await queryBuilder
         .range()
         .search([""]) // search এর জন্য কোন field ব্যবহার করবেন সেটা দিন (যেমন courseTitle, user.email etc.)
-        .filter()
+        .filter(["paymentStatus"])
         .sort()
         .paginate()
         .fields()
@@ -115,6 +129,6 @@ const getMyOrderedCoursesFromDB = async (query, userId) => {
 exports.OrderCourseServices = {
     createCourseOrderIntoDB,
     getAllOrderedCoursesFromDB,
-    getMyOrderedCoursesFromDB
+    getMyOrderedCoursesFromDB,
 };
 //# sourceMappingURL=orderCourse.service.js.map

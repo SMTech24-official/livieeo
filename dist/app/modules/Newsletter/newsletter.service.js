@@ -8,20 +8,19 @@ const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const http_status_1 = __importDefault(require("http-status"));
 const emailSender_1 = __importDefault(require("../Auth/emailSender"));
-const subscribeNewsletter = async (payload, user) => {
-    console.log("user service", user);
+const subscribeNewsletter = async (payload) => {
     const existSubscribe = await prisma_1.default.newsletter.findUnique({
         where: {
-            email: user.email
-        }
+            email: payload.email,
+        },
     });
     if (existSubscribe) {
-        throw new ApiError_1.default(http_status_1.default.CONFLICT, "You are already subscribe");
+        throw new ApiError_1.default(http_status_1.default.CONFLICT, "You are already subscribed");
     }
     const result = await prisma_1.default.newsletter.create({
-        data: payload
+        data: payload,
     });
-    await (0, emailSender_1.default)(user.email, "Newsletter Subscription", `
+    await (0, emailSender_1.default)(payload.email, "Newsletter Subscription", `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -96,7 +95,7 @@ const subscribeNewsletter = async (payload, user) => {
         Welcome to Our Newsletter
     </div>
     <div class="content">
-        <p>Hi ${user.firstName},</p>
+        <p>Hi,</p>
         <p>Thank you for subscribing to our newsletter! We're excited to have you onboard.</p>
         <p>You'll now receive the latest updates, tips, and exclusive offers directly in your inbox.</p>
     </div>
@@ -110,6 +109,6 @@ const subscribeNewsletter = async (payload, user) => {
     return result;
 };
 exports.NewsletterServices = {
-    subscribeNewsletter
+    subscribeNewsletter,
 };
 //# sourceMappingURL=newsletter.service.js.map

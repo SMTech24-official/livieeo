@@ -101,6 +101,6 @@ exports.CourseControllers = {
     deleteCourse,
     updateCourse,
     getRelatedCourses,
-    getSingleCourse
+    getSingleCourse,
 };
 //# sourceMappingURL=course.controller.js.map

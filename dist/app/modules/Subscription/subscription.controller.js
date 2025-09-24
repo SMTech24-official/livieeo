@@ -9,9 +9,9 @@ const subscription_service_1 = require("./subscription.service");
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const http_status_1 = __importDefault(require("http-status"));
 const createSubscription = (0, catchAsync_1.default)(async (req, res) => {
-    const { planId } = req.params;
     const user = req.user;
-    const result = await subscription_service_1.SubscriptionServices.createSubscriptionIntoDB(planId, user);
+    const body = req.body;
+    const result = await subscription_service_1.SubscriptionServices.createSubscriptionIntoDB(body.package, user);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
         success: true,
@@ -24,7 +24,7 @@ const getAllSubscriptions = (0, catchAsync_1.default)(async (req, res) => {
     (0, sendResponse_1.default)(res, {
         statusCode: 201,
         success: true,
-        message: "All subscription request retrived successfully",
+        message: "All subscription request retrieved successfully",
         data: result,
     });
 });
@@ -44,7 +44,7 @@ const getMySubscription = (0, catchAsync_1.default)(async (req, res) => {
     (0, sendResponse_1.default)(res, {
         statusCode: 201,
         success: true,
-        message: "My subscription retrived successfully !",
+        message: "My subscription retrieved successfully !",
         data: result,
     });
 });
@@ -52,6 +52,6 @@ exports.SubscriptionControllers = {
     createSubscription,
     getAllSubscriptions,
     connectSubscription,
-    getMySubscription
+    getMySubscription,
 };
 //# sourceMappingURL=subscription.controller.js.map

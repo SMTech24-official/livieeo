@@ -19,7 +19,7 @@ const emailSender = async (email, subject, html) => {
         },
     });
     const info = await transporter.sendMail({
-        from: '"Livieeo" <azharmahmud730@gmail.com>',
+        from: `"Livieeo" <${config_1.default.emailSender.email}>`,
         to: email,
         subject: subject,
         html,

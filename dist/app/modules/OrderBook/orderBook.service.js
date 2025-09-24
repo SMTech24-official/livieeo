@@ -107,29 +107,32 @@ const createBookOrderIntoDB = async (payload, user) => {
     if (books.length === 0) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "No books found !");
     }
-    // 🔎 check if user already bought any of these books
-    const alreadyBought = await prisma_1.default.orderBookItem.findMany({
-        where: {
-            bookId: { in: bookIds },
-            order: {
-                userId,
-                paymentStatus: "PAID",
-            },
-        },
-        select: { bookId: true },
-    });
-    if (alreadyBought.length > 0) {
-        const boughtBookIds = alreadyBought.map((b) => b.bookId);
-        const boughtBookNames = books
-            .filter((b) => boughtBookIds.includes(b.id))
-            .map((b) => b.bookName)
-            .join(", ");
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, `You have already purchased these books: ${boughtBookNames}`);
-    }
+    // 🔎 check if user already bought any of these books - No Need
+    // const alreadyBought = await prisma.orderBookItem.findMany({
+    //   where: {
+    //     bookId: { in: bookIds },
+    //     order: {
+    //       userId,
+    //       paymentStatus: "PAID",
+    //     },
+    //   },
+    //   select: { bookId: true },
+    // });
+    // if (alreadyBought.length > 0) {
+    //   const boughtBookIds = alreadyBought.map((b) => b.bookId);
+    //   const boughtBookNames = books
+    //     .filter((b) => boughtBookIds.includes(b.id))
+    //     .map((b) => b.bookName)
+    //     .join(", ");
+    //   throw new ApiError(
+    //     httpStatus.BAD_REQUEST,
+    //     `You have already purchased these books: ${boughtBookNames}`
+    //   );
+    // }
     // total amount calculate
     const totalAmount = books.reduce((sum, book) => sum + book.discountPrice, 0);
     const totalBooks = books.length;
-    const bookNames = books.map(book => book.bookName).join(", ");
+    const bookNames = books.map((book) => book.bookName).join(", ");
     // 1️⃣ create order
     const order = await prisma_1.default.orderBook.create({
         data: {
@@ -160,7 +163,7 @@ const createBookOrderIntoDB = async (payload, user) => {
                 },
                 unit_amount: Math.round(book.discountPrice * 100), // convert to cents
             },
-            quantity: totalBooks,
+            quantity: 1,
         })),
         mode: "payment",
         success_url: `${config_1.default.stripe.success_url}`,
@@ -185,7 +188,7 @@ const getAllOrderedBooksFromDB = async (query) => {
     const orders = await queryBuilder
         .range()
         .search([""])
-        .filter()
+        .filter(["paymentStatus"])
         .sort()
         .paginate()
         .fields()
@@ -217,9 +220,9 @@ const getMyOrderedBooksFromDB = async (query, userEmail) => {
         .execute({
         where: {
             user: {
-                email: userEmail
+                email: userEmail,
             },
-            paymentStatus: "PAID"
+            paymentStatus: "PAID",
         },
         include: {
             user: true,
@@ -236,6 +239,6 @@ const getMyOrderedBooksFromDB = async (query, userEmail) => {
 exports.OrderBookServices = {
     createBookOrderIntoDB,
     getAllOrderedBooksFromDB,
-    getMyOrderedBooksFromDB
+    getMyOrderedBooksFromDB,
 };
 //# sourceMappingURL=orderBook.service.js.map

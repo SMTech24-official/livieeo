@@ -18,7 +18,7 @@ const createBookIntoDB = async (payload, book, bookCover) => {
         payload.bookCover = uploadBookCover?.secure_url ?? "";
     }
     const result = await prisma_1.default.book.create({
-        data: payload
+        data: payload,
     });
     return result;
 };
@@ -33,9 +33,9 @@ const getAllBooksFromDB = async (query) => {
         .fields()
         .execute();
     const meta = await queryBuilder.countTotal();
-    if (!books || books.length === 0) {
-        throw new ApiError_1.default(404, "No books found");
-    }
+    //   if (!books || books.length === 0) {
+    //     throw new ApiError(404, "No books found");
+    //   }
     return { meta, data: books };
 };
 // 📌 Most Popular Books Service
@@ -52,10 +52,7 @@ const getMostPopularBooksFromDB = async (query) => {
         where: { isPublished: true },
         orderBy: { rating: "desc" }, // ⭐ highest rating আগে আসবে
     });
-    const meta = await queryBuilder.countTotal();
-    if (!books || books.length === 0) {
-        throw new ApiError_1.default(404, "No popular books found");
-    }
+    const meta = await queryBuilder.rawFilter({ isPublished: true }).countTotal();
     return { meta, data: books };
 };
 // 📌 New Books Service
@@ -72,10 +69,7 @@ const getNewBooksFromDB = async (query) => {
         where: { isPublished: true },
         orderBy: { publishDate: "desc" }, // ⭐ সর্বশেষ বই আগে আসবে
     });
-    const meta = await queryBuilder.countTotal();
-    if (!books || books.length === 0) {
-        throw new ApiError_1.default(404, "No new books found");
-    }
+    const meta = await queryBuilder.rawFilter({ isPublished: true }).countTotal();
     return { meta, data: books };
 };
 const getPublishedBooksFromDB = async (query) => {
@@ -89,13 +83,17 @@ const getPublishedBooksFromDB = async (query) => {
         .fields()
         .execute({
         where: {
-            isPublished: true
-        }
+            isPublished: true,
+        },
     });
-    const meta = await queryBuilder.countTotal();
-    if (!books || books.length === 0) {
-        throw new ApiError_1.default(404, "No books found");
-    }
+    const meta = await queryBuilder
+        .rawFilter({
+        isPublished: true,
+    })
+        .countTotal();
+    //   if (!books || books.length === 0) {
+    //     throw new ApiError(404, "No books found");
+    //   }
     return { meta, data: books };
 };
 const getBookByIdFromDB = async (id) => {
@@ -105,8 +103,8 @@ const getBookByIdFromDB = async (id) => {
     }
     const result = await prisma_1.default.book.findUniqueOrThrow({
         where: {
-            id
-        }
+            id,
+        },
     });
     return result;
 };
@@ -126,7 +124,10 @@ const updateBookInDB = async (id, payload, book, bookCover) => {
     }
     if (bookCover) {
         const uploadBookCover = await fileUploader_1.fileUploader.uploadToCloudinary(bookCover);
-        payload = { ...payload, bookCover: uploadBookCover?.secure_url ?? existbook.bookCover };
+        payload = {
+            ...payload,
+            bookCover: uploadBookCover?.secure_url ?? existbook.bookCover,
+        };
     }
     // rating validation
     if (payload.rating !== undefined) {
@@ -163,15 +164,15 @@ const deleteBookFromDB = async (id) => {
 const updatePublishedStatus = async (id, status) => {
     const book = await prisma_1.default.book.findUnique({
         where: {
-            id
-        }
+            id,
+        },
     });
     if (!book) {
         throw new ApiError_1.default(404, "Book not found!");
     }
     const result = await prisma_1.default.book.update({
         where: { id },
-        data: { isPublished: status }
+        data: { isPublished: status },
     });
     return result;
 };
@@ -197,10 +198,13 @@ const getRelatedBooksFromDB = async (bookId, query) => {
             isPublished: true,
         },
     });
-    const meta = await queryBuilder.countTotal();
-    if (!books || books.length === 0) {
-        throw new ApiError_1.default(404, "No related books found");
-    }
+    const meta = await queryBuilder
+        .rawFilter({
+        category: currentBook.category,
+        id: { not: bookId },
+        isPublished: true,
+    })
+        .countTotal();
     return { meta, data: books };
 };
 const ratingToBook = async (bookId, rating) => {
@@ -211,8 +215,8 @@ const ratingToBook = async (bookId, rating) => {
     // 2️⃣ বই খুঁজে বের করা
     const book = await prisma_1.default.book.findUnique({
         where: {
-            id: bookId
-        }
+            id: bookId,
+        },
     });
     if (!book) {
         throw new ApiError_1.default(404, "Book not found!");
@@ -220,7 +224,7 @@ const ratingToBook = async (bookId, rating) => {
     // 3️⃣ rating update করা
     const result = await prisma_1.default.book.update({
         where: { id: bookId },
-        data: { rating }
+        data: { rating },
     });
     return result;
 };
@@ -235,6 +239,6 @@ exports.BookServices = {
     getRelatedBooksFromDB,
     ratingToBook,
     getMostPopularBooksFromDB,
-    getNewBooksFromDB
+    getNewBooksFromDB,
 };
 //# sourceMappingURL=book.service.js.map

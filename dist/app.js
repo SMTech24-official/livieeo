@@ -12,10 +12,16 @@ const globalErrorHandler_1 = __importDefault(require("./app/middlewares/globalEr
 const webhook_route_1 = require("./app/modules/WebHook/webhook.route");
 const visitorLogger_1 = require("./app/middlewares/visitorLogger");
 const app = (0, express_1.default)();
+// Expose uploads folder
+app.use("/api/v1/uploads", express_1.default.static("uploads"));
 // here use the webhook json data hanlding middleware
 app.use("/api/v1", webhook_route_1.WebHookRoutes);
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://livieeo-frontend.vercel.app"], // frontend URL
+    origin: [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://livieeo-frontend.vercel.app",
+    ], // frontend URL
     credentials: true, // allow credentials (cookies, auth headers)
 }));
 app.use((0, cookie_parser_1.default)());

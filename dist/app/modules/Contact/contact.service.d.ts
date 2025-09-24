@@ -1,7 +1,6 @@
 import { Contact } from "@prisma/client";
-import { JwtPayload } from "jsonwebtoken";
 export declare const ContactServices: {
-    saveContactIntoDB: (payload: Contact, user: JwtPayload) => Promise<{
+    saveContactIntoDB: (payload: Contact) => Promise<{
         id: string;
         firstName: string;
         lastName: string;

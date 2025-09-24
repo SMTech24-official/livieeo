@@ -11,7 +11,9 @@ const http_status_1 = __importDefault(require("http-status"));
 const createBook = (0, catchAsync_1.default)(async (req, res) => {
     const files = req.files;
     const bookFile = files.book ? files.book[0] : undefined;
-    const bookCoverFile = files.bookCover ? files.bookCover[0] : undefined;
+    const bookCoverFile = files.bookCover
+        ? files.bookCover[0]
+        : undefined;
     const result = await book_service_1.BookServices.createBookIntoDB(req.body, bookFile, bookCoverFile);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
@@ -23,7 +25,9 @@ const createBook = (0, catchAsync_1.default)(async (req, res) => {
 const updateBook = (0, catchAsync_1.default)(async (req, res) => {
     const files = req.files;
     const bookFile = files.book ? files.book[0] : undefined;
-    const bookCoverFile = files.bookCover ? files.bookCover[0] : undefined;
+    const bookCoverFile = files.bookCover
+        ? files.bookCover[0]
+        : undefined;
     const result = await book_service_1.BookServices.updateBookInDB(req.params.id, req.body, bookFile, bookCoverFile);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
@@ -53,7 +57,7 @@ const getMostPopularBooks = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 const getNewBooks = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await book_service_1.BookServices.getMostPopularBooksFromDB(req.query);
+    const result = await book_service_1.BookServices.getNewBooksFromDB(req.query);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -68,7 +72,8 @@ const getPublishedBooks = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_1.default.OK,
         success: true,
         message: `published books retrieved successfully`,
-        data: result,
+        data: result.data,
+        meta: result.meta
     });
 });
 const getBookById = (0, catchAsync_1.default)(async (req, res) => {
@@ -105,7 +110,8 @@ const getRelatedBooks = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_1.default.OK,
         success: true,
         message: `Related books retrieved successfully`,
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 });
 const ratingToBook = (0, catchAsync_1.default)(async (req, res) => {
@@ -129,6 +135,6 @@ exports.BookControllers = {
     ratingToBook,
     getRelatedBooks,
     getMostPopularBooks,
-    getNewBooks
+    getNewBooks,
 };
 //# sourceMappingURL=book.controller.js.map
