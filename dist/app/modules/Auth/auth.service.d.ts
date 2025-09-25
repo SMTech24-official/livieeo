@@ -30,7 +30,7 @@ export declare const AuthServices: {
     forgotPassword: (payload: {
         email: string;
     }) => Promise<void>;
-    verifyOtp: (payload: {
+    verifyOtp: ({ email, otp }: {
         email: string;
         otp: string;
     }) => Promise<{

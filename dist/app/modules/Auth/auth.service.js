@@ -195,17 +195,25 @@ const resetPassword = async (payload) => {
     }
 };
 // ================= VERIFY OTP =================
-const verifyOtp = async (payload) => {
-    const token = await prisma_1.default.resetToken.findFirst({
-        where: { email: payload.email, otp: payload.otp },
+const verifyOtp = async ({ email, otp }) => {
+    const user = await prisma_1.default.user.findUnique({ where: { email } });
+    if (!user)
+        throw new ApiError_1.default(404, "User not found");
+    if (user.isEmailVerified)
+        throw new ApiError_1.default(400, "Email already verified");
+    if (user.emailVerificationCode !== otp)
+        throw new ApiError_1.default(400, "Invalid code");
+    if (user.emailVerificationExpiry < new Date())
+        throw new ApiError_1.default(400, "Code expired");
+    await prisma_1.default.user.update({
+        where: { id: user.id },
+        data: {
+            isEmailVerified: true,
+            emailVerificationCode: null,
+            emailVerificationExpiry: null,
+        },
     });
-    if (!token) {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "Invalid OTP");
-    }
-    if (token.expiresAt < new Date()) {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "OTP expired");
-    }
-    return { message: "OTP verified successfully" };
+    return { message: "Email verified successfully!" };
 };
 exports.AuthServices = {
     loginUser,
