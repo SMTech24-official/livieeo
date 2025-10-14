@@ -18,6 +18,7 @@ app.use("/api/v1/uploads", express_1.default.static("uploads"));
 app.use("/api/v1", webhook_route_1.WebHookRoutes);
 app.use((0, cors_1.default)({
     origin: [
+        "https://patakemvingir.com",
         "http://localhost:3000",
         "http://localhost:3001",
         "https://livieeo-frontend.vercel.app",

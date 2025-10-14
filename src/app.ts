@@ -24,6 +24,7 @@ app.use("/api/v1", WebHookRoutes);
 app.use(
   cors({
     origin: [
+      "https://patakemvingir.com",
       "http://localhost:3000",
       "http://localhost:3001",
       "https://livieeo-frontend.vercel.app",
