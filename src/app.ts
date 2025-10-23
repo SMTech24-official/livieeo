@@ -28,6 +28,7 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "https://livieeo-frontend.vercel.app",
+      "https://patakemvingir.com"
     ], // frontend URL
     credentials: true, // allow credentials (cookies, auth headers)
   })
