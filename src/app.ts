@@ -1,9 +1,9 @@
 import express, {
-  application,
-  Application,
-  NextFunction,
-  Request,
-  Response,
+    application,
+    Application,
+    NextFunction,
+    Request,
+    Response,
 } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
@@ -22,16 +22,25 @@ app.use("/api/v1/uploads", express.static("uploads"));
 app.use("/api/v1", WebHookRoutes);
 
 app.use(
-  cors({
-    origin: [
-      "https://patakemvingir.com",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "https://livieeo-frontend.vercel.app",
-      "https://patakemvingir.com"
-    ], // frontend URL
-    credentials: true, // allow credentials (cookies, auth headers)
-  })
+    cors({
+        origin: [
+            "https://patakemvingir.com",
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://livieeo-frontend.vercel.app",
+            "https://patakemvingir.com",
+        ], // frontend URL
+        credentials: true, // allow credentials (cookies, auth headers),
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "Origin",
+            "X-Requested-With",
+            "Accept",
+            "Access-Control-Allow-Origin",
+        ],
+    })
 );
 app.use(cookieParser());
 app.use(express.json());
@@ -39,20 +48,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(visitorLogger);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello from Livieeo!");
+    res.send("Hello from Livieeo!");
 });
 
 app.use("/api/v1", router);
 app.use(globalErrorHandler);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.status(httpStatus.NOT_FOUND).json({
-    success: false,
-    message: "API NOT FOUND",
-    error: {
-      path: req.originalUrl,
-      message: "Your request path is not found!",
-    },
-  });
+    res.status(httpStatus.NOT_FOUND).json({
+        success: false,
+        message: "API NOT FOUND",
+        error: {
+            path: req.originalUrl,
+            message: "Your request path is not found!",
+        },
+    });
 });
 export default app;
