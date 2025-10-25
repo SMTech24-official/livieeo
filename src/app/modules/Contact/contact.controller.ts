@@ -5,16 +5,16 @@ import { ContactServices } from "./contact.service";
 import httpStatus from "http-status";
 
 const saveContact = catchAsync(async (req, res) => {
-  const result = await ContactServices.saveContactIntoDB(req.body);
+    const result = await ContactServices.saveContactIntoDB(req.body);
 
-  sendResponse(res, {
-    statusCode: httpStatus.CREATED,
-    success: true,
-    message: "Thank you so much for connect with us",
-    data: result,
-  });
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: "Thank you so much for connect with us",
+        data: result,
+    });
 });
 
 export const ContactControllers = {
-  saveContact,
+    saveContact,
 };

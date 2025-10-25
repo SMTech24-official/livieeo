@@ -5,12 +5,14 @@ import { EmailSender } from "../../../helpers/emailSender";
 import emailSender from "../Auth/emailSender";
 
 const saveContactIntoDB = async (payload: Contact) => {
-  const result = await prisma.contact.create({ data: payload });
+    console.log(payload);
 
-  await emailSender(
-    payload.email,
-    "Contact Form Submission",
-    `<!DOCTYPE html>
+    const result = await prisma.contact.create({ data: payload });
+
+    await emailSender(
+        payload.email,
+        "Contact Form Submission",
+        `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -34,11 +36,11 @@ const saveContactIntoDB = async (payload: Contact) => {
 </body>
 </html>
 `
-  );
+    );
 
-  return result;
+    return result;
 };
 
 export const ContactServices = {
-  saveContactIntoDB,
+    saveContactIntoDB,
 };

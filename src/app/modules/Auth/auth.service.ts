@@ -10,175 +10,178 @@ import emailSender from "./emailSender";
 import { EmailTemplates } from "./emailTemplates";
 
 interface ChangePasswordPayload {
-  oldPassword: string;
-  newPassword: string;
-  confirmPassword: string;
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }
 
 // ================= LOGIN =================
 const loginUser = async (payload: { email: string; password: string }) => {
-  try {
-    const userData = await prisma.user.findUniqueOrThrow({
-      where: {
-        email: payload.email,
-        status: UserStatus.ACTIVE,
-      },
+    const userData = await prisma.user.findUnique({
+        where: {
+            email: payload.email,
+        },
     });
 
+    if (!userData) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid Credentials");
+    }
+
+    if (userData.status !== "ACTIVE") {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "This account is Blocked");
+    }
+
     if (!userData.isEmailVerified) {
-      throw new ApiError(
-        httpStatus.FORBIDDEN,
-        "Please verify your email before login"
-      );
+        throw new ApiError(
+            httpStatus.FORBIDDEN,
+            "Please verify your email before login"
+        );
     }
 
     const isCorrectPassword: boolean = await bcrypt.compare(
-      payload.password,
-      userData.password
+        payload.password,
+        userData.password
     );
 
     if (!isCorrectPassword) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid Credentials");
     }
 
     const accessToken = JWTHelpers.generateToken(
-      {
-        id: userData.id,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        role: userData.role,
-      },
-      config.jwt.access_secret as Secret,
-      config.jwt.access_expires_in || "7d"
+        {
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            role: userData.role,
+        },
+        config.jwt.access_secret as Secret,
+        config.jwt.access_expires_in || "7d"
     );
 
     const refreshToken = JWTHelpers.generateToken(
-      {
-        id: userData.id,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        role: userData.role,
-      },
-      config.jwt.refresh_secret as Secret,
-      config.jwt.refresh_expires_in || "7d"
+        {
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            role: userData.role,
+        },
+        config.jwt.refresh_secret as Secret,
+        config.jwt.refresh_expires_in || "7d"
     );
 
     return {
-      accessToken,
-      refreshToken,
-      user: {
-        id: userData.id,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        role: userData.role,
-        status: userData.status,
-        createdAt: userData.createdAt,
-      },
+        accessToken,
+        refreshToken,
+        user: {
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            role: userData.role,
+            status: userData.status,
+            createdAt: userData.createdAt,
+        },
     };
-  } catch (err: any) {
-    console.log(err);
-  }
 };
 
 // ================= REFRESH TOKEN =================
 const refreshToken = async (token: string) => {
-  let decodedData;
-  try {
-    decodedData = JWTHelpers.verifyToken(
-      token,
-      config.jwt.refresh_secret as string
+    let decodedData;
+    try {
+        decodedData = JWTHelpers.verifyToken(
+            token,
+            config.jwt.refresh_secret as string
+        );
+    } catch (err) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized !");
+    }
+
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            email: decodedData.email,
+            status: UserStatus.ACTIVE,
+        },
+    });
+
+    const accessToken = JWTHelpers.generateToken(
+        {
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            role: userData.role,
+        },
+        config.jwt.access_secret as Secret,
+        config.jwt.access_expires_in as string
     );
-  } catch (err) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized !");
-  }
 
-  const userData = await prisma.user.findUniqueOrThrow({
-    where: {
-      email: decodedData.email,
-      status: UserStatus.ACTIVE,
-    },
-  });
-
-  const accessToken = JWTHelpers.generateToken(
-    {
-      id: userData.id,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      role: userData.role,
-    },
-    config.jwt.access_secret as Secret,
-    config.jwt.access_expires_in as string
-  );
-
-  return { accessToken };
+    return { accessToken };
 };
 
 // ================= CHANGE PASSWORD =================
 const changePassword = async (
-  user: JwtPayload,
-  payload: ChangePasswordPayload
+    user: JwtPayload,
+    payload: ChangePasswordPayload
 ) => {
-  // ১. ইউজার ডেটা বের করা
-  const userData = await prisma.user.findUnique({
-    where: { email: user.email },
-  });
+    // ১. ইউজার ডেটা বের করা
+    const userData = await prisma.user.findUnique({
+        where: { email: user.email },
+    });
 
-  if (!userData || userData.status !== UserStatus.ACTIVE) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found or inactive!");
-  }
+    if (!userData || userData.status !== UserStatus.ACTIVE) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User not found or inactive!");
+    }
 
-  // ২. পুরানো পাসওয়ার্ড চেক করা
-  const isCorrectPassword = await bcrypt.compare(
-    payload.oldPassword,
-    userData.password
-  );
-  if (!isCorrectPassword) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password!");
-  }
+    // ২. পুরানো পাসওয়ার্ড চেক করা
+    const isCorrectPassword = await bcrypt.compare(
+        payload.oldPassword,
+        userData.password
+    );
+    if (!isCorrectPassword) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password!");
+    }
 
-  // ৩. নতুন পাসওয়ার্ড ও কনফার্ম পাসওয়ার্ড ম্যাচ করছে কিনা চেক
-  if (payload.newPassword !== payload.confirmPassword) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
-  }
+    // ৩. নতুন পাসওয়ার্ড ও কনফার্ম পাসওয়ার্ড ম্যাচ করছে কিনা চেক
+    if (payload.newPassword !== payload.confirmPassword) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
+    }
 
-  // ৪. নতুন পাসওয়ার্ড হ্যাশ করা
-  const hashedPassword = await bcrypt.hash(payload.newPassword, 12);
+    // ৪. নতুন পাসওয়ার্ড হ্যাশ করা
+    const hashedPassword = await bcrypt.hash(payload.newPassword, 12);
 
-  // ৫. ডাটাবেজে আপডেট করা
-  await prisma.user.update({
-    where: { email: userData.email },
-    data: { password: hashedPassword },
-  });
+    // ৫. ডাটাবেজে আপডেট করা
+    await prisma.user.update({
+        where: { email: userData.email },
+        data: { password: hashedPassword },
+    });
 
-  return { message: "Password changed successfully!" };
+    return { message: "Password changed successfully!" };
 };
 
 // ================= FORGOT PASSWORD (Send OTP) =================
 
 const forgotPassword = async (payload: { email: string }) => {
-  const userData = await prisma.user.findUniqueOrThrow({
-    where: {
-      email: payload.email,
-      status: UserStatus.ACTIVE,
-    },
-  });
-  const resetPassToken = JWTHelpers.generateToken(
-    {
-      email: userData.email,
-      role: userData.role,
-    },
-    config.jwt.reset_pass_secret as Secret,
-    config.jwt.reset_pass_expires_in as string
-  );
-  const resetPassLink = `${config.reset_pass_link}/?email=${userData.email}&token=${resetPassToken}`;
-  await emailSender(
-    userData.email,
-    "Reset Your Password",
-    `
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            email: payload.email,
+            status: UserStatus.ACTIVE,
+        },
+    });
+    const resetPassToken = JWTHelpers.generateToken(
+        {
+            email: userData.email,
+            role: userData.role,
+        },
+        config.jwt.reset_pass_secret as Secret,
+        config.jwt.reset_pass_expires_in as string
+    );
+    const resetPassLink = `${config.reset_pass_link}/?email=${userData.email}&token=${resetPassToken}`;
+    await emailSender(
+        userData.email,
+        "Reset Your Password",
+        `
   <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; padding: 40px;">
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
  
@@ -226,66 +229,69 @@ const forgotPassword = async (payload: { email: string }) => {
     </div>
   </div>
   `
-  );
+    );
 };
 // ================= RESET PASSWORD (Using Token) =================
 const resetPassword = async (payload: {
-  token: string;
-  newPassword: string;
+    token: string;
+    newPassword: string;
 }) => {
-  try {
-    // Step 1: টোকেন ভেরিফাই করা
-    const decoded = JWTHelpers.verifyToken(
-      payload.token,
-      config.jwt.reset_pass_secret as Secret
-    ) as { email: string; role: string };
+    try {
+        // Step 1: টোকেন ভেরিফাই করা
+        const decoded = JWTHelpers.verifyToken(
+            payload.token,
+            config.jwt.reset_pass_secret as Secret
+        ) as { email: string; role: string };
 
-    if (!decoded?.email) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired token");
+        if (!decoded?.email) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Invalid or expired token"
+            );
+        }
+
+        // Step 2: নতুন পাসওয়ার্ড হ্যাশ করা
+        const hashedPassword = await bcrypt.hash(payload.newPassword, 12);
+
+        // Step 3: ইউজারের পাসওয়ার্ড আপডেট করা
+        await prisma.user.update({
+            where: { email: decoded.email },
+            data: { password: hashedPassword },
+        });
+
+        return { message: "Password reset successfully" };
+    } catch (error) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Token expired or invalid");
     }
-
-    // Step 2: নতুন পাসওয়ার্ড হ্যাশ করা
-    const hashedPassword = await bcrypt.hash(payload.newPassword, 12);
-
-    // Step 3: ইউজারের পাসওয়ার্ড আপডেট করা
-    await prisma.user.update({
-      where: { email: decoded.email },
-      data: { password: hashedPassword },
-    });
-
-    return { message: "Password reset successfully" };
-  } catch (error) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Token expired or invalid");
-  }
 };
 // ================= VERIFY OTP =================
 const verifyOtp = async ({ email, otp }: { email: string; otp: string }) => {
-  const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) throw new ApiError(404, "User not found");
-  if (user.isEmailVerified) throw new ApiError(400, "Email already verified");
-  if (user.emailVerificationCode !== otp)
-    throw new ApiError(400, "Invalid code");
-  if (user.emailVerificationExpiry! < new Date())
-    throw new ApiError(400, "Code expired");
+    if (!user) throw new ApiError(404, "User not found");
+    if (user.isEmailVerified) throw new ApiError(400, "Email already verified");
+    if (user.emailVerificationCode !== otp)
+        throw new ApiError(400, "Invalid code");
+    if (user.emailVerificationExpiry! < new Date())
+        throw new ApiError(400, "Code expired");
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      isEmailVerified: true,
-      emailVerificationCode: null,
-      emailVerificationExpiry: null,
-    },
-  });
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            isEmailVerified: true,
+            emailVerificationCode: null,
+            emailVerificationExpiry: null,
+        },
+    });
 
-  return { message: "Email verified successfully!" };
+    return { message: "Email verified successfully!" };
 };
 
 export const AuthServices = {
-  loginUser,
-  refreshToken,
-  changePassword,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
+    loginUser,
+    refreshToken,
+    changePassword,
+    forgotPassword,
+    verifyOtp,
+    resetPassword,
 };
